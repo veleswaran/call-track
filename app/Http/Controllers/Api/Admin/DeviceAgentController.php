@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Contracts\Services\AgentManagementServiceInterface;
-use App\Domain\Agents\Models\Agent;
 use App\Domain\Devices\Models\Device;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
@@ -21,9 +20,7 @@ class DeviceAgentController extends Controller
     {
         $request->validate(['agent_id' => 'required|exists:agents,id']);
 
-        $agent = Agent::findOrFail($request->agent_id);
-
-        $updatedDevice = $this->service->assignDevice($device, $agent);
+        $updatedDevice = $this->service->assignDevice($device, (int) $request->agent_id);
 
         return response()->json([
             'message' => 'Device assigned to agent successfully',

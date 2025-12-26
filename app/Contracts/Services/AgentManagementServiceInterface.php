@@ -14,7 +14,9 @@ interface AgentManagementServiceInterface
 
     public function updateAgent(Agent $agent, AgentData $data): Agent;
 
-    public function assignDevice(Device $device, Agent $agent): Device;
+    public function assignDevice(Device $device, int $agentId): Device;
 
     public function unassignDevice(Device $device): Device;
+
+    public function getAgentsList(int $perPage = 20): \Illuminate\Contracts\Pagination\LengthAwarePaginator;
 }

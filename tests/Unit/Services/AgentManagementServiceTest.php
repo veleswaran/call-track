@@ -15,6 +15,8 @@ use Tests\TestCase;
 
 class AgentManagementServiceTest extends TestCase
 {
+    use \Illuminate\Foundation\Testing\RefreshDatabase;
+
     public function test_it_delegates_creation_to_action()
     {
         $action = Mockery::mock(CreateAgentAction::class);
@@ -48,15 +50,17 @@ class AgentManagementServiceTest extends TestCase
             Mockery::mock(UnassignAgentFromDeviceAction::class)
         );
 
-        $device = new Device;
-        $agent = new Agent;
+        $device = Device::factory()->create();
+        $agent = Agent::factory()->create();
 
         $assignAction->shouldReceive('execute')
             ->once()
-            ->with($device, $agent)
+            ->with($device, Mockery::on(function ($arg) use ($agent) {
+                return $arg->id === $agent->id;
+            }))
             ->andReturn($device);
 
-        $result = $service->assignDevice($device, $agent);
+        $result = $service->assignDevice($device, (int) $agent->id);
 
         $this->assertEquals($device, $result);
     }
