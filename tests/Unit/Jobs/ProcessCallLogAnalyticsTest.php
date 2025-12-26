@@ -37,7 +37,7 @@ class ProcessCallLogAnalyticsTest extends TestCase
         CallClassification::factory()->create([
             'call_log_id' => $log2->id,
             'type' => 'BUSINESS',
-            'user_id' => $admin->id, 
+            'user_id' => $admin->id,
         ]);
 
         // 3. Personal, duration 50
@@ -55,7 +55,7 @@ class ProcessCallLogAnalyticsTest extends TestCase
         // Yesterday's logs (Should check ignored)
         CallLog::factory()->create([
             'device_id' => $device->id,
-             'duration' => 500,
+            'duration' => 500,
             'timestamp' => now()->subDay(),
         ]);
 
@@ -79,7 +79,7 @@ class ProcessCallLogAnalyticsTest extends TestCase
             'personal_calls' => 1,
             'ignored_calls' => 0,
         ]);
-        
+
         // Assert no record for yesterday (unless already existed, but here we check handled logic)
         // Since logic only touches "Today", we ensure we didn't accidentally create yesterday stats here.
         $this->assertDatabaseMissing('analytics_daily', [

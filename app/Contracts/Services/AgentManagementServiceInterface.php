@@ -11,7 +11,10 @@ use App\Domain\Devices\Models\Device;
 interface AgentManagementServiceInterface
 {
     public function createAgent(AgentData $data): Agent;
+
     public function updateAgent(Agent $agent, AgentData $data): Agent;
+
     public function assignDevice(Device $device, Agent $agent): Device;
+
     public function unassignDevice(Device $device): Device;
 }

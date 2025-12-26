@@ -20,9 +20,9 @@ class DeviceAgentController extends Controller
     public function assign(Request $request, Device $device): JsonResponse
     {
         $request->validate(['agent_id' => 'required|exists:agents,id']);
-        
+
         $agent = Agent::findOrFail($request->agent_id);
-    
+
         $updatedDevice = $this->service->assignDevice($device, $agent);
 
         return response()->json([

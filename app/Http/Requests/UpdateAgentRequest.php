@@ -17,9 +17,9 @@ class UpdateAgentRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'employee_code' => [
-                'nullable', 
-                'string', 
-                'max:50', 
+                'nullable',
+                'string',
+                'max:50',
                 Rule::unique('agents', 'employee_code')->ignore($this->route('agent')),
             ],
             'status' => ['required', 'in:active,inactive'],

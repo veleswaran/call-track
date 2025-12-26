@@ -26,7 +26,7 @@ class AgentManagementServiceTest extends TestCase
         );
 
         $dto = new AgentData(name: 'John Doe', employeeCode: 'EMP-001');
-        $expectedAgent = new Agent();
+        $expectedAgent = new Agent;
 
         $action->shouldReceive('execute')
             ->once()
@@ -48,8 +48,8 @@ class AgentManagementServiceTest extends TestCase
             Mockery::mock(UnassignAgentFromDeviceAction::class)
         );
 
-        $device = new Device();
-        $agent = new Agent();
+        $device = new Device;
+        $agent = new Agent;
 
         $assignAction->shouldReceive('execute')
             ->once()

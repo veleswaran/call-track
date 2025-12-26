@@ -34,7 +34,7 @@ class IngestCallLogsActionTest extends TestCase
             logs: [$logData]
         );
 
-        $action = new IngestCallLogsAction();
+        $action = new IngestCallLogsAction;
         $action->execute($dto);
 
         $this->assertDatabaseHas('call_logs', [
@@ -45,7 +45,7 @@ class IngestCallLogsActionTest extends TestCase
         ]);
 
         Queue::assertPushed(ProcessCallLogAnalytics::class, function ($job) use ($device) {
-             return $job->deviceId === $device->id;
+            return $job->deviceId === $device->id;
         });
     }
 
@@ -54,7 +54,7 @@ class IngestCallLogsActionTest extends TestCase
         Queue::fake();
 
         $device = Device::factory()->create();
-         $logData = new CallLogData(
+        $logData = new CallLogData(
             callHash: 'same-hash',
             phoneNumber: '+1234567890',
             direction: 'incoming',
@@ -67,7 +67,7 @@ class IngestCallLogsActionTest extends TestCase
             logs: [$logData]
         );
 
-        $action = new IngestCallLogsAction();
+        $action = new IngestCallLogsAction;
         $action->execute($dto);
         $action->execute($dto); // Run twice
 

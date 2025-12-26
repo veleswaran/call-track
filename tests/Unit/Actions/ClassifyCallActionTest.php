@@ -30,7 +30,7 @@ class ClassifyCallActionTest extends TestCase
             reason: 'Work related'
         );
 
-        $action = new ClassifyCallAction();
+        $action = new ClassifyCallAction;
         $action->execute($dto);
 
         $this->assertDatabaseHas('call_classifications', [
@@ -66,7 +66,7 @@ class ClassifyCallActionTest extends TestCase
             reason: 'Correction'
         );
 
-        $action = new ClassifyCallAction();
+        $action = new ClassifyCallAction;
         $action->execute($dto);
 
         $this->assertDatabaseHas('call_classifications', [
@@ -74,7 +74,7 @@ class ClassifyCallActionTest extends TestCase
             'type' => 'BUSINESS',
             'reason' => 'Correction',
         ]);
-        
+
         // Ensure only one record exists
         $this->assertEquals(1, CallClassification::where('call_log_id', $callLog->id)->count());
     }

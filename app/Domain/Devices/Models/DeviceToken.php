@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Devices\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class DeviceToken extends Model
 {
@@ -17,6 +16,7 @@ class DeviceToken extends Model
     {
         return \Database\Factories\DeviceTokenFactory::new();
     }
+
     protected $fillable = [
         'device_id',
         'token',

@@ -6,7 +6,6 @@ namespace App\Actions\Devices;
 
 use App\Domain\Devices\DTOs\RegisterDeviceData;
 use App\Domain\Devices\Models\Device;
-use App\Domain\Devices\Models\DeviceToken;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 

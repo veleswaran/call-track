@@ -16,9 +16,9 @@ class CallSyncServiceTest extends TestCase
         $action = Mockery::mock(IngestCallLogsAction::class);
         $service = new CallSyncService($action);
 
-        $device = new Device();
+        $device = new Device;
         $device->id = 1;
-        
+
         $dto = new SyncCallLogsDTO(
             device: $device,
             logs: []

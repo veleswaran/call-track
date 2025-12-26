@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Domain\Calls\Models\CallLog;
 use App\Domain\Devices\Models\DeviceToken;
 use App\Jobs\ProcessCallLogAnalytics;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -36,8 +35,8 @@ class IngestCallLogsTest extends TestCase
                     'direction' => 'OUTGOING',
                     'duration' => 120,
                     'timestamp' => now()->subHour()->toDateTimeString(),
-                ]
-            ]
+                ],
+            ],
         ];
 
         $response = $this->withHeader('X-Device-Token', $token)
@@ -72,12 +71,12 @@ class IngestCallLogsTest extends TestCase
             'logs' => [
                 [
                     'call_hash' => '', // Empty
-                ]
-            ]
+                ],
+            ],
         ];
 
         $response = $this->withHeader('X-Device-Token', $tokenRecord->token)
-             ->postJson('/api/v1/call-logs/bulk', $payload);
+            ->postJson('/api/v1/call-logs/bulk', $payload);
 
         $response->assertUnprocessable();
     }
