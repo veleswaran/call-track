@@ -9,8 +9,7 @@ use App\Domain\Devices\Models\Device;
 readonly class SyncCallLogsDTO
 {
     /**
-     * @param Device $device
-     * @param CallLogData[] $logs
+     * @param  CallLogData[]  $logs
      */
     public function __construct(
         public Device $device,

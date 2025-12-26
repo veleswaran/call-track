@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Actions\Classification;
 
+use App\Domain\Calls\Models\CallLog;
 use App\Domain\Classification\DTOs\CallClassificationDTO;
 use App\Domain\Classification\Models\CallClassification;
-use Illuminate\Support\Facades\DB;
 use App\Jobs\ProcessCallLogAnalytics;
-use App\Domain\Calls\Models\CallLog;
+use Illuminate\Support\Facades\DB;
 
 class ClassifyCallAction
 {

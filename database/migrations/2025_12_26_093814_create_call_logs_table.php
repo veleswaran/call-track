@@ -20,7 +20,7 @@ return new class extends Migration
             $table->integer('duration')->default(0); // seconds
             $table->timestamp('timestamp'); // when call happened
             $table->timestamp('created_at')->useCurrent();
-            
+
             $table->unique(['device_id', 'call_hash']);
             $table->index('created_at');
         });

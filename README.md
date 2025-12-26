@@ -7,6 +7,7 @@ CallTrack AI is an API-first enterprise platform designed to capture, classify, 
 - **Immutable Ingestion**: Raw call logs are hashed and stored with strict immutability.
 - **Device Authentication**: Stateless, token-based authentication for devices (`X-Device-Token`).
 - **Admin Governance**: Laravel Sanctum-based admin API for classifying calls (Business/Personal/Ignored).
+- **Sales Agent Tagging**: Assign devices to sales agents for CRM attribution and analytics.
 - **Analytics**: Async job processing for daily call statistics.
 - **Domain-Driven Design**: Clean architecture separating Domains, Actions, and Services.
 - **API Documentation**: Auto-generated OpenAPI documentation via Dedoc Scramble.
@@ -43,8 +44,14 @@ API documentation is automatically generated.
 
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
+| `POST` | `/api/v1/devices/register` | Register a new device | None |
 | `POST` | `/api/v1/call-logs/bulk` | Ingest batched call logs | Device Token |
 | `POST` | `/api/v1/admin/calls/{id}/classify` | Classify a call log | Admin (Sanctum) |
+| `POST` | `/api/v1/admin/agents` | Create a sales agent | Admin (Sanctum) |
+| `GET` | `/api/v1/admin/agents` | List all agents | Admin (Sanctum) |
+| `PUT` | `/api/v1/admin/agents/{id}` | Update agent details | Admin (Sanctum) |
+| `POST` | `/api/v1/admin/devices/{id}/assign-agent` | Assign agent to device | Admin (Sanctum) |
+| `POST` | `/api/v1/admin/devices/{id}/unassign-agent` | Unassign agent from device | Admin (Sanctum) |
 
 ## 📦 Setup Instructions
 
@@ -69,13 +76,28 @@ API documentation is automatically generated.
    php artisan serve
    ```
 
-## 🧪 Testing
+## 🧪 Quality Assurance
 
-Run strict tests to ensure architecture compliance:
+Ensure code quality and architectural compliance using the following tools:
 
+### 1. Unit & Feature Tests
+Run the full test suite (100% coverage on business logic):
 ```bash
 php artisan test
 ```
+
+### 2. Static Analysis (Larastan)
+We use PHPStan (Level 5+) to enforce strict typing and catch bugs early:
+```bash
+./vendor/bin/phpstan analyse
+```
+
+### 3. Code Style (Laravel Pint)
+Automatically fix code style issues to follow PSR-12 and Laravel best practices:
+```bash
+./vendor/bin/pint
+```
+
 
 ## 🔒 Security
 

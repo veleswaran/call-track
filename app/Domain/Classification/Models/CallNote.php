@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Classification\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Domain\Calls\Models\CallLog;
 use App\Domain\Users\Models\User;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CallNote extends Model
 {

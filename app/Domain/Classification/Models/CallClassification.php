@@ -4,13 +4,22 @@ declare(strict_types=1);
 
 namespace App\Domain\Classification\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Domain\Calls\Models\CallLog;
 use App\Domain\Users\Models\User;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class CallClassification extends Model
 {
+    use HasFactory;
+
+    protected static function newFactory()
+    {
+        return \Database\Factories\CallClassificationFactory::new();
+    }
+
     protected $fillable = [
         'call_log_id',
         'user_id',

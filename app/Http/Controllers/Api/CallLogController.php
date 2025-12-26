@@ -2,13 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-
-use App\Http\Requests\StoreCallLogsRequest;
 use App\Contracts\Services\CallSyncServiceInterface;
-use App\Domain\Calls\DTOs\SyncCallLogsDTO;
 use App\Domain\Calls\DTOs\CallLogData;
+use App\Domain\Calls\DTOs\SyncCallLogsDTO;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreCallLogsRequest;
 use Illuminate\Http\JsonResponse;
 
 class CallLogController extends Controller
@@ -23,10 +21,10 @@ class CallLogController extends Controller
     public function store(StoreCallLogsRequest $request): JsonResponse
     {
         $device = $request->attributes->get('device');
-        
+
         // Fail-safe if middleware logic changes
         if (! $device) {
-             return response()->json(['message' => 'Device authentication required'], 401);
+            return response()->json(['message' => 'Device authentication required'], 401);
         }
 
         $logsData = [];

@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('type'); // BUSINESS, PERSONAL, IGNORED
             $table->text('reason')->nullable();
             $table->timestamps();
-            
+
             $table->unique('call_log_id');
         });
 

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\Governance;
 
-use App\Contracts\Services\CallGovernanceServiceInterface;
 use App\Actions\Classification\ClassifyCallAction;
+use App\Contracts\Services\CallGovernanceServiceInterface;
 use App\Domain\Classification\DTOs\CallClassificationDTO;
 
 class CallGovernanceService implements CallGovernanceServiceInterface

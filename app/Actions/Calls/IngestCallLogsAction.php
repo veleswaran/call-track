@@ -6,7 +6,6 @@ namespace App\Actions\Calls;
 
 use App\Domain\Calls\DTOs\SyncCallLogsDTO;
 use App\Domain\Calls\Models\CallLog;
-use Illuminate\Support\Facades\DB;
 use App\Jobs\ProcessCallLogAnalytics;
 
 class IngestCallLogsAction
@@ -34,7 +33,7 @@ class IngestCallLogsAction
 
         // Chunking for large batches
         foreach (array_chunk($records, 500) as $chunk) {
-             CallLog::insertOrIgnore($chunk);
+            CallLog::insertOrIgnore($chunk);
         }
 
         // Dispatch analytics job for the device

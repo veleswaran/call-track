@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Analytics\Models;
 
+use App\Domain\Devices\Models\Device;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Domain\Devices\Models\Device;
 
 class AnalyticsDaily extends Model
 {

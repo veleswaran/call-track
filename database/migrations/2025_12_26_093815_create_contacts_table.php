@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('phone_hash');
             $table->timestamps();
-            
+
             $table->unique(['device_id', 'phone_hash']);
         });
     }

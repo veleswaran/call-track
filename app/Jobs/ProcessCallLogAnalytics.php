@@ -23,9 +23,9 @@ class ProcessCallLogAnalytics implements ShouldQueue
     {
         // Simple aggregation example
         // In reality, this might be more complex or incremental
-        
+
         $today = now()->toDateString();
-        
+
         // This is a naive implementation re-calculating everything for the day.
         $stats = \Illuminate\Support\Facades\DB::table('call_logs')
             ->where('device_id', $this->deviceId)
