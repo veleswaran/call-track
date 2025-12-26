@@ -1,0 +1,35 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Actions\Classification;
+
+use App\Domain\Classification\DTOs\CallClassificationDTO;
+use App\Domain\Classification\Models\CallClassification;
+use Illuminate\Support\Facades\DB;
+use App\Jobs\ProcessCallLogAnalytics;
+use App\Domain\Calls\Models\CallLog;
+
+class ClassifyCallAction
+{
+    public function execute(CallClassificationDTO $dto): void
+    {
+        DB::transaction(function () use ($dto) {
+            CallClassification::updateOrCreate(
+                ['call_log_id' => $dto->callLogId],
+                [
+                    'user_id' => $dto->adminUserId,
+                    'type' => $dto->type,
+                    'reason' => $dto->reason,
+                ]
+            );
+        });
+
+        // Trigger analytics update for this specific call's device date
+        // Note: Ideally we find the date/device from the call log ID to be precise
+        $callLog = CallLog::find($dto->callLogId);
+        if ($callLog) {
+            ProcessCallLogAnalytics::dispatch($callLog->device_id);
+        }
+    }
+}
