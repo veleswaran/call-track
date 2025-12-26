@@ -27,6 +27,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        \Illuminate\Support\Facades\Gate::define('viewApiDocs', function (? \App\Domain\Users\Models\User $user) {
+            return true; // Simplistic for now. Restrict in production.
+        });
     }
 }
