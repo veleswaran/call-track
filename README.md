@@ -71,7 +71,12 @@ API documentation is automatically generated.
    php artisan migrate
    ```
 
-4. **Serve Application**
+4. **Create Super Admin**
+   ```bash
+   php artisan admin:create-super
+   ```
+
+5. **Serve Application**
    ```bash
    php artisan serve
    ```
