@@ -25,6 +25,11 @@ class AppServiceProvider extends ServiceProvider
             \App\Contracts\Services\AgentManagementServiceInterface::class,
             \App\Services\Agents\AgentManagementService::class
         );
+
+        $this->app->bind(
+            \App\Contracts\Services\DashboardServiceContract::class,
+            \App\Services\DashboardService::class
+        );
     }
 
     /**
