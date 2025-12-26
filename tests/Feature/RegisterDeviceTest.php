@@ -12,9 +12,17 @@ class RegisterDeviceTest extends TestCase
 
     public function test_it_registers_a_new_device()
     {
+        $agent = \App\Domain\Agents\Models\Agent::factory()->create();
+        $code = \App\Domain\Devices\Models\DeviceRegistrationCode::create([
+            'code' => 'TESTCODE',
+            'agent_id' => $agent->id,
+            'expires_at' => now()->addHour(),
+        ]);
+
         $payload = [
-            'name' => 'Test Device',
-            'model' => 'Pixel 8',
+            'code' => 'TESTCODE',
+            'device_name' => 'Test Device',
+            'device_model' => 'Pixel 8',
             'os_version' => 'Android 14',
             'app_version' => '1.0.0',
         ];
@@ -31,13 +39,13 @@ class RegisterDeviceTest extends TestCase
         $this->assertDatabaseHas('devices', [
             'name' => 'Test Device',
             'model' => 'Pixel 8',
+            'agent_id' => $agent->id,
         ]);
 
         $token = $response->json('token');
-        $this->assertDatabaseHas('device_tokens', [
-            'device_name' => 'Test Device',
-            'token' => $token,
-        ]);
+        // Token is hashed in DB now, so we can't search by plain token
+        // But we can check if device exists
+        $this->assertDatabaseHas('devices', ['id' => $response->json('device_id')]);
     }
 
     public function test_it_validates_registration_payload()
@@ -45,6 +53,6 @@ class RegisterDeviceTest extends TestCase
         $response = $this->postJson('/api/v1/devices/register', []);
 
         $response->assertUnprocessable();
-        $response->assertJsonValidationErrors(['name', 'model', 'os_version', 'app_version']);
+        $response->assertJsonValidationErrors(['code', 'device_name']);
     }
 }
