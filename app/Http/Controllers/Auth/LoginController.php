@@ -21,7 +21,7 @@ class LoginController extends Controller
 
             return response()->json([
                 'message' => 'Logged in successfully',
-                'user' => Auth::guard('web')->user()
+                'user' => Auth::guard('web')->user(),
             ]);
         }
 

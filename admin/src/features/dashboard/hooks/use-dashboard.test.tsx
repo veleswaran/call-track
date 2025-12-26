@@ -34,11 +34,15 @@ describe("useDashboardMetrics", () => {
             business_calls: 892,
             personal_calls: 245,
             ignored_calls: 97,
+            unclassified_calls: 50,
+            total_devices: 10,
+            active_devices: 8,
+            total_agents: 5,
             total_duration_seconds: 174720,
             average_call_duration_seconds: 142,
         };
 
-        vi.mocked(api.get).mockResolvedValueOnce(mockMetrics);
+        vi.mocked(api.get).mockResolvedValueOnce({ data: mockMetrics });
 
         const { result } = renderHook(() => useDashboardMetrics(), {
             wrapper: createWrapper(),

@@ -137,3 +137,7 @@ export interface DashboardMetrics {
     active_devices: number;
     total_agents: number;
 }
+
+export interface ResourceResponse<T> {
+    data: T;
+}

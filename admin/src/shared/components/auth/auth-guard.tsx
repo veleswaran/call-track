@@ -11,27 +11,27 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     const [isAuthenticated, setIsAuthenticated] = React.useState(false);
 
     React.useEffect(() => {
-        checkAuth();
-    }, [pathname]);
-
-    const checkAuth = async () => {
-        try {
-            const user = await authService.getCurrentUser();
-            if (!user) {
-                // If checking /login, user is null is fine (let them login)
-                // But this guard is for PROTECTED routes.
-                // So if user is null, redirect to login.
-                throw new Error("Unauthenticated");
+        const checkAuth = async () => {
+            try {
+                const user = await authService.getCurrentUser();
+                if (!user) {
+                    // If checking /login, user is null is fine (let them login)
+                    // But this guard is for PROTECTED routes.
+                    // So if user is null, redirect to login.
+                    throw new Error("Unauthenticated");
+                }
+                setIsAuthenticated(true);
+            } catch {
+                setIsAuthenticated(false);
+                console.log("AuthGuard: Unauthenticated, redirecting to login");
+                router.push("/login");
+            } finally {
+                setIsLoading(false);
             }
-            setIsAuthenticated(true);
-        } catch (error) {
-            setIsAuthenticated(false);
-            console.log("AuthGuard: Unauthenticated, redirecting to login");
-            router.push("/login");
-        } finally {
-            setIsLoading(false);
-        }
-    };
+        };
+
+        checkAuth();
+    }, [pathname, router]);
 
     if (isLoading) {
         return (

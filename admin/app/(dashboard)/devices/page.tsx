@@ -11,6 +11,7 @@ import {
 } from "@shared/components/ui/table";
 import { Smartphone } from "lucide-react";
 import { format } from "date-fns";
+import { DeviceRegistrationCodeDialog } from "@features/devices/components/device-registration-code-dialog";
 
 /**
  * Devices page - displays device list using API hook
@@ -29,6 +30,7 @@ export default function DevicesPage() {
                         Manage registered devices and assignments
                     </p>
                 </div>
+                <DeviceRegistrationCodeDialog />
             </div>
 
             <div className="rounded-md border border-zinc-200 dark:border-zinc-800">

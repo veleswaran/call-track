@@ -7,6 +7,9 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin \App\Domain\Calls\Models\CallLog
+ */
 class CallLogResource extends JsonResource
 {
     /**
@@ -19,7 +22,7 @@ class CallLogResource extends JsonResource
         return [
             'id' => $this->id,
             'device_id' => $this->device_id,
-            'phone_number' => 'Hidden', // Should be masked or depending on permission
+            'phone_number' => $this->phone_number, // Auto-decrypted by encrypted cast
             'call_type' => strtolower($this->direction),
             'duration' => $this->duration,
             'timestamp' => $this->timestamp,

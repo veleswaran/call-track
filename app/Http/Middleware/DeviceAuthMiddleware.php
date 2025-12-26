@@ -21,8 +21,11 @@ class DeviceAuthMiddleware
             return response()->json(['message' => 'Device Token Missing'], 401);
         }
 
+        // Token is hashed in DB
+        $hashedToken = hash('sha256', $token);
+
         $deviceToken = \App\Domain\Devices\Models\DeviceToken::with('device')
-            ->where('token', $token)
+            ->where('token', $hashedToken)
             ->first();
 
         if (! $deviceToken) {

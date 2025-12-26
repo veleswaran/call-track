@@ -92,7 +92,7 @@ describe("useAgents", () => {
 
 describe("useAgent", () => {
     it("should fetch single agent by ID", async () => {
-        vi.mocked(api.get).mockResolvedValueOnce(mockAgent);
+        vi.mocked(api.get).mockResolvedValueOnce({ data: mockAgent });
 
         const { result } = renderHook(() => useAgent(1), {
             wrapper: createWrapper(),

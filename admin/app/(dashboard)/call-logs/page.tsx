@@ -11,6 +11,7 @@ import {
 } from "@shared/components/ui/table";
 import { format } from "date-fns";
 import { PhoneIncoming, PhoneOutgoing, PhoneMissed } from "lucide-react";
+import { CallActions } from "@features/call-logs/components/call-actions";
 
 /**
  * Call Logs page - displays paginated call log list using API hook
@@ -37,7 +38,9 @@ export default function CallLogsPage() {
                             <TableHead>Phone Number</TableHead>
                             <TableHead>Duration</TableHead>
                             <TableHead>Time</TableHead>
+                            <TableHead>Time</TableHead>
                             <TableHead>Type</TableHead>
+                            <TableHead className="w-[50px]"></TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -100,6 +103,9 @@ export default function CallLogsPage() {
                                                 log.classification.classification.slice(1)
                                                 : "Unclassified"}
                                         </span>
+                                    </TableCell>
+                                    <TableCell>
+                                        <CallActions callLog={log} />
                                     </TableCell>
                                 </TableRow>
                             ))

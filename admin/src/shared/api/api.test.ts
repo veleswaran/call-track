@@ -268,7 +268,10 @@ describe("api client", () => {
                 {
                     method: "DELETE",
                     credentials: "include",
-                    headers: { Accept: "application/json" },
+                    headers: {
+                        Accept: "application/json",
+                        "Content-Type": "application/json",
+                    },
                 }
             );
             expect(result).toEqual({ deleted: true });
