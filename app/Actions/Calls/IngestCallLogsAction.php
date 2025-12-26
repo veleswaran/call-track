@@ -20,9 +20,11 @@ class IngestCallLogsAction
                 'device_id' => $dto->device->id,
                 'call_hash' => $log->callHash,
                 'phone_number_hash' => hash('sha256', $log->phoneNumber),
+                'phone_number' => \Illuminate\Support\Facades\Crypt::encryptString($log->phoneNumber),
                 'direction' => $log->direction,
                 'duration' => $log->duration,
                 'timestamp' => $log->timestamp,
+                'sim_slot' => $log->simSlot,
                 'created_at' => $now,
             ];
         }

@@ -35,6 +35,7 @@ class CallLogController extends Controller
                 direction: $log['direction'],
                 duration: (int) $log['duration'],
                 timestamp: $log['timestamp'],
+                simSlot: (int) ($log['sim_slot'] ?? 0),
             );
         }
 
