@@ -1,0 +1,33 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Resources;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+
+class DeviceResource extends JsonResource
+{
+    /**
+     * Transform the resource into an array.
+     *
+     * @return array<string, mixed>
+     */
+    public function toArray(Request $request): array
+    {
+        return [
+            'id' => $this->id,
+            'device_identifier' => $this->id, // Using ID as identifier for now
+            'device_name' => $this->name,
+            'device_model' => $this->model,
+            'os_version' => $this->os_version,
+            'app_version' => $this->app_version,
+            'status' => 'active', // Placeholder until we have real status logic or column
+            'agent_id' => $this->agent_id,
+            'last_sync_at' => $this->created_at, // Placeholder or use specialized query
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
+        ];
+    }
+}

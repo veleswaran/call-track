@@ -18,22 +18,46 @@ function createApiError(message: string, status?: number): ApiError {
  * API client configured for Laravel Sanctum cookie-based authentication
  * All requests include credentials for cross-origin cookie handling
  */
+/**
+ * Helper to get cookie by name
+ */
+function getCookie(name: string): string | null {
+    if (typeof document === "undefined") return null;
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
+    return null;
+}
+
+/**
+ * Get headers with CSRF token
+ */
+function getHeaders(contentType = "application/json"): HeadersInit {
+    const headers: Record<string, string> = {
+        Accept: "application/json",
+    };
+
+    if (contentType) {
+        headers["Content-Type"] = contentType;
+    }
+
+    const xsrfToken = getCookie("XSRF-TOKEN");
+    if (xsrfToken) {
+        headers["X-XSRF-TOKEN"] = decodeURIComponent(xsrfToken);
+    }
+
+    return headers;
+}
+
 export const api = {
     baseUrl: API_BASE_URL,
 
-    /**
-     * Fetches the CSRF cookie from Laravel Sanctum
-     * Must be called before any state-changing requests (POST, PUT, DELETE)
-     */
     async getCsrfCookie(): Promise<void> {
         await fetch(`${API_BASE_URL}/sanctum/csrf-cookie`, {
             credentials: "include",
         });
     },
 
-    /**
-     * Performs a GET request
-     */
     async get<T>(endpoint: string): Promise<T> {
         const response = await fetch(`${API_BASE_URL}${endpoint}`, {
             credentials: "include",
@@ -49,19 +73,13 @@ export const api = {
         return response.json();
     },
 
-    /**
-     * Performs a POST request with CSRF token handling
-     */
     async post<T>(endpoint: string, data?: unknown): Promise<T> {
         await this.getCsrfCookie();
 
         const response = await fetch(`${API_BASE_URL}${endpoint}`, {
             method: "POST",
             credentials: "include",
-            headers: {
-                Accept: "application/json",
-                "Content-Type": "application/json",
-            },
+            headers: getHeaders(),
             body: data ? JSON.stringify(data) : undefined,
         });
 
@@ -72,19 +90,13 @@ export const api = {
         return response.json();
     },
 
-    /**
-     * Performs a PUT request with CSRF token handling
-     */
     async put<T>(endpoint: string, data?: unknown): Promise<T> {
         await this.getCsrfCookie();
 
         const response = await fetch(`${API_BASE_URL}${endpoint}`, {
             method: "PUT",
             credentials: "include",
-            headers: {
-                Accept: "application/json",
-                "Content-Type": "application/json",
-            },
+            headers: getHeaders(),
             body: data ? JSON.stringify(data) : undefined,
         });
 
@@ -95,18 +107,13 @@ export const api = {
         return response.json();
     },
 
-    /**
-     * Performs a DELETE request with CSRF token handling
-     */
     async delete<T>(endpoint: string): Promise<T> {
         await this.getCsrfCookie();
 
         const response = await fetch(`${API_BASE_URL}${endpoint}`, {
             method: "DELETE",
             credentials: "include",
-            headers: {
-                Accept: "application/json",
-            },
+            headers: getHeaders(),
         });
 
         if (!response.ok) {

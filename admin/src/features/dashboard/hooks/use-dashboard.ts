@@ -16,7 +16,12 @@ export const dashboardKeys = {
 export function useDashboardMetrics() {
     return useQuery({
         queryKey: dashboardKeys.metrics(),
-        queryFn: () => api.get<DashboardMetrics>("/api/v1/admin/dashboard"),
+        queryFn: async () => {
+            const response = await api.get<{ data: DashboardMetrics }>(
+                "/api/v1/admin/dashboard"
+            );
+            return response.data;
+        },
         // Dashboard should refresh in background
         staleTime: 30 * 1000, // 30 seconds
         refetchInterval: 60 * 1000, // Refetch every minute

@@ -1,6 +1,7 @@
 "use client";
 
 import { AppShell } from "@shared/components/layout/app-shell";
+import { AuthGuard } from "@shared/components/auth/auth-guard";
 import { authService } from "@shared/api/auth-service";
 import { useRouter } from "next/navigation";
 
@@ -21,5 +22,9 @@ export default function DashboardLayout({
         }
     };
 
-    return <AppShell onLogout={handleLogout}>{children}</AppShell>;
+    return (
+        <AuthGuard>
+            <AppShell onLogout={handleLogout}>{children}</AppShell>
+        </AuthGuard>
+    );
 }

@@ -29,5 +29,11 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('agents', \App\Http\Controllers\Api\Admin\AgentController::class);
         Route::post('/devices/{device}/assign-agent', [\App\Http\Controllers\Api\Admin\DeviceAgentController::class, 'assign']);
         Route::post('/devices/{device}/unassign-agent', [\App\Http\Controllers\Api\Admin\DeviceAgentController::class, 'unassign']);
+
+        // Devices
+        Route::get('/devices', [\App\Http\Controllers\Api\Admin\DeviceController::class, 'index']);
+
+        // Call Logs
+        Route::get('/call-logs', [\App\Http\Controllers\Api\Admin\CallLogController::class, 'index']);
     });
 });

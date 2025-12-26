@@ -2,7 +2,6 @@
 // Basic offline support - will be enhanced as needed
 
 const CACHE_NAME = "calltrack-admin-v1";
-const OFFLINE_URL = "/offline";
 
 // Install event - cache essential assets
 self.addEventListener("install", (event) => {

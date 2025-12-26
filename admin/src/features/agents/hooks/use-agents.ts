@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@shared/api/api";
-import type { Agent, PaginatedResponse } from "@shared/types";
+import type { Agent, PaginatedResponse, ResourceResponse } from "@shared/types";
 
 /**
  * Query keys for agents
@@ -33,7 +33,12 @@ export function useAgents(params?: { page?: number; per_page?: number }) {
 export function useAgent(id: number) {
     return useQuery({
         queryKey: agentKeys.detail(id),
-        queryFn: () => api.get<Agent>(`/api/v1/admin/agents/${id}`),
+        queryFn: async () => {
+            const response = await api.get<ResourceResponse<Agent>>(
+                `/api/v1/admin/agents/${id}`
+            );
+            return response.data;
+        },
         enabled: !!id,
     });
 }
@@ -45,8 +50,13 @@ export function useCreateAgent() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: (data: { name: string; email: string; phone?: string }) =>
-            api.post<Agent>("/api/v1/admin/agents", data),
+        mutationFn: async (data: { name: string; email: string; phone?: string }) => {
+            const response = await api.post<ResourceResponse<Agent>>(
+                "/api/v1/admin/agents",
+                data
+            );
+            return response.data;
+        },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: agentKeys.lists() });
         },
@@ -60,13 +70,19 @@ export function useUpdateAgent() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({
+        mutationFn: async ({
             id,
             data,
         }: {
             id: number;
             data: { name?: string; email?: string; phone?: string };
-        }) => api.put<Agent>(`/api/v1/admin/agents/${id}`, data),
+        }) => {
+            const response = await api.put<ResourceResponse<Agent>>(
+                `/api/v1/admin/agents/${id}`,
+                data
+            );
+            return response.data;
+        },
         onSuccess: (_, { id }) => {
             queryClient.invalidateQueries({ queryKey: agentKeys.detail(id) });
             queryClient.invalidateQueries({ queryKey: agentKeys.lists() });

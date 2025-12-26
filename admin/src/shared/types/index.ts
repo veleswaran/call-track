@@ -49,6 +49,8 @@ export interface Device {
     device_identifier: string;
     device_name: string | null;
     device_model: string | null;
+    os_version: string | null;
+    app_version: string | null;
     status: "active" | "suspended";
     agent_id: string | null;
     last_sync_at: string | null;
@@ -127,7 +129,11 @@ export interface DashboardMetrics {
     total_calls: number;
     business_calls: number;
     personal_calls: number;
-    total_duration: number;
-    devices_active: number;
-    agents_active: number;
+    ignored_calls: number;
+    unclassified_calls: number;
+    total_duration_seconds: number;
+    average_call_duration_seconds: number;
+    total_devices: number;
+    active_devices: number;
+    total_agents: number;
 }
