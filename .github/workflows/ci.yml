@@ -2,42 +2,39 @@ name: CI
 
 on:
   push:
-    branches: [ master, main ]
+    branches: [ master, develop ]
   pull_request:
-    branches: [ master, main ]
+    branches: [ master, develop ]
 
 jobs:
-  test:
+  quality-checks:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: '8.4'
-        extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv
-        coverage: none
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, pdo, sqlite3
+          coverage: none
 
-    - name: Install dependencies
-      run: |
-        composer install --prefer-dist --no-interaction --no-progress
+      - name: Copy .env
+        run: cp .env.example .env
 
-    - name: Copy .env
-      run: cp .env.example .env
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
 
-    - name: Generate key
-      run: php artisan key:generate
+      - name: Generate application key
+        run: php artisan key:generate
 
-    - name: Directory Permissions
-      run: chmod -R 777 storage bootstrap/cache
+      - name: Run Laravel Pint (Code Style)
+        run: ./vendor/bin/pint --test
 
-    - name: Run Pint (Linting)
-      run: ./vendor/bin/pint --test
+      - name: Run PHPStan (Static Analysis)
+        run: ./vendor/bin/phpstan analyse
 
-    - name: Run Larastan (Static Analysis)
-      run: ./vendor/bin/phpstan analyse --memory-limit=2G
-
-    - name: Run Tests
-      run: php artisan test
+      - name: Run Tests
+        run: php artisan test
