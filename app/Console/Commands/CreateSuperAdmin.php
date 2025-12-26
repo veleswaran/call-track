@@ -33,10 +33,11 @@ class CreateSuperAdmin extends Command
         // Get user input
         $name = $this->ask('Name');
         $email = $this->ask('Email');
-        
+
         // Validate email uniqueness
         if (User::where('email', $email)->exists()) {
             $this->error("User with email '{$email}' already exists!");
+
             return self::FAILURE;
         }
 
@@ -46,11 +47,13 @@ class CreateSuperAdmin extends Command
         // Validate password
         if (strlen($password) < 8) {
             $this->error('Password must be at least 8 characters!');
+
             return self::FAILURE;
         }
 
         if ($password !== $passwordConfirmation) {
             $this->error('Passwords do not match!');
+
             return self::FAILURE;
         }
 
@@ -62,7 +65,7 @@ class CreateSuperAdmin extends Command
         ]);
 
         $this->newLine();
-        $this->info("✅ Super Admin created successfully!");
+        $this->info('✅ Super Admin created successfully!');
         $this->table(
             ['ID', 'Name', 'Email'],
             [[$user->id, $user->name, $user->email]]
@@ -71,7 +74,7 @@ class CreateSuperAdmin extends Command
         $this->newLine();
         $this->comment('You can now use this account to authenticate via Sanctum.');
         $this->comment('Generate a token with: php artisan tinker');
-        $this->comment('>>> $user = User::find(' . $user->id . ')');
+        $this->comment('>>> $user = User::find('.$user->id.')');
         $this->comment('>>> $user->createToken("admin-token")->plainTextToken');
 
         return self::SUCCESS;
