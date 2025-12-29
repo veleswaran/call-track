@@ -19,6 +19,10 @@ class CallLogResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        // Optimized: contacts are batch-attached in the controller via a precomputed phone_hash map.
+        // We simply read the relation here to avoid per-row queries (N+1).
+        $contact = $this->getRelationValue('contact_by_hash');
+
         return [
             'id' => $this->id,
             'device_id' => $this->device_id,
@@ -26,6 +30,8 @@ class CallLogResource extends JsonResource
             'call_type' => strtolower($this->direction),
             'duration' => $this->duration,
             'timestamp' => $this->timestamp,
+            'contact_name' => $contact?->name,
+            'contact_notes' => $contact?->notes,
             'classification' => $this->classification ? [
                 'id' => $this->classification->id,
                 'classification' => strtolower($this->classification->type),

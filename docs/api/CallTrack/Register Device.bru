@@ -1,0 +1,29 @@
+meta {
+  name: Register Device
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://127.0.0.1:8000/api/v1/devices/register
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "code": "ZJIPIC",
+    "device_name": "Android tesadafasf",
+    "device_model": "TEster",
+    "os_version": "7",
+    "app_version": "1"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

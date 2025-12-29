@@ -12,6 +12,11 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(
+            \App\Contracts\Services\CallLogQueryServiceContract::class,
+            \App\Services\CallLogQueryService::class
+        );
+
+        $this->app->bind(
             \App\Contracts\Services\CallSyncServiceInterface::class,
             \App\Services\Calls\CallSyncService::class
         );

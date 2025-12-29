@@ -34,9 +34,9 @@ const mockAgent: Agent = {
     id: 1,
     name: "John Doe",
     email: "john@example.com",
+    status: "active",
     phone: "123-456-7890",
-    is_active: true,
-    device_count: 2,
+    devices_count: 2,
     created_at: "2024-01-01T00:00:00Z",
     updated_at: "2024-01-01T00:00:00Z",
 };

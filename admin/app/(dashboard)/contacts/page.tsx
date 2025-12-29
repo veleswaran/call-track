@@ -1,6 +1,8 @@
 /**
  * Contacts page - displays saved contacts from calls
  */
+import { ContactsList } from "@features/contacts/components/contacts-list";
+
 export default function ContactsPage() {
     return (
         <div className="space-y-6">
@@ -13,12 +15,7 @@ export default function ContactsPage() {
                 </div>
             </div>
 
-            {/* Placeholder for contacts list */}
-            <div className="rounded-lg border border-dashed border-zinc-300 p-8 text-center dark:border-zinc-700">
-                <p className="text-zinc-500 dark:text-zinc-400">
-                    Contacts list will appear here
-                </p>
-            </div>
+            <ContactsList />
         </div>
     );
 }

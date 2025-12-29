@@ -29,15 +29,14 @@ function createWrapper() {
 
 const mockDevice: Device = {
     id: 1,
-    device_id: "device-123",
+    device_identifier: "device-123",
     device_name: "Pixel 7",
-    model: "Pixel 7",
-    manufacturer: "Google",
+    device_model: "Pixel 7",
     os_version: "Android 14",
     app_version: "1.0.0",
-    is_active: true,
-    last_sync_at: "2024-01-01T12:00:00Z",
+    status: "active",
     agent_id: 1,
+    last_sync_at: "2024-01-01T12:00:00Z",
     created_at: "2024-01-01T00:00:00Z",
     updated_at: "2024-01-01T00:00:00Z",
 };

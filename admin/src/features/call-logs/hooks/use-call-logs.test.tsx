@@ -33,11 +33,15 @@ const mockCallLog: CallLog = {
     phone_number: "+1234567890",
     contact_name: "John Doe",
     call_type: "incoming",
-    duration_seconds: 120,
-    call_timestamp: "2024-01-01T10:00:00Z",
-    classification: "business",
+    duration: 120,
+    timestamp: "2024-01-01T10:00:00Z",
+    classification: {
+        id: 10,
+        classification: "business",
+        classified_by: 99,
+        classified_at: "2024-01-01T10:04:00Z",
+    },
     created_at: "2024-01-01T10:05:00Z",
-    updated_at: "2024-01-01T10:05:00Z",
 };
 
 describe("useCallLogs", () => {

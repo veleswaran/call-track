@@ -12,6 +12,8 @@ import {
 import { format } from "date-fns";
 import { PhoneIncoming, PhoneOutgoing, PhoneMissed } from "lucide-react";
 import { CallActions } from "@features/call-logs/components/call-actions";
+import { formatDuration } from "@shared/utils/time";
+import { getCallStatus } from "@shared/utils/call";
 
 /**
  * Call Logs page - displays paginated call log list using API hook
@@ -37,8 +39,9 @@ export default function CallLogsPage() {
                             <TableHead className="w-[50px]"></TableHead>
                             <TableHead>Phone Number</TableHead>
                             <TableHead>Duration</TableHead>
+                            <TableHead>Status</TableHead>
                             <TableHead>Time</TableHead>
-                            <TableHead>Time</TableHead>
+                            <TableHead>Notes</TableHead>
                             <TableHead>Type</TableHead>
                             <TableHead className="w-[50px]"></TableHead>
                         </TableRow>
@@ -46,24 +49,27 @@ export default function CallLogsPage() {
                     <TableBody>
                         {isLoading ? (
                             <TableRow>
-                                <TableCell colSpan={5} className="h-24 text-center">
+                                <TableCell colSpan={8} className="h-24 text-center">
                                     Loading...
                                 </TableCell>
                             </TableRow>
                         ) : isError ? (
                             <TableRow>
-                                <TableCell colSpan={5} className="h-24 text-center text-red-500">
+                                <TableCell colSpan={8} className="h-24 text-center text-red-500">
                                     Failed to load call logs
                                 </TableCell>
                             </TableRow>
                         ) : callLogs.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={5} className="h-24 text-center">
+                                <TableCell colSpan={8} className="h-24 text-center">
                                     No call logs found
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            callLogs.map((log) => (
+                            callLogs.map((log) => {
+                                const status = getCallStatus(log.call_type, log.duration);
+
+                                return (
                                 <TableRow key={log.id}>
                                     <TableCell>
                                         {log.call_type === "incoming" && (
@@ -77,15 +83,33 @@ export default function CallLogsPage() {
                                         )}
                                     </TableCell>
                                     <TableCell className="font-medium">
-                                        {log.phone_number}
+                                        {/* Contact name (if any) shown above the phone number */}
+                                        {log.contact_name ? (
+                                            <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                                                {log.contact_name}
+                                            </div>
+                                        ) : null}
+                                        <div>{log.phone_number}</div>
                                     </TableCell>
                                     <TableCell>
-                                        {log.duration > 0
-                                            ? `${log.duration}s`
-                                            : "-"}
+                                        {formatDuration(log.duration)}
+                                    </TableCell>
+                                    <TableCell>
+                                        <span
+                                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${status === "Connected"
+                                                ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+                                                : status === "No Answer"
+                                                    ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
+                                                    : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"}`}
+                                        >
+                                            {status}
+                                        </span>
                                     </TableCell>
                                     <TableCell>
                                         {format(new Date(log.timestamp), "MMM d, h:mm a")}
+                                    </TableCell>
+                                    <TableCell>
+                                        {log.contact_notes ?? "-"}
                                     </TableCell>
                                     <TableCell>
                                         <span
@@ -108,7 +132,8 @@ export default function CallLogsPage() {
                                         <CallActions callLog={log} />
                                     </TableCell>
                                 </TableRow>
-                            ))
+                                );
+                            })
                         )}
                     </TableBody>
                 </Table>

@@ -1,0 +1,20 @@
+meta {
+  name: Get Call logs
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://127.0.0.1:8000/api/v1/admin/call-logs
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer GLNHQFdKD74OQhm1mEGdzn4w3LsVz3Bh2pfGc5FhGPXxK9sRnu5OtSYCJe5x
+  Content-Type: application/json
+}
+
+settings {
+  encodeUrl: true
+}

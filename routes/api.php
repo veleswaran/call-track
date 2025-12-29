@@ -15,9 +15,6 @@ Route::prefix('v1')->group(function () {
 
     Route::middleware([DeviceAuthMiddleware::class])->group(function () {
         Route::post('/call-logs/sync', [\App\Http\Controllers\Api\CallLogController::class, 'store']);
-        // Legacy bulk route support if needed, or remove. Keeping bulk as alias?
-        // Let's use /devices/sync as per plan? Plan said /devices/sync.
-        // My code above uses /call-logs/sync. I should align with plan.
         Route::post('/devices/sync', [\App\Http\Controllers\Api\CallLogController::class, 'store']);
     });
 
