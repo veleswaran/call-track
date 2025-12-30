@@ -65,9 +65,8 @@ export interface Device {
 export interface Agent {
     id: number;
     name: string;
-    email: string;
+    employee_code: string | null;
     status: "active" | "inactive";
-    phone: string | null;
     devices_count?: number;
     created_at: string;
     updated_at: string;

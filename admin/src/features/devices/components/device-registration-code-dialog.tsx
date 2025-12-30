@@ -84,7 +84,7 @@ export function DeviceRegistrationCodeDialog() {
                                     <option value="" disabled>Select an agent...</option>
                                     {agents.map((agent) => (
                                         <option key={agent.id} value={agent.id}>
-                                            {agent.name} ({agent.email})
+                                            {agent.name} ({agent.employee_code ?? "No code"})
                                         </option>
                                     ))}
                                 </select>

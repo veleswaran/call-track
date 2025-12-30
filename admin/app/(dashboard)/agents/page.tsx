@@ -1,6 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { useAgents } from "@features/agents/hooks/use-agents";
+import { AddAgentDialog } from "@features/agents/components/AddAgentDialog";
+import { EditAgentDialog } from "@features/agents/components/EditAgentDialog";
+import { AssignDeviceDialog } from "@features/agents/components/AssignDeviceDialog";
 import {
     Table,
     TableBody,
@@ -9,13 +13,17 @@ import {
     TableHeader,
     TableRow,
 } from "@shared/components/ui/table";
-import { User, Mail, Phone } from "lucide-react";
+import { Button } from "@shared/components/ui/button";
+import { User, Pencil, Smartphone } from "lucide-react";
+import type { Agent } from "@shared/types";
 
 /**
- * Agents page - displays agent list using API hook
+ * Agents page - displays agent list with CRUD capabilities
  */
 export default function AgentsPage() {
     const { data, isLoading, isError } = useAgents({ page: 1, per_page: 20 });
+    const [editingAgent, setEditingAgent] = useState<Agent | null>(null);
+    const [assigningAgent, setAssigningAgent] = useState<Agent | null>(null);
 
     const agents = data?.data ?? [];
 
@@ -28,6 +36,7 @@ export default function AgentsPage() {
                         Manage sales agents and their device assignments
                     </p>
                 </div>
+                <AddAgentDialog />
             </div>
 
             <div className="rounded-md border border-zinc-200 dark:border-zinc-800">
@@ -36,10 +45,10 @@ export default function AgentsPage() {
                         <TableRow>
                             <TableHead className="w-[50px]"></TableHead>
                             <TableHead>Name</TableHead>
-                            <TableHead>Email</TableHead>
-                            <TableHead>Phone</TableHead>
+                            <TableHead>Employee Code</TableHead>
                             <TableHead>Devices</TableHead>
                             <TableHead>Status</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -58,7 +67,7 @@ export default function AgentsPage() {
                         ) : agents.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={6} className="h-24 text-center">
-                                    No agents found
+                                    No agents found. Click &quot;Add Agent&quot; to create one.
                                 </TableCell>
                             </TableRow>
                         ) : (
@@ -71,23 +80,12 @@ export default function AgentsPage() {
                                     </TableCell>
                                     <TableCell className="font-medium">{agent.name}</TableCell>
                                     <TableCell>
-                                        <div className="flex items-center gap-2">
-                                            <Mail className="h-3 w-3 text-zinc-400" />
-                                            <span className="text-sm text-zinc-500">
-                                                {agent.email}
-                                            </span>
-                                        </div>
+                                        <span className="text-sm text-zinc-500">
+                                            {agent.employee_code || "-"}
+                                        </span>
                                     </TableCell>
                                     <TableCell>
-                                        <div className="flex items-center gap-2">
-                                            <Phone className="h-3 w-3 text-zinc-400" />
-                                            <span className="text-sm text-zinc-500">
-                                                {agent.phone || "-"}
-                                            </span>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <span className="font-medium">{agent.devices_count}</span>
+                                        <span className="font-medium">{agent.devices_count ?? 0}</span>
                                     </TableCell>
                                     <TableCell>
                                         <span
@@ -99,12 +97,50 @@ export default function AgentsPage() {
                                             {agent.status === 'active' ? "Active" : "Inactive"}
                                         </span>
                                     </TableCell>
+                                    <TableCell className="text-right">
+                                        <div className="flex justify-end gap-2">
+                                            <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                onClick={() => setAssigningAgent(agent)}
+                                                title="Manage Devices"
+                                            >
+                                                <Smartphone className="h-4 w-4" />
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                onClick={() => setEditingAgent(agent)}
+                                                title="Edit Agent"
+                                            >
+                                                <Pencil className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    </TableCell>
                                 </TableRow>
                             ))
                         )}
                     </TableBody>
                 </Table>
             </div>
+
+            {/* Edit Dialog */}
+            {editingAgent && (
+                <EditAgentDialog
+                    agent={editingAgent}
+                    open={!!editingAgent}
+                    onOpenChange={(open) => !open && setEditingAgent(null)}
+                />
+            )}
+
+            {/* Assign Device Dialog */}
+            {assigningAgent && (
+                <AssignDeviceDialog
+                    agent={assigningAgent}
+                    open={!!assigningAgent}
+                    onOpenChange={(open) => !open && setAssigningAgent(null)}
+                />
+            )}
         </div>
     );
 }

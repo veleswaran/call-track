@@ -40,6 +40,10 @@ describe("useDashboardMetrics", () => {
             total_agents: 5,
             total_duration_seconds: 174720,
             average_call_duration_seconds: 142,
+            total_calls_change_percent: 12.5,
+            active_devices_change_percent: 5.0,
+            average_call_duration_change_percent: -2.1,
+            total_duration_change_percent: 10.0,
         };
 
         vi.mocked(api.get).mockResolvedValueOnce({ data: mockMetrics });
