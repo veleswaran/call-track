@@ -105,7 +105,7 @@ export default function DevicesPage() {
                                         <Button
                                             variant="ghost"
                                             size="sm"
-                                            onClick={() => handleRevoke(device.id, device.device_name)}
+                                            onClick={() => handleRevoke(device.id, device.device_name ?? 'Unknown Device')}
                                             disabled={revokeDeviceTokens.isPending}
                                             className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10"
                                         >

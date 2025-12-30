@@ -16,10 +16,10 @@ class RevokeActiveTokensActionTest extends TestCase
     public function test_it_revokes_all_active_tokens_for_device()
     {
         $device = Device::factory()->create();
-        
+
         // Active tokens
         DeviceToken::factory()->count(3)->create(['device_id' => $device->id]);
-        
+
         // Already revoked token
         DeviceToken::factory()->revoked()->create(['device_id' => $device->id]);
 

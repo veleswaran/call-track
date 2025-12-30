@@ -16,7 +16,7 @@ class RevokeDeviceTokensTest extends TestCase
     {
         $admin = User::factory()->create();
         $device = Device::factory()->create();
-        
+
         // Create 3 active tokens
         DeviceToken::factory()->count(3)->create([
             'device_id' => $device->id,
@@ -38,7 +38,7 @@ class RevokeDeviceTokensTest extends TestCase
         // Verify status in index
         $indexResponse = $this->actingAs($admin, 'sanctum')
             ->getJson('/api/v1/admin/devices');
-            
+
         $indexResponse->assertOk();
         $deviceData = collect($indexResponse->json('data'))->firstWhere('id', $device->id);
         $this->assertEquals('inactive', $deviceData['status']);

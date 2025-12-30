@@ -39,7 +39,7 @@ class TokenLifecycleTest extends TestCase
 
         $response->assertUnauthorized()
             ->assertJson([
-                'error_code' => DeviceTokenValidationResult::ERROR_EXPIRED
+                'error_code' => DeviceTokenValidationResult::ERROR_EXPIRED,
             ]);
     }
 
@@ -55,7 +55,7 @@ class TokenLifecycleTest extends TestCase
 
         $response->assertUnauthorized()
             ->assertJson([
-                'error_code' => DeviceTokenValidationResult::ERROR_REVOKED
+                'error_code' => DeviceTokenValidationResult::ERROR_REVOKED,
             ]);
     }
 
@@ -65,7 +65,7 @@ class TokenLifecycleTest extends TestCase
 
         $response->assertUnauthorized()
             ->assertJson([
-                'error_code' => DeviceTokenValidationResult::ERROR_MISSING
+                'error_code' => DeviceTokenValidationResult::ERROR_MISSING,
             ]);
     }
 }

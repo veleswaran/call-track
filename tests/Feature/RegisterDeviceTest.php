@@ -51,7 +51,7 @@ class RegisterDeviceTest extends TestCase
             'device_id' => $response->json('device_id'),
             // 'token_hash' => ... hard to verify hash without knowing what it hashed to, but we can verify record exists
         ]);
-        
+
         $deviceToken = \App\Domain\Devices\Models\DeviceToken::where('device_id', $response->json('device_id'))->first();
         $this->assertEquals(hash('sha256', $token), $deviceToken->token_hash);
         $this->assertNotNull($deviceToken->issued_at);
@@ -77,7 +77,7 @@ class RegisterDeviceTest extends TestCase
         ]);
 
         $uuid = \Illuminate\Support\Str::uuid()->toString();
-        
+
         $payload1 = [
             'code' => 'CODE1',
             'device_uuid' => $uuid,
@@ -94,7 +94,7 @@ class RegisterDeviceTest extends TestCase
             'agent_id' => $agent->id,
             'expires_at' => now()->addHour(),
         ]);
-        
+
         $payload2 = [
             'code' => 'CODE2',
             'device_uuid' => $uuid,
@@ -103,14 +103,14 @@ class RegisterDeviceTest extends TestCase
 
         $response2 = $this->postJson('/api/v1/devices/register', $payload2);
         $response2->assertStatus(201);
-        
+
         // Assert SAME device ID reused
         $this->assertEquals($deviceId, $response2->json('device_id'));
-        
+
         // Assert NEW token issued
         $token2 = $response2->json('token');
         $this->assertNotEquals($token1, $token2);
-        
+
         // Assert Old token revoked
         $hashedToken1 = hash('sha256', $token1);
         $this->assertDatabaseHas('device_tokens', [

@@ -23,12 +23,12 @@ class IssueDeviceTokenActionTest extends TestCase
 
         $action = app(IssueDeviceTokenAction::class);
         $action = app(IssueDeviceTokenAction::class);
-        
+
         $result = $action->execute($dto);
 
         $this->assertArrayHasKey('token', $result);
         $this->assertArrayHasKey('plainTextToken', $result);
-        
+
         $tokenRecord = $result['token'];
         $plainToken = $result['plainTextToken'];
 
@@ -38,7 +38,7 @@ class IssueDeviceTokenActionTest extends TestCase
         $this->assertNotNull($tokenRecord->expires_at);
         // Verify expiry is roughly 30 days from now
         $this->assertTrue($tokenRecord->expires_at->diffInDays(now()->addDays(30)) < 1);
-        
+
         // Verify hash matches
         $this->assertEquals(hash('sha256', $plainToken), $tokenRecord->token_hash);
     }

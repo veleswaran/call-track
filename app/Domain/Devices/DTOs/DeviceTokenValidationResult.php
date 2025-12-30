@@ -10,9 +10,13 @@ namespace App\Domain\Devices\DTOs;
 readonly class DeviceTokenValidationResult
 {
     public const ERROR_NONE = null;
+
     public const ERROR_MISSING = 'TOKEN_MISSING';
+
     public const ERROR_INVALID = 'TOKEN_INVALID';
+
     public const ERROR_EXPIRED = 'TOKEN_EXPIRED';
+
     public const ERROR_REVOKED = 'TOKEN_REVOKED';
 
     public function __construct(

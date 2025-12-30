@@ -17,7 +17,7 @@ class ValidateDeviceTokenActionTest extends TestCase
     {
         $plainToken = Str::random(60);
         $hashedToken = hash('sha256', $plainToken);
-        
+
         $tokenRecord = DeviceToken::factory()->create([
             'token_hash' => $hashedToken,
             'expires_at' => now()->addDay(),
@@ -28,7 +28,7 @@ class ValidateDeviceTokenActionTest extends TestCase
 
         $this->assertTrue($result->isValid);
         $this->assertEquals($tokenRecord->id, $result->tokenId);
-        
+
         // Verify last_used_at updated
         $this->assertNotNull($tokenRecord->fresh()->last_used_at);
     }
@@ -37,7 +37,7 @@ class ValidateDeviceTokenActionTest extends TestCase
     {
         $plainToken = Str::random(60);
         $hashedToken = hash('sha256', $plainToken);
-        
+
         DeviceToken::factory()->expired()->create([
             'token_hash' => $hashedToken,
         ]);
@@ -53,7 +53,7 @@ class ValidateDeviceTokenActionTest extends TestCase
     {
         $plainToken = Str::random(60);
         $hashedToken = hash('sha256', $plainToken);
-        
+
         DeviceToken::factory()->revoked()->create([
             'token_hash' => $hashedToken,
         ]);

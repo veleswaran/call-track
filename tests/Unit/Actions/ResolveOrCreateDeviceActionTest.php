@@ -35,7 +35,7 @@ class ResolveOrCreateDeviceActionTest extends TestCase
         $uuid = Str::uuid()->toString();
         $device = Device::factory()->create([
             'device_uuid' => $uuid,
-            'name' => 'Old Name'
+            'name' => 'Old Name',
         ]);
 
         $data = new RegisterDeviceData(
@@ -53,17 +53,18 @@ class ResolveOrCreateDeviceActionTest extends TestCase
         $this->assertEquals($device->id, $result['device']->id);
         $this->assertEquals('New Name', $result['device']->name); // Check update
     }
+
     public function test_updates_agent_on_existing_device()
     {
         $oldAgent = \App\Domain\Agents\Models\Agent::factory()->create();
         $newAgent = \App\Domain\Agents\Models\Agent::factory()->create();
-        
+
         $uuid = Str::uuid()->toString();
         $device = Device::factory()->create([
             'device_uuid' => $uuid,
             'agent_id' => $oldAgent->id,
         ]);
-        
+
         $data = new RegisterDeviceData(
             deviceUuid: $uuid,
             name: 'Device',
