@@ -7,7 +7,9 @@ import {
     CardTitle,
 } from "@shared/components/ui/card";
 import { Phone, Clock, Smartphone, Timer, TrendingUp, TrendingDown } from "lucide-react";
-import { useDashboardMetrics } from "@features/dashboard/hooks/use-dashboard";
+import { useDashboardMetrics, useDashboardCharts } from "@features/dashboard/hooks/use-dashboard";
+import { CallVolumeTrendsChart } from "@features/dashboard/components/CallVolumeTrendsChart";
+import { CallOutcomeChart } from "@features/dashboard/components/CallOutcomeChart";
 
 /**
  * Comparison indicator component showing percentage change
@@ -87,10 +89,11 @@ function formatDuration(seconds: number): string {
 }
 
 /**
- * Dashboard page - displays key metrics for current week with comparison
+ * Dashboard page - displays key metrics for current week with comparison and charts
  */
 export default function DashboardPage() {
-    const { data: metrics, isLoading } = useDashboardMetrics();
+    const { data: metrics, isLoading: metricsLoading } = useDashboardMetrics();
+    const { data: charts, isLoading: chartsLoading } = useDashboardCharts();
 
     const totalCalls = metrics?.total_calls ?? 0;
     const activeDevices = metrics?.active_devices ?? 0;
@@ -114,36 +117,41 @@ export default function DashboardPage() {
                     value={totalCalls.toLocaleString()}
                     icon={Phone}
                     changePercent={metrics?.total_calls_change_percent}
-                    isLoading={isLoading}
+                    isLoading={metricsLoading}
                 />
                 <MetricCard
                     title="Active Devices"
                     value={activeDevices.toLocaleString()}
                     icon={Smartphone}
                     changePercent={metrics?.active_devices_change_percent}
-                    isLoading={isLoading}
+                    isLoading={metricsLoading}
                 />
                 <MetricCard
                     title="Avg Call Duration"
                     value={formatDuration(avgDuration)}
                     icon={Timer}
                     changePercent={metrics?.average_call_duration_change_percent}
-                    isLoading={isLoading}
+                    isLoading={metricsLoading}
                 />
                 <MetricCard
                     title="Total Duration"
                     value={formatDuration(durationSeconds)}
                     icon={Clock}
                     changePercent={metrics?.total_duration_change_percent}
-                    isLoading={isLoading}
+                    isLoading={metricsLoading}
                 />
             </div>
 
-            {/* Placeholder for future content */}
-            <div className="rounded-lg border border-dashed border-zinc-300 p-8 text-center dark:border-zinc-700">
-                <p className="text-zinc-500 dark:text-zinc-400">
-                    Recent activity and charts will appear here
-                </p>
+            {/* Charts Grid */}
+            <div className="grid gap-6 lg:grid-cols-2">
+                <CallVolumeTrendsChart
+                    data={charts?.volume_trends ?? []}
+                    isLoading={chartsLoading}
+                />
+                <CallOutcomeChart
+                    data={charts?.outcome_distribution ?? []}
+                    isLoading={chartsLoading}
+                />
             </div>
         </div>
     );

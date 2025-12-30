@@ -29,4 +29,16 @@ final class DashboardController extends Controller
             'data' => new DashboardMetricsResource($metrics),
         ]);
     }
+
+    /**
+     * Get dashboard chart data
+     */
+    public function charts(): JsonResponse
+    {
+        $charts = $this->dashboardService->getCharts();
+
+        return response()->json([
+            'data' => $charts->toArray(),
+        ]);
+    }
 }
