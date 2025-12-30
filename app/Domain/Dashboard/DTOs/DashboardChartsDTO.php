@@ -10,8 +10,8 @@ namespace App\Domain\Dashboard\DTOs;
 final readonly class DashboardChartsDTO
 {
     /**
-     * @param array<int, array{day: string, current: int, previous: int}> $volume_trends
-     * @param array<int, array{name: string, value: int}> $outcome_distribution
+     * @param  array<int, array{day: string, current: int, previous: int}>  $volume_trends
+     * @param  array<int, array{name: string, value: int}>  $outcome_distribution
      */
     public function __construct(
         public array $volume_trends,
@@ -21,8 +21,8 @@ final readonly class DashboardChartsDTO
     /**
      * Create from arrays
      *
-     * @param array<int, array{day: string, current: int, previous: int}> $volumeTrends
-     * @param array<int, array{name: string, value: int}> $outcomeDistribution
+     * @param  array<int, array{day: string, current: int, previous: int}>  $volumeTrends
+     * @param  array<int, array{name: string, value: int}>  $outcomeDistribution
      */
     public static function from(array $volumeTrends, array $outcomeDistribution): self
     {
