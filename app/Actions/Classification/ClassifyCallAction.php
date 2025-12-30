@@ -7,6 +7,7 @@ namespace App\Actions\Classification;
 use App\Domain\Calls\Models\CallLog;
 use App\Domain\Classification\DTOs\CallClassificationDTO;
 use App\Domain\Classification\Models\CallClassification;
+use App\Domain\Classification\Models\CallNote;
 use App\Jobs\ProcessCallLogAnalytics;
 use Illuminate\Support\Facades\DB;
 
@@ -19,10 +20,20 @@ class ClassifyCallAction
                 ['call_log_id' => $dto->callLogId],
                 [
                     'user_id' => $dto->adminUserId,
+                    'agent_id' => $dto->agentId,
                     'type' => $dto->type,
                     'reason' => $dto->reason,
                 ]
             );
+
+            if ($dto->note) {
+                CallNote::create([
+                    'call_log_id' => $dto->callLogId,
+                    'user_id' => $dto->adminUserId,
+                    'agent_id' => $dto->agentId,
+                    'note' => $dto->note,
+                ]);
+            }
         });
 
         // Trigger analytics update for this specific call's device date

@@ -23,6 +23,14 @@ export interface CallLog {
     duration: number;
     timestamp: string;
     classification: CallClassification | null;
+    notes?: CallNote[];
+    created_at: string;
+}
+
+export interface CallNote {
+    id: number;
+    note: string;
+    agent_id: number | null;
     created_at: string;
 }
 

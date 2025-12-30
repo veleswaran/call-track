@@ -133,7 +133,19 @@ export default function CallLogsPage() {
                                                 {format(new Date(log.timestamp), "MMM d, h:mm a")}
                                             </TableCell>
                                             <TableCell>
-                                                {log.contact_notes ?? "-"}
+                                                <div className="flex flex-col gap-1">
+                                                    {log.contact_notes && (
+                                                        <div className="text-xs text-zinc-500">
+                                                            <span className="font-medium">Contact:</span> {log.contact_notes}
+                                                        </div>
+                                                    )}
+                                                    {log.notes?.map((note) => (
+                                                        <div key={note.id} className="text-sm">
+                                                            {note.note}
+                                                        </div>
+                                                    ))}
+                                                    {!log.contact_notes && (!log.notes || log.notes.length === 0) && "-"}
+                                                </div>
                                             </TableCell>
                                             <TableCell>
                                                 <span

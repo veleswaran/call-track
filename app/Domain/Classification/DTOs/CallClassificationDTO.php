@@ -8,8 +8,10 @@ readonly class CallClassificationDTO
 {
     public function __construct(
         public int $callLogId,
-        public int $adminUserId,
+        public ?int $adminUserId,
         public string $type, // BUSINESS, PERSONAL, IGNORED
         public ?string $reason = null,
+        public ?int $agentId = null,
+        public ?string $note = null,
     ) {}
 }

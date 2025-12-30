@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property \Illuminate\Support\Carbon $created_at
  * @property-read Device $device
  * @property-read CallClassification|null $classification
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, CallNote> $notes
  */
 class CallLog extends Model
 {

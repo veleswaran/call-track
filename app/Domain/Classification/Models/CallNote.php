@@ -14,6 +14,7 @@ class CallNote extends Model
     protected $fillable = [
         'call_log_id',
         'user_id',
+        'agent_id',
         'note',
     ];
 
@@ -25,5 +26,10 @@ class CallNote extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function agent(): BelongsTo
+    {
+        return $this->belongsTo(\App\Domain\Agents\Models\Agent::class);
     }
 }

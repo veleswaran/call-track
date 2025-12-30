@@ -8,6 +8,8 @@ CallTrack AI is an API-first enterprise platform designed to capture, classify, 
 - **Device Authentication**: Stateless, token-based authentication for devices (`X-Device-Token`).
 - **Admin Governance**: Laravel Sanctum-based admin API for classifying calls (Business/Personal/Ignored).
 - **Sales Agent Tagging**: Assign devices to sales agents for CRM attribution and analytics.
+- **SIM Slot Filtering**: Track calls only from specific SIM slots (e.g. Work SIM).
+- **Agent Classification**: Agents can classify calls and add notes directly from the device.
 - **Analytics**: Async job processing for daily call statistics.
 - **Domain-Driven Design**: Clean architecture separating Domains, Actions, and Services.
 - **API Documentation**: Auto-generated OpenAPI documentation via Dedoc Scramble.
@@ -48,6 +50,7 @@ Note: Access to docs is gated by `Gate::define('viewApiDocs', ...)`. In this rep
 |--------|----------|-------------|------|
 | `POST` | `/api/v1/devices/register` | Register a new device | None |
 | `POST` | `/api/v1/call-logs/sync` | Ingest batched call logs (primary) | Device Token |
+| `POST` | `/api/v1/calls/{hash}/classify` | Classify/Note a call from device | Device Token |
 | `POST` | `/api/v1/devices/sync` | Alias to call logs sync | Device Token |
 | `GET` | `/api/v1/admin/call-logs` | List paginated call logs | Admin (Sanctum) |
 | `POST` | `/api/v1/admin/calls/{id}/classify` | Classify a call log | Admin (Sanctum) |
@@ -143,7 +146,8 @@ curl --request POST \
     "device_uuid": "550e8400-e29b-41d4-a716-446655440000",
     "device_name": "Pixel 7",
     "os_version": "14",
-    "app_version": "1.0.0"
+    "app_version": "1.0.0",
+    "tracked_sim_slots": [0, 1]
   }'
 ```
 
@@ -171,6 +175,20 @@ curl --request POST \
 ```
 
 Note: `/api/v1/devices/sync` is an alias pointing to the same controller.
+
+### Device: Classify Call
+
+```bash
+curl --request POST \
+  --url 'http://127.0.0.1:8000/api/v1/call-logs/YOUR_CALL_HASH/classify' \
+  --header 'Accept: application/json' \
+  --header 'Content-Type: application/json' \
+  --header 'X-Device-Token: YOUR_DEVICE_TOKEN' \
+  --data '{
+    "type": "BUSINESS",
+    "note": "Client inquiry about pricing"
+  }'
+```
 
 ### Admin: List call logs
 
