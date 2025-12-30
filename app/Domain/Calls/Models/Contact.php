@@ -24,6 +24,11 @@ class Contact extends Model
 {
     use HasFactory;
 
+    protected static function newFactory()
+    {
+        return \Database\Factories\ContactFactory::new();
+    }
+
     protected $fillable = [
         'device_id',
         'name',

@@ -31,6 +31,7 @@ class IndexCallLogsRequest extends FormRequest
             'call_type' => ['sometimes', 'string', 'in:incoming,outgoing,missed'],
             'date_from' => ['sometimes', 'date'],
             'date_to' => ['sometimes', 'date', 'after_or_equal:date_from'],
+            'search' => ['sometimes', 'string', 'max:255'],
         ];
     }
 }

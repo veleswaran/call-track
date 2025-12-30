@@ -20,6 +20,7 @@ final readonly class ListCallLogsDTO
         public ?string $callType = null,
         public ?string $dateFrom = null,
         public ?string $dateTo = null,
+        public ?string $search = null,
     ) {}
 
     public static function fromRequest(IndexCallLogsRequest $request): self
@@ -36,6 +37,7 @@ final readonly class ListCallLogsDTO
             callType: $request->string('call_type')->toString() ?: null,
             dateFrom: $request->string('date_from')->toString() ?: null,
             dateTo: $request->string('date_to')->toString() ?: null,
+            search: $request->string('search')->toString() ?: null,
         );
     }
 }

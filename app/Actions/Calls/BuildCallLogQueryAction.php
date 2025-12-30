@@ -17,7 +17,7 @@ final class BuildCallLogQueryAction
     {
         $query = CallLog::query()
             ->with('classification')
-            ->latest();
+            ->orderByDesc('timestamp');
 
         if ($dto->deviceId !== null) {
             $query->where('device_id', $dto->deviceId);
@@ -40,6 +40,23 @@ final class BuildCallLogQueryAction
 
         if ($dto->dateTo !== null) {
             $query->where('timestamp', '<=', $dto->dateTo);
+        }
+
+        if ($dto->search !== null) {
+            $searchTerm = $dto->search;
+            $query->where(function (Builder $q) use ($searchTerm) {
+                // 1. Search by Contact Name (Case-insensitive)
+                $termLower = strtolower($searchTerm);
+                $q->whereIn('phone_number_hash', function ($subQuery) use ($termLower) {
+                    $subQuery->select('phone_hash')
+                        ->from('contacts')
+                        ->whereRaw('LOWER(name) LIKE ?', ["%{$termLower}%"]);
+                });
+
+                // 2. Search by Exact Phone Number
+                // We hash the input exactly as is.
+                $q->orWhere('phone_number_hash', hash('sha256', $searchTerm));
+            });
         }
 
         // agentId filter intentionally omitted until device-agent relationship is defined

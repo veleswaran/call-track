@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@shared/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@shared/components/ui/dialog";
 import { Button } from "@shared/components/ui/button";
 import { Input } from "@shared/components/ui/input";
 import { useCreateContact } from "@features/contacts/hooks/use-create-contact";
@@ -65,11 +65,11 @@ export function AddContactDialog({ callLog, deviceId, open, onOpenChange }: AddC
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Add Contact</DialogTitle>
-                    <div className="text-sm text-zinc-500 dark:text-zinc-400">
+                    <DialogDescription>
                         {isStandaloneMode
                             ? "Create a new contact entry"
                             : "Save this phone number to contacts properly"}
-                    </div>
+                    </DialogDescription>
                 </DialogHeader>
 
                 <div className="space-y-4 py-4">
