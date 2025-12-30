@@ -13,7 +13,7 @@ class ContactFactory extends Factory
     public function definition(): array
     {
         $phone = $this->faker->e164PhoneNumber;
-        
+
         return [
             'device_id' => Device::factory(),
             'name' => $this->faker->name,

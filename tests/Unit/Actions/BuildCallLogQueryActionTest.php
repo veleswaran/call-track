@@ -20,7 +20,7 @@ class BuildCallLogQueryActionTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->action = new BuildCallLogQueryAction();
+        $this->action = new BuildCallLogQueryAction;
     }
 
     /** @test */
@@ -82,7 +82,7 @@ class BuildCallLogQueryActionTest extends TestCase
         );
 
         $results = $this->action->execute($dto)->get();
-        
+
         $this->assertCount(1, $results);
         $this->assertEquals($hash, $results->first()->phone_number_hash);
     }
@@ -106,7 +106,7 @@ class BuildCallLogQueryActionTest extends TestCase
         $results = $this->action->execute($dto)->get();
 
         $this->assertCount(2, $results);
-        
+
         // Should be New Call first (timestamp: now)
         $this->assertEquals($newCall->id, $results->first()->id);
         $this->assertEquals($oldCall->id, $results->last()->id);

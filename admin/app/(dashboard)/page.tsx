@@ -6,7 +6,7 @@ import {
     CardHeader,
     CardTitle,
 } from "@shared/components/ui/card";
-import { Phone, PhoneIncoming, PhoneOutgoing, Clock } from "lucide-react";
+import { Phone, Clock, Smartphone, Timer } from "lucide-react";
 import { useDashboardMetrics } from "@features/dashboard/hooks/use-dashboard";
 
 /**
@@ -65,8 +65,8 @@ export default function DashboardPage() {
     const { data: metrics, isLoading } = useDashboardMetrics();
 
     const totalCalls = metrics?.total_calls ?? 0;
-    const businessCalls = metrics?.business_calls ?? 0;
-    const personalCalls = metrics?.personal_calls ?? 0;
+    const activeDevices = metrics?.active_devices ?? 0;
+    const avgDuration = metrics?.average_call_duration_seconds ?? 0;
     const durationSeconds = metrics?.total_duration_seconds ?? 0;
 
     return (
@@ -89,17 +89,17 @@ export default function DashboardPage() {
                     isLoading={isLoading}
                 />
                 <MetricCard
-                    title="Business Calls"
-                    value={businessCalls.toLocaleString()}
-                    icon={PhoneIncoming}
-                    description="Classified as business"
+                    title="Active Devices"
+                    value={activeDevices.toLocaleString()}
+                    icon={Smartphone}
+                    description="Synced in last 24h"
                     isLoading={isLoading}
                 />
                 <MetricCard
-                    title="Personal Calls"
-                    value={personalCalls.toLocaleString()}
-                    icon={PhoneOutgoing}
-                    description="Classified as personal"
+                    title="Avg Call Duration"
+                    value={formatDuration(avgDuration)}
+                    icon={Timer}
+                    description="Per call average"
                     isLoading={isLoading}
                 />
                 <MetricCard
