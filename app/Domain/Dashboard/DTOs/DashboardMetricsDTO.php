@@ -20,6 +20,11 @@ final readonly class DashboardMetricsDTO
         public int $total_agents,
         public int $total_duration_seconds,
         public float $average_call_duration_seconds,
+        // Week-over-week comparison percentages
+        public ?float $total_calls_change_percent = null,
+        public ?float $active_devices_change_percent = null,
+        public ?float $average_call_duration_change_percent = null,
+        public ?float $total_duration_change_percent = null,
     ) {}
 
     /**
@@ -40,6 +45,10 @@ final readonly class DashboardMetricsDTO
             total_agents: (int) ($data['total_agents'] ?? 0),
             total_duration_seconds: (int) ($data['total_duration_seconds'] ?? 0),
             average_call_duration_seconds: (float) ($data['average_call_duration_seconds'] ?? 0),
+            total_calls_change_percent: isset($data['total_calls_change_percent']) ? (float) $data['total_calls_change_percent'] : null,
+            active_devices_change_percent: isset($data['active_devices_change_percent']) ? (float) $data['active_devices_change_percent'] : null,
+            average_call_duration_change_percent: isset($data['average_call_duration_change_percent']) ? (float) $data['average_call_duration_change_percent'] : null,
+            total_duration_change_percent: isset($data['total_duration_change_percent']) ? (float) $data['total_duration_change_percent'] : null,
         );
     }
 
@@ -61,6 +70,10 @@ final readonly class DashboardMetricsDTO
             'total_agents' => $this->total_agents,
             'total_duration_seconds' => $this->total_duration_seconds,
             'average_call_duration_seconds' => $this->average_call_duration_seconds,
+            'total_calls_change_percent' => $this->total_calls_change_percent,
+            'active_devices_change_percent' => $this->active_devices_change_percent,
+            'average_call_duration_change_percent' => $this->average_call_duration_change_percent,
+            'total_duration_change_percent' => $this->total_duration_change_percent,
         ];
     }
 }

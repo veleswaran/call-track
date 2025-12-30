@@ -9,6 +9,7 @@ use App\Domain\Calls\DTOs\ListCallLogsDTO;
 use App\Domain\Calls\Models\CallLog;
 use App\Domain\Calls\Models\Contact;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class BuildCallLogQueryActionTest extends TestCase
@@ -23,8 +24,8 @@ class BuildCallLogQueryActionTest extends TestCase
         $this->action = new BuildCallLogQueryAction;
     }
 
-    /** @test */
-    public function it_filters_by_search_term_matching_phone_number()
+    #[Test]
+    public function it_filters_by_search_term_matching_phone_number(): void
     {
         // 1. Create a call log with a specific phone number
         $phoneNumber = '+15551234567';
@@ -53,8 +54,8 @@ class BuildCallLogQueryActionTest extends TestCase
         $this->assertEquals($hash, $results->first()->phone_number_hash);
     }
 
-    /** @test */
-    public function it_filters_by_search_term_matching_contact_name_case_insensitive()
+    #[Test]
+    public function it_filters_by_search_term_matching_contact_name_case_insensitive(): void
     {
         $name = 'John Doe';
         $phone = '15559876543';
@@ -87,8 +88,8 @@ class BuildCallLogQueryActionTest extends TestCase
         $this->assertEquals($hash, $results->first()->phone_number_hash);
     }
 
-    /** @test */
-    public function it_sorts_call_logs_by_timestamp_descending()
+    #[Test]
+    public function it_sorts_call_logs_by_timestamp_descending(): void
     {
         // Create older call
         $oldCall = CallLog::factory()->create([

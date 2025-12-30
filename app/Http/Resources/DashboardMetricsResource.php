@@ -36,6 +36,11 @@ final class DashboardMetricsResource extends JsonResource
             'total_agents' => $metrics->total_agents,
             'total_duration_seconds' => $metrics->total_duration_seconds,
             'average_call_duration_seconds' => round($metrics->average_call_duration_seconds, 2),
+            // Week-over-week comparison
+            'total_calls_change_percent' => $metrics->total_calls_change_percent,
+            'active_devices_change_percent' => $metrics->active_devices_change_percent,
+            'average_call_duration_change_percent' => $metrics->average_call_duration_change_percent,
+            'total_duration_change_percent' => $metrics->total_duration_change_percent,
         ];
     }
 }

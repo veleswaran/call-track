@@ -6,8 +6,31 @@ import {
     CardHeader,
     CardTitle,
 } from "@shared/components/ui/card";
-import { Phone, Clock, Smartphone, Timer } from "lucide-react";
+import { Phone, Clock, Smartphone, Timer, TrendingUp, TrendingDown } from "lucide-react";
 import { useDashboardMetrics } from "@features/dashboard/hooks/use-dashboard";
+
+/**
+ * Comparison indicator component showing percentage change
+ */
+function ComparisonIndicator({ value }: { value: number | null }) {
+    if (value === null) {
+        return null;
+    }
+
+    const isPositive = value >= 0;
+    const Icon = isPositive ? TrendingUp : TrendingDown;
+    const colorClass = isPositive
+        ? "text-emerald-600 dark:text-emerald-400"
+        : "text-red-600 dark:text-red-400";
+
+    return (
+        <div className={`flex items-center gap-1 text-xs ${colorClass}`}>
+            <Icon className="h-3 w-3" />
+            <span>{Math.abs(value)}%</span>
+            <span className="text-zinc-500 dark:text-zinc-400">vs last week</span>
+        </div>
+    );
+}
 
 /**
  * Metric card component for dashboard
@@ -17,12 +40,14 @@ function MetricCard({
     value,
     icon: Icon,
     description,
+    changePercent,
     isLoading = false,
 }: {
     title: string;
     value: string | number;
     icon: typeof Phone;
     description?: string;
+    changePercent?: number | null;
     isLoading?: boolean;
 }) {
     return (
@@ -37,7 +62,10 @@ function MetricCard({
                 ) : (
                     <div className="text-2xl font-bold">{value}</div>
                 )}
-                {description && (
+                {changePercent !== undefined && !isLoading && (
+                    <ComparisonIndicator value={changePercent} />
+                )}
+                {description && changePercent === undefined && (
                     <p className="text-xs text-zinc-500 dark:text-zinc-400">
                         {description}
                     </p>
@@ -51,7 +79,7 @@ function MetricCard({
  * Format duration in seconds to human readable string (e.g. "1h 30m" or "45s")
  */
 function formatDuration(seconds: number): string {
-    if (seconds < 60) return `${seconds}s`;
+    if (seconds < 60) return `${Math.round(seconds)}s`;
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     if (hours === 0) return `${minutes}m`;
@@ -59,7 +87,7 @@ function formatDuration(seconds: number): string {
 }
 
 /**
- * Dashboard page - displays key metrics and summary from API
+ * Dashboard page - displays key metrics for current week with comparison
  */
 export default function DashboardPage() {
     const { data: metrics, isLoading } = useDashboardMetrics();
@@ -75,7 +103,7 @@ export default function DashboardPage() {
             <div>
                 <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
                 <p className="text-zinc-500 dark:text-zinc-400">
-                    Overview of your call tracking metrics
+                    This week&apos;s call tracking metrics
                 </p>
             </div>
 
@@ -85,28 +113,28 @@ export default function DashboardPage() {
                     title="Total Calls"
                     value={totalCalls.toLocaleString()}
                     icon={Phone}
-                    description="All time"
+                    changePercent={metrics?.total_calls_change_percent}
                     isLoading={isLoading}
                 />
                 <MetricCard
                     title="Active Devices"
                     value={activeDevices.toLocaleString()}
                     icon={Smartphone}
-                    description="Synced in last 24h"
+                    changePercent={metrics?.active_devices_change_percent}
                     isLoading={isLoading}
                 />
                 <MetricCard
                     title="Avg Call Duration"
                     value={formatDuration(avgDuration)}
                     icon={Timer}
-                    description="Per call average"
+                    changePercent={metrics?.average_call_duration_change_percent}
                     isLoading={isLoading}
                 />
                 <MetricCard
                     title="Total Duration"
                     value={formatDuration(durationSeconds)}
                     icon={Clock}
-                    description="Combined call time"
+                    changePercent={metrics?.total_duration_change_percent}
                     isLoading={isLoading}
                 />
             </div>

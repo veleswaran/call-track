@@ -137,6 +137,11 @@ export interface DashboardMetrics {
     total_devices: number;
     active_devices: number;
     total_agents: number;
+    // Week-over-week comparison percentages
+    total_calls_change_percent: number | null;
+    active_devices_change_percent: number | null;
+    average_call_duration_change_percent: number | null;
+    total_duration_change_percent: number | null;
 }
 
 export interface ResourceResponse<T> {
