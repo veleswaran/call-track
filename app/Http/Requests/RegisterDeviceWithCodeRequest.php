@@ -15,6 +15,7 @@ class RegisterDeviceWithCodeRequest extends FormRequest
     {
         return [
             'code' => ['required', 'string'],
+            'device_uuid' => ['required', 'string', 'uuid'],
             'device_name' => ['required', 'string'],
             'device_model' => ['nullable', 'string'],
             'os_version' => ['nullable', 'string'],

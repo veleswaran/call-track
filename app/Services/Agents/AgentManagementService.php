@@ -46,6 +46,6 @@ class AgentManagementService implements AgentManagementServiceInterface
 
     public function getAgentsList(int $perPage = 20): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
-        return Agent::paginate($perPage);
+        return Agent::withCount('devices')->latest()->paginate($perPage);
     }
 }

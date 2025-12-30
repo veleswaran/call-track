@@ -19,6 +19,7 @@ class DeviceRegistrationController extends Controller
     public function store(\App\Http\Requests\RegisterDeviceWithCodeRequest $request): \Illuminate\Http\JsonResponse
     {
         $dto = \App\Domain\Devices\DTOs\RegisterDeviceData::fromArray([
+            'device_uuid' => $request->validated('device_uuid'),
             'name' => $request->validated('device_name'),
             'model' => $request->validated('device_model'),
             'os_version' => $request->validated('os_version'),

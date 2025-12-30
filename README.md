@@ -139,8 +139,9 @@ curl --request POST \
   --header 'Accept: application/json' \
   --header 'Content-Type: application/json' \
   --data '{
-    "device_id": "ABC12345",
-    "device_model": "Pixel 7",
+    "code": "YOUR_REGISTRATION_CODE",
+    "device_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "device_name": "Pixel 7",
     "os_version": "14",
     "app_version": "1.0.0"
   }'

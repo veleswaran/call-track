@@ -19,7 +19,7 @@ class IngestCallLogsTest extends TestCase
 
         $plainToken = \Illuminate\Support\Str::random(60);
         $tokenRecord = DeviceToken::factory()->create([
-            'token' => hash('sha256', $plainToken),
+            'token_hash' => hash('sha256', $plainToken),
         ]);
         $token = $plainToken;
 
@@ -70,7 +70,7 @@ class IngestCallLogsTest extends TestCase
     {
         $plainToken = \Illuminate\Support\Str::random(60);
         $tokenRecord = DeviceToken::factory()->create([
-            'token' => hash('sha256', $plainToken),
+            'token_hash' => hash('sha256', $plainToken),
         ]);
 
         $payload = [

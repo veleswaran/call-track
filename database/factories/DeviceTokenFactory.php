@@ -15,9 +15,26 @@ class DeviceTokenFactory extends Factory
     {
         return [
             'device_id' => Device::factory(),
-            'token' => Str::random(60),
+            'token_hash' => hash('sha256', Str::random(60)),
             'device_name' => $this->faker->words(3, true),
-            'last_used_at' => now(),
+            'issued_at' => now(),
+            'expires_at' => now()->addDays(90),
+            'revoked_at' => null,
+            'last_used_at' => null,
         ];
+    }
+
+    public function expired(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'expires_at' => now()->subDay(),
+        ]);
+    }
+
+    public function revoked(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'revoked_at' => now(),
+        ]);
     }
 }

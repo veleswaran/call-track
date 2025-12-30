@@ -4,14 +4,21 @@ declare(strict_types=1);
 
 namespace App\Actions\Devices;
 
+use App\Domain\Devices\DTOs\IssueDeviceTokenDTO;
 use App\Domain\Devices\DTOs\RegisterDeviceData;
+use App\Domain\Devices\DTOs\RevokeTokensDTO;
 use App\Domain\Devices\Models\Device;
 use App\Domain\Devices\Models\DeviceRegistrationCode;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class RegisterDeviceWithCodeAction
 {
+    public function __construct(
+        protected ResolveOrCreateDeviceAction $resolveDevice,
+        protected RevokeActiveTokensAction $revokeTokens,
+        protected IssueDeviceTokenAction $issueToken,
+    ) {}
+
     /**
      * @return array{device: Device, token: string}
      */
@@ -21,27 +28,27 @@ class RegisterDeviceWithCodeAction
             $registrationCode = DeviceRegistrationCode::where('code', $code)
                 ->whereNull('used_at')
                 ->where('expires_at', '>', now())
-                ->lockForUpdate() // Prevent race conditions
+                ->lockForUpdate()
                 ->firstOrFail();
 
-            /** @var Device $device */
-            $device = Device::create([
-                'name' => $data->name,
-                'model' => $data->model,
-                'os_version' => $data->osVersion,
-                'app_version' => $data->appVersion,
-                'agent_id' => $registrationCode->agent_id,
-            ]);
+            // 1. Resolve or Create Device
+            $resolution = $this->resolveDevice->execute($data, $registrationCode->agent_id);
+            $device = $resolution['device'];
 
-            $plainTextToken = Str::random(60);
+            // 2. Revoke existing active tokens (Rotation)
+            $this->revokeTokens->execute(new RevokeTokensDTO(
+                deviceId: $device->id,
+                reason: 're-registration'
+            ));
 
-            $device->tokens()->create([
-                'token' => hash('sha256', $plainTextToken), // Store hashed
-                'device_name' => $data->name,
-                'last_used_at' => null,
-            ]);
+            // 3. Issue new token
+            $tokenResult = $this->issueToken->execute(new IssueDeviceTokenDTO(
+                deviceId: $device->id,
+                deviceName: $data->name,
+                expiresInDays: 90 // Default 90 days expiry
+            ));
 
-            // Update code usage
+            // 4. Update code usage
             $registrationCode->update([
                 'used_at' => now(),
                 'used_by_device_id' => $device->id,
@@ -49,7 +56,7 @@ class RegisterDeviceWithCodeAction
 
             return [
                 'device' => $device,
-                'token' => $plainTextToken,
+                'token' => $tokenResult['plainTextToken'],
             ];
         });
     }

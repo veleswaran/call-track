@@ -12,14 +12,24 @@ import {
 import { Smartphone } from "lucide-react";
 import { format } from "date-fns";
 import { DeviceRegistrationCodeDialog } from "@features/devices/components/device-registration-code-dialog";
+import { useRevokeDeviceTokens } from "@features/devices/hooks/use-devices";
+import { Button } from "@shared/components/ui/button";
+import { LogOut } from "lucide-react";
 
 /**
  * Devices page - displays device list using API hook
  */
 export default function DevicesPage() {
     const { data, isLoading, isError } = useDevices({ page: 1, per_page: 20 });
+    const revokeDeviceTokens = useRevokeDeviceTokens();
 
     const devices = data?.data ?? [];
+
+    const handleRevoke = async (deviceId: number, deviceName: string) => {
+        if (confirm(`Are you sure you want to revoke all tokens for ${deviceName}? The device will need to re-register.`)) {
+            revokeDeviceTokens.mutate(deviceId);
+        }
+    };
 
     return (
         <div className="space-y-6">
@@ -43,6 +53,7 @@ export default function DevicesPage() {
                             <TableHead>OS Version</TableHead>
                             <TableHead>Last Sync</TableHead>
                             <TableHead>Status</TableHead>
+                            <TableHead className="w-[100px]">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -89,6 +100,18 @@ export default function DevicesPage() {
                                         >
                                             {device.status === 'active' ? "Active" : "Suspended"}
                                         </span>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => handleRevoke(device.id, device.device_name)}
+                                            disabled={revokeDeviceTokens.isPending}
+                                            className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10"
+                                        >
+                                            <LogOut className="h-4 w-4 mr-2" />
+                                            Revoke
+                                        </Button>
                                     </TableCell>
                                 </TableRow>
                             ))

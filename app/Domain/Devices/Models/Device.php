@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id
+ * @property string $device_uuid
  * @property string $name
  * @property string $model
  * @property string|null $os_version
@@ -34,6 +35,7 @@ class Device extends Model
      * @var list<string>
      */
     protected $fillable = [
+        'device_uuid',
         'name',
         'model',
         'os_version',
@@ -50,6 +52,11 @@ class Device extends Model
     public function tokens(): HasMany
     {
         return $this->hasMany(DeviceToken::class);
+    }
+
+    public function activeTokens(): HasMany
+    {
+        return $this->hasMany(DeviceToken::class)->active();
     }
 
     public function callLogs(): HasMany

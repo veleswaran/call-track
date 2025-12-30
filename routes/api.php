@@ -37,6 +37,7 @@ Route::prefix('v1')->group(function () {
 
         // Devices
         Route::get('/devices', [\App\Http\Controllers\Api\Admin\DeviceController::class, 'index']);
+        Route::post('/devices/{device}/revoke-tokens', \App\Http\Controllers\Api\Admin\RevokeDeviceTokensController::class);
 
         // Call Logs
         Route::get('/call-logs', [\App\Http\Controllers\Api\Admin\CallLogController::class, 'index']);

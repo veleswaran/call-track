@@ -26,7 +26,7 @@ class DeviceResource extends JsonResource
             'device_model' => $this->model,
             'os_version' => $this->os_version,
             'app_version' => $this->app_version,
-            'status' => 'active', // Placeholder until we have real status logic or column
+            'status' => $this->active_tokens_exists ? 'active' : 'inactive',
             'agent_id' => $this->agent_id,
             'last_sync_at' => $this->created_at, // Placeholder or use specialized query
             'created_at' => $this->created_at,

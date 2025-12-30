@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@shared/api/api";
 import type { Device, PaginatedResponse } from "@shared/types";
 
@@ -35,5 +35,22 @@ export function useDevice(id: number) {
         queryKey: deviceKeys.detail(id),
         queryFn: () => api.get<Device>(`/api/v1/admin/devices/${id}`),
         enabled: !!id,
+    });
+}
+
+/**
+ * Revoke all active tokens for a device
+ */
+export function useRevokeDeviceTokens() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (deviceId: number) =>
+            api.post<{ message: string; revoked_count: number }>(
+                `/api/v1/admin/devices/${deviceId}/revoke-tokens`
+            ),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: deviceKeys.all });
+        },
     });
 }

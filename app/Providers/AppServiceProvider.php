@@ -45,6 +45,11 @@ class AppServiceProvider extends ServiceProvider
             \App\Contracts\Services\ContactManagementServiceInterface::class,
             \App\Services\Contacts\ContactManagementService::class
         );
+
+        $this->app->bind(
+            \App\Contracts\Services\DeviceTokenServiceInterface::class,
+            \App\Services\Devices\DeviceTokenService::class
+        );
     }
 
     /**

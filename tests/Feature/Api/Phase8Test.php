@@ -43,6 +43,7 @@ class Phase8Test extends TestCase
 
         $response = $this->postJson('/api/v1/devices/register', [
             'code' => 'ABC123',
+            'device_uuid' => Str::uuid()->toString(),
             'device_name' => 'Test Device',
             'device_model' => 'Pixel 7',
         ]);
@@ -66,6 +67,7 @@ class Phase8Test extends TestCase
 
         $regResponse = $this->postJson('/api/v1/devices/register', [
             'code' => 'SYNC01',
+            'device_uuid' => Str::uuid()->toString(),
             'device_name' => 'Sync Device',
         ]);
         $token = $regResponse->json('token');
