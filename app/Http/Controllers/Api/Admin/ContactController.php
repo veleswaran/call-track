@@ -21,10 +21,6 @@ class ContactController extends Controller
     {
         $query = \App\Domain\Calls\Models\Contact::query();
 
-        if ($request->has('device_id')) {
-            $query->where('device_id', $request->device_id);
-        }
-
         if ($request->has('search')) {
             $search = $request->search;
             $query->where('name', 'like', "%{$search}%");
@@ -36,7 +32,6 @@ class ContactController extends Controller
     public function store(StoreContactRequest $request): JsonResponse
     {
         $dto = new StoreContactDTO(
-            deviceId: $request->integer('device_id'),
             name: $request->string('name')->toString(),
             phoneNumber: $request->string('phone_number')->toString(),
         );

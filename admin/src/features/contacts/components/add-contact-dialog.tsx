@@ -14,32 +14,25 @@ interface AddContactDialogProps {
      * If not provided, dialog works in standalone mode
      */
     callLog?: CallLog;
-    /**
-     * Device ID to associate contact with
-     * Required when callLog is not provided
-     */
-    deviceId?: number;
     open: boolean;
     onOpenChange: (open: boolean) => void;
 }
 
-export function AddContactDialog({ callLog, deviceId, open, onOpenChange }: AddContactDialogProps) {
+export function AddContactDialog({ callLog, open, onOpenChange }: AddContactDialogProps) {
     const [name, setName] = useState("");
     const [phoneNumber, setPhoneNumber] = useState("");
     const { mutate: createContact, isPending } = useCreateContact();
 
     // Determine if we're in standalone mode (no call log provided)
     const isStandaloneMode = !callLog;
-    const effectiveDeviceId = callLog?.device_id ?? deviceId ?? 1; // Default to device 1 if not provided
     const effectivePhoneNumber = callLog?.phone_number ?? phoneNumber;
 
     const handleSave = () => {
-        if (!name.trim() || (!isStandaloneMode && !callLog) || (isStandaloneMode && !phoneNumber.trim())) {
+        if (!name.trim() || (isStandaloneMode && !phoneNumber.trim())) {
             return;
         }
 
         createContact({
-            device_id: effectiveDeviceId,
             name: name.trim(),
             phone_number: effectivePhoneNumber,
         }, {

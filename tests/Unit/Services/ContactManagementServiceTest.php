@@ -19,7 +19,6 @@ class ContactManagementServiceTest extends TestCase
         $service = new ContactManagementService($action);
 
         $dto = new StoreContactDTO(
-            deviceId: 1,
             name: 'Jane Doe',
             phoneNumber: '+9876543210'
         );

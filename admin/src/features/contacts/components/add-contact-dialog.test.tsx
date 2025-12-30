@@ -68,7 +68,6 @@ describe("AddContactDialog", () => {
     it("should render in standalone mode with editable phone number", () => {
         render(
             <AddContactDialog
-                deviceId={1}
                 open={true}
                 onOpenChange={mockOnOpenChange}
             />,
@@ -83,7 +82,6 @@ describe("AddContactDialog", () => {
     it("should show correct description in standalone mode", () => {
         render(
             <AddContactDialog
-                deviceId={1}
                 open={true}
                 onOpenChange={mockOnOpenChange}
             />,
@@ -127,7 +125,6 @@ describe("AddContactDialog", () => {
     it("should allow entering phone number in standalone mode", () => {
         render(
             <AddContactDialog
-                deviceId={1}
                 open={true}
                 onOpenChange={mockOnOpenChange}
             />,
@@ -157,7 +154,6 @@ describe("AddContactDialog", () => {
     it("should disable save button in standalone mode when phone or name is empty", () => {
         render(
             <AddContactDialog
-                deviceId={1}
                 open={true}
                 onOpenChange={mockOnOpenChange}
             />,

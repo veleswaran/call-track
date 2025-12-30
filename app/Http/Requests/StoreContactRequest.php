@@ -14,7 +14,6 @@ class StoreContactRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'device_id' => ['required', 'integer', 'exists:devices,id'],
             'name' => ['required', 'string', 'max:255'],
             'phone_number' => ['required', 'string', 'max:20'],
         ];

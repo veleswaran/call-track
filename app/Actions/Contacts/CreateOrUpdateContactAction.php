@@ -10,7 +10,7 @@ use App\Domain\Contacts\DTOs\StoreContactDTO;
 class CreateOrUpdateContactAction
 {
     /**
-     * Create or update a contact based on device_id and phone_hash
+     * Create or update a contact based on phone_hash (global)
      */
     public function execute(StoreContactDTO $data): Contact
     {
@@ -18,7 +18,6 @@ class CreateOrUpdateContactAction
 
         return Contact::updateOrCreate(
             [
-                'device_id' => $data->deviceId,
                 'phone_hash' => $phoneHash,
             ],
             [

@@ -101,19 +101,15 @@ class Phase8Test extends TestCase
     public function test_admin_can_manage_contacts()
     {
         $admin = User::factory()->create();
-        $agent = Agent::factory()->create();
-        $device = \App\Domain\Devices\Models\Device::factory()->create(['agent_id' => $agent->id]);
 
         $response = $this->actingAs($admin, 'sanctum')
             ->postJson('/api/v1/admin/contacts', [
-                'device_id' => $device->id,
                 'name' => 'John Doe',
                 'phone_number' => '+15559998888',
             ]);
 
         $response->assertCreated();
         $this->assertDatabaseHas('contacts', [
-            'device_id' => $device->id,
             'name' => 'John Doe',
         ]);
     }
