@@ -40,6 +40,11 @@ class AppServiceProvider extends ServiceProvider
             \App\Contracts\Services\DashboardServiceContract::class,
             \App\Services\DashboardService::class
         );
+
+        $this->app->bind(
+            \App\Contracts\Services\ContactManagementServiceInterface::class,
+            \App\Services\Contacts\ContactManagementService::class
+        );
     }
 
     /**

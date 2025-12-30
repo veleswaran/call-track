@@ -4,15 +4,22 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Admin;
 
-use App\Domain\Calls\Models\Contact;
+use App\Contracts\Services\ContactManagementServiceInterface;
+use App\Domain\Contacts\DTOs\StoreContactDTO;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreContactRequest;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ContactController extends Controller
 {
-    public function index(Request $request)
+    public function __construct(
+        private readonly ContactManagementServiceInterface $contactService,
+    ) {}
+
+    public function index(Request $request): JsonResponse
     {
-        $query = Contact::query();
+        $query = \App\Domain\Calls\Models\Contact::query();
 
         if ($request->has('device_id')) {
             $query->where('device_id', $request->device_id);
@@ -26,27 +33,16 @@ class ContactController extends Controller
         return response()->json($query->paginate(20));
     }
 
-    public function store(Request $request)
+    public function store(StoreContactRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'device_id' => 'required|exists:devices,id',
-            'name' => 'required|string|max:255',
-            'phone_number' => 'required|string',
-        ]);
-
-        $contact = Contact::updateOrCreate(
-            [
-                'device_id' => $validated['device_id'],
-                'phone_hash' => hash('sha256', $validated['phone_number']),
-            ],
-            [
-                'name' => $validated['name'],
-                'phone_number' => $validated['phone_number'], // Store encrypted if model casts it.
-            ]
+        $dto = new StoreContactDTO(
+            deviceId: $request->integer('device_id'),
+            name: $request->string('name')->toString(),
+            phoneNumber: $request->string('phone_number')->toString(),
         );
+
+        $contact = $this->contactService->storeContact($dto);
 
         return response()->json($contact, 201);
     }
-
-    // update, delete methods omitted for MVP speed unless requested, store covers updateOrCreate
 }

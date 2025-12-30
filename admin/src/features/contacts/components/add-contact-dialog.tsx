@@ -9,44 +9,81 @@ import type { CallLog } from "@shared/types";
 import { Loader2 } from "lucide-react";
 
 interface AddContactDialogProps {
-    callLog: CallLog;
+    /**
+     * Optional call log to pre-fill phone number from
+     * If not provided, dialog works in standalone mode
+     */
+    callLog?: CallLog;
+    /**
+     * Device ID to associate contact with
+     * Required when callLog is not provided
+     */
+    deviceId?: number;
     open: boolean;
     onOpenChange: (open: boolean) => void;
 }
 
-export function AddContactDialog({ callLog, open, onOpenChange }: AddContactDialogProps) {
+export function AddContactDialog({ callLog, deviceId, open, onOpenChange }: AddContactDialogProps) {
     const [name, setName] = useState("");
+    const [phoneNumber, setPhoneNumber] = useState("");
     const { mutate: createContact, isPending } = useCreateContact();
 
+    // Determine if we're in standalone mode (no call log provided)
+    const isStandaloneMode = !callLog;
+    const effectiveDeviceId = callLog?.device_id ?? deviceId ?? 1; // Default to device 1 if not provided
+    const effectivePhoneNumber = callLog?.phone_number ?? phoneNumber;
+
     const handleSave = () => {
-        if (!name.trim()) return;
+        if (!name.trim() || (!isStandaloneMode && !callLog) || (isStandaloneMode && !phoneNumber.trim())) {
+            return;
+        }
 
         createContact({
-            device_id: callLog.device_id,
-            name: name,
-            phone_number: callLog.phone_number,
+            device_id: effectiveDeviceId,
+            name: name.trim(),
+            phone_number: effectivePhoneNumber,
         }, {
             onSuccess: () => {
                 onOpenChange(false);
                 setName("");
+                setPhoneNumber("");
             }
         });
     };
 
+    const handleOpenChange = (newOpen: boolean) => {
+        if (!newOpen) {
+            // Reset form when closing
+            setName("");
+            setPhoneNumber("");
+        }
+        onOpenChange(newOpen);
+    };
+
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
+        <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Add Contact</DialogTitle>
                     <div className="text-sm text-zinc-500 dark:text-zinc-400">
-                        Save this phone number to contacts properly.
+                        {isStandaloneMode
+                            ? "Create a new contact entry"
+                            : "Save this phone number to contacts properly"}
                     </div>
                 </DialogHeader>
 
                 <div className="space-y-4 py-4">
                     <div className="space-y-2">
                         <label className="text-sm font-medium">Phone Number</label>
-                        <Input value={callLog.phone_number} disabled className="bg-zinc-100" />
+                        {isStandaloneMode ? (
+                            <Input
+                                value={phoneNumber}
+                                onChange={(e) => setPhoneNumber(e.target.value)}
+                                placeholder="+1234567890"
+                            />
+                        ) : (
+                            <Input value={callLog?.phone_number} disabled className="bg-zinc-100 dark:bg-zinc-800" />
+                        )}
                     </div>
                     <div className="space-y-2">
                         <label className="text-sm font-medium">Name</label>
@@ -59,8 +96,11 @@ export function AddContactDialog({ callLog, open, onOpenChange }: AddContactDial
                 </div>
 
                 <DialogFooter>
-                    <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>Cancel</Button>
-                    <Button onClick={handleSave} disabled={isPending || !name.trim()}>
+                    <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={isPending}>Cancel</Button>
+                    <Button
+                        onClick={handleSave}
+                        disabled={isPending || !name.trim() || (isStandaloneMode && !phoneNumber.trim())}
+                    >
                         {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         Save
                     </Button>
