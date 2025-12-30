@@ -14,8 +14,14 @@ class IngestCallLogsAction
     {
         $records = [];
         $now = now();
+        $trackedSlots = $dto->device->tracked_sim_slots;
 
         foreach ($dto->logs as $log) {
+            // Filter by tracked SIM slots if configured
+            if ($trackedSlots !== null && ! in_array($log->simSlot, $trackedSlots, true)) {
+                continue;
+            }
+
             $records[] = [
                 'device_id' => $dto->device->id,
                 'call_hash' => $log->callHash,

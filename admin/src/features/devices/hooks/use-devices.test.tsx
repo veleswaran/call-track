@@ -36,7 +36,8 @@ const mockDevice: Device = {
     app_version: "1.0.0",
     status: "active",
     agent_id: 1,
-    last_sync_at: "2024-01-01T12:00:00Z",
+    tracked_sim_slots: null,
+    last_sync_at: "2023-01-01T00:00:00Z",
     created_at: "2024-01-01T00:00:00Z",
     updated_at: "2024-01-01T00:00:00Z",
 };

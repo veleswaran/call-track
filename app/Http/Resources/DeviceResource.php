@@ -26,6 +26,7 @@ class DeviceResource extends JsonResource
             'device_model' => $this->model,
             'os_version' => $this->os_version,
             'app_version' => $this->app_version,
+            'tracked_sim_slots' => $this->tracked_sim_slots,
             'status' => $this->active_tokens_exists ? 'active' : 'inactive',
             'agent_id' => $this->agent_id,
             'last_sync_at' => $this->created_at, // Placeholder or use specialized query

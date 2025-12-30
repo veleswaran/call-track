@@ -51,6 +51,7 @@ export default function DevicesPage() {
                             <TableHead>Device Name</TableHead>
                             <TableHead>Model</TableHead>
                             <TableHead>OS Version</TableHead>
+                            <TableHead>Tracked SIMs</TableHead>
                             <TableHead>Last Sync</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead className="w-[100px]">Actions</TableHead>
@@ -86,6 +87,13 @@ export default function DevicesPage() {
                                     </TableCell>
                                     <TableCell>{device.device_model}</TableCell>
                                     <TableCell>{device.os_version}</TableCell>
+                                    <TableCell>
+                                        {device.tracked_sim_slots === null
+                                            ? <span className="text-zinc-400">All</span>
+                                            : device.tracked_sim_slots.length === 0
+                                                ? <span className="text-red-500">None</span>
+                                                : device.tracked_sim_slots.join(", ")}
+                                    </TableCell>
                                     <TableCell>
                                         {device.last_sync_at
                                             ? format(new Date(device.last_sync_at), "MMM d, h:mm a")

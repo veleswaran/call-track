@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
  * @property bool|null $active_tokens_exists
+ * @property array|null $tracked_sim_slots
  */
 class Device extends Model
 {
@@ -43,7 +44,20 @@ class Device extends Model
         'app_version',
         'user_id',
         'agent_id',
+        'tracked_sim_slots',
     ];
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'tracked_sim_slots' => 'array',
+        ];
+    }
 
     public function agent(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {

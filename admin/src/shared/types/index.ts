@@ -54,6 +54,7 @@ export interface Device {
     app_version: string | null;
     status: "active" | "suspended";
     agent_id: number | null;
+    tracked_sim_slots: number[] | null;
     last_sync_at: string | null;
     created_at: string;
     updated_at: string;
