@@ -30,6 +30,7 @@ export const defaultNavigation: NavItem[] = [
     { name: "Dashboard", href: "/", icon: LayoutDashboard },
     { name: "Call Logs", href: "/call-logs", icon: Phone },
     { name: "Devices", href: "/devices", icon: Smartphone },
+    { name: "Users", href: "/users", icon: Users },
     { name: "Agents", href: "/agents", icon: Users },
     { name: "Contacts", href: "/contacts", icon: Contact },
 ];

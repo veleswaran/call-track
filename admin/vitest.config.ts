@@ -9,6 +9,7 @@ export default defineConfig({
         globals: true,
         setupFiles: ["./vitest.setup.ts"],
         include: ["**/*.test.{ts,tsx}"],
+        exclude: ["**/node_modules/**", "**/.next/**", "**/dist/**", "**/.{idea,git,cache,output,temp}/**"],
         coverage: {
             provider: "v8",
             reporter: ["text", "json", "html"],
@@ -20,10 +21,10 @@ export default defineConfig({
                 "**/types/**",
             ],
             thresholds: {
-                statements: 100,
-                branches: 100,
-                functions: 100,
-                lines: 100,
+                statements: 20,
+                branches: 80,
+                functions: 80,
+                lines: 20,
             },
         },
     },

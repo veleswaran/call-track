@@ -46,5 +46,21 @@ Route::prefix('v1')->group(function () {
         // Contacts
         Route::post('/contacts', [\App\Http\Controllers\Api\Admin\ContactController::class, 'store']);
         Route::get('/contacts', [\App\Http\Controllers\Api\Admin\ContactController::class, 'index']);
+
+        // User Management
+        Route::apiResource('users', \App\Http\Controllers\Api\Admin\AdminUserController::class);
+        Route::post('/users/{id}/reset-2fa', [\App\Http\Controllers\Api\Admin\AdminUserController::class, 'resetTwoFactor']);
+
     });
+
+    // 2FA Management (Session based)
+    Route::middleware(['auth:sanctum'])->group(function () {
+        Route::post('/auth/two-factor/enable', [\App\Http\Controllers\Api\Auth\TwoFactorController::class, 'enable']);
+        Route::post('/auth/two-factor/confirm', [\App\Http\Controllers\Api\Auth\TwoFactorController::class, 'confirm']);
+        Route::post('/auth/two-factor/disable', [\App\Http\Controllers\Api\Auth\TwoFactorController::class, 'disable']);
+        Route::post('/auth/two-factor/recovery-codes', [\App\Http\Controllers\Api\Auth\TwoFactorController::class, 'recoveryCodes']);
+    });
+
+    // 2FA Challenge (Public/Guest because standard login is public, but accessing session)
+    Route::post('/auth/two-factor/challenge', [\App\Http\Controllers\Api\Auth\TwoFactorController::class, 'challenge']);
 });

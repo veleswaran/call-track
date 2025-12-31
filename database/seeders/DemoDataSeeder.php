@@ -32,6 +32,8 @@ class DemoDataSeeder extends Seeder
             ]
         );
 
+        $admin->assignRole('admin');
+
         $this->command->info('Created admin user: admin@calltrack.com / password');
 
         // Create agents (matching actual schema: name, employee_code, status)

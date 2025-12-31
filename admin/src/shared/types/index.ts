@@ -6,6 +6,9 @@ export interface User {
     name: string;
     email: string;
     email_verified_at: string | null;
+    roles?: string[];
+    two_factor_enabled?: boolean;
+    two_factor_confirmed_at?: string | null;
     created_at: string;
     updated_at: string;
 }
@@ -116,6 +119,13 @@ export interface PaginatedResponse<T> {
 }
 
 /**
+ * Single resource API response
+ */
+export interface ResourceResponse<T> {
+    data: T;
+}
+
+/**
  * API error response
  */
 export interface ApiErrorResponse {
@@ -152,6 +162,11 @@ export interface DashboardMetrics {
     total_duration_change_percent: number | null;
 }
 
-export interface ResourceResponse<T> {
-    data: T;
+export interface TwoFactorSetupResponse {
+    secret: string;
+    qr_code_url: string;
+}
+
+export interface RecoveryCodesResponse {
+    recovery_codes: string[];
 }

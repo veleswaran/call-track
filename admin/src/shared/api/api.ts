@@ -3,14 +3,16 @@ const API_BASE_URL =
 
 interface ApiError extends Error {
     status?: number;
+    data?: unknown;
 }
 
 /**
  * Creates an API error with status code
  */
-function createApiError(message: string, status?: number): ApiError {
+function createApiError(message: string, status?: number, data?: unknown): ApiError {
     const error = new Error(message) as ApiError;
     error.status = status;
+    error.data = data;
     return error;
 }
 
@@ -67,7 +69,15 @@ export const api = {
         });
 
         if (!response.ok) {
-            throw createApiError(response.statusText, response.status);
+            let errorMessage = response.statusText;
+            let errorData = null;
+            try {
+                errorData = await response.json();
+                errorMessage = errorData.message || errorMessage;
+            } catch {
+                // Ignore JSON parse error
+            }
+            throw createApiError(errorMessage, response.status, errorData);
         }
 
         return response.json();
@@ -84,7 +94,15 @@ export const api = {
         });
 
         if (!response.ok) {
-            throw createApiError(response.statusText, response.status);
+            let errorMessage = response.statusText;
+            let errorData = null;
+            try {
+                errorData = await response.json();
+                errorMessage = errorData.message || errorMessage;
+            } catch {
+                // Ignore JSON parse error
+            }
+            throw createApiError(errorMessage, response.status, errorData);
         }
 
         return response.json();
@@ -101,7 +119,15 @@ export const api = {
         });
 
         if (!response.ok) {
-            throw createApiError(response.statusText, response.status);
+            let errorMessage = response.statusText;
+            let errorData = null;
+            try {
+                errorData = await response.json();
+                errorMessage = errorData.message || errorMessage;
+            } catch {
+                // Ignore JSON parse error
+            }
+            throw createApiError(errorMessage, response.status, errorData);
         }
 
         return response.json();
@@ -117,7 +143,15 @@ export const api = {
         });
 
         if (!response.ok) {
-            throw createApiError(response.statusText, response.status);
+            let errorMessage = response.statusText;
+            let errorData = null;
+            try {
+                errorData = await response.json();
+                errorMessage = errorData.message || errorMessage;
+            } catch {
+                // Ignore JSON parse error
+            }
+            throw createApiError(errorMessage, response.status, errorData);
         }
 
         return response.json();
