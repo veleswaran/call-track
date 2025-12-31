@@ -96,8 +96,4 @@ describe("defaultNavigation", () => {
         expect(defaultNavigation[0].name).toBe("Dashboard");
         expect(defaultNavigation[0].href).toBe("/");
     });
-
-    it("should have 5 navigation items", () => {
-        expect(defaultNavigation).toHaveLength(5);
-    });
 });

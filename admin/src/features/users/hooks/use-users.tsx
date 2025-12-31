@@ -3,7 +3,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { usersApi, CreateUserData } from "@shared/api/users";
 import { toast } from "sonner";
-import { ApiErrorResponse } from "@shared/types";
 
 export function useUsers(page = 1, perPage = 15) {
     return useQuery({

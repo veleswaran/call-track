@@ -33,7 +33,7 @@ export function TwoFactorSettings() {
             const data = await authService.enableTwoFactor();
             setQrData(data);
             setIsSettingUp(true);
-        } catch (_error) {
+        } catch {
             toast.error("Failed to start 2FA setup");
         } finally {
             setLoading(false);
@@ -50,8 +50,9 @@ export function TwoFactorSettings() {
             setQrData(null);
             mutate(); // Refresh user
             toast.success("Two-factor authentication enabled");
-        } catch (_error) {
-            toast.error("Invalid code. Please try again.");
+        } catch (error) {
+            const message = (error as Error).message || "Invalid code. Please try again.";
+            toast.error(message);
         } finally {
             setLoading(false);
         }
@@ -64,7 +65,7 @@ export function TwoFactorSettings() {
             setPassword("");
             mutate();
             toast.success("Two-factor authentication disabled");
-        } catch (_error) {
+        } catch {
             toast.error("Incorrect password or failed to disable");
         } finally {
             setLoading(false);

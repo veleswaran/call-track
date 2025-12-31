@@ -16,7 +16,9 @@ class TwoFactorAuthTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $response = $this->actingAs($user)->postJson('/api/v1/admin/auth/two-factor/enable');
+        $response = $this->withHeaders(['Referer' => 'http://localhost:3000'])
+            ->actingAs($user)
+            ->postJson('/api/v1/auth/two-factor/enable');
 
         $response->assertOk()
             ->assertJsonStructure(['secret', 'qr_code_url']);
@@ -30,16 +32,17 @@ class TwoFactorAuthTest extends TestCase
 
         // Enable first (in reality, frontend has secret)
         // But we skip enable step and call confirm directly with a valid code for a secret we know.
-        // Wait, confirm expects to MATCH the secret we send?
         // TwoFactorController::confirm takes 'secret' and 'code'.
         // It validates that code matches secret. Then enables it for user.
 
         $code = $google2fa->getCurrentOtp($secret);
 
-        $response = $this->actingAs($user)->postJson('/api/v1/admin/auth/two-factor/confirm', [
-            'secret' => $secret,
-            'code' => $code,
-        ]);
+        $response = $this->withHeaders(['Referer' => 'http://localhost:3000'])
+            ->actingAs($user)
+            ->postJson('/api/v1/auth/two-factor/confirm', [
+                'secret' => $secret,
+                'code' => $code,
+            ]);
 
         $response->assertOk()
             ->assertJsonStructure(['recovery_codes']);
@@ -83,9 +86,10 @@ class TwoFactorAuthTest extends TestCase
         // Session needs to be maintained. in tests, it usually is.
         // But we need to check if session has 'auth.2fa.id'.
 
-        $response = $this->postJson('/api/v1/auth/two-factor/challenge', [
-            'code' => $code,
-        ]);
+        $response = $this->withHeaders(['Referer' => 'http://localhost:3000'])
+            ->postJson('/api/v1/auth/two-factor/challenge', [
+                'code' => $code,
+            ]);
 
         $response->assertOk()
             ->assertJson(['message' => 'Logged in successfully']);

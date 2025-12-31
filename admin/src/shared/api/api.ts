@@ -3,14 +3,16 @@ const API_BASE_URL =
 
 interface ApiError extends Error {
     status?: number;
+    data?: unknown;
 }
 
 /**
  * Creates an API error with status code
  */
-function createApiError(message: string, status?: number): ApiError {
+function createApiError(message: string, status?: number, data?: unknown): ApiError {
     const error = new Error(message) as ApiError;
     error.status = status;
+    error.data = data;
     return error;
 }
 
