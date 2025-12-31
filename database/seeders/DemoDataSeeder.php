@@ -75,9 +75,10 @@ class DemoDataSeeder extends Seeder
             // Create device token
             DB::table('device_tokens')->insertOrIgnore([
                 'device_id' => $device->id,
-                'token' => 'demo_token_'.Str::random(40),
+                'token_hash' => 'demo_token_'.Str::random(40),
                 'device_name' => $deviceData['name'],
                 'last_used_at' => now()->subHours(rand(1, 48)),
+                'issued_at' => now(),
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
