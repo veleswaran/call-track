@@ -2,40 +2,46 @@
 
 import { useState } from "react";
 import { useAgents } from "@features/agents/hooks/use-agents";
+import { useGenerateDeviceCode, GeneratedCode } from "@features/devices/hooks/use-devices";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@shared/components/ui/dialog";
 import { Button } from "@shared/components/ui/button";
-import { api } from "@shared/api/api";
 import { Loader2, Copy, Check } from "lucide-react";
 import { format } from "date-fns";
+import { toast } from "sonner";
+import { ApiError } from "@shared/api/api";
 
 export function DeviceRegistrationCodeDialog() {
     const [open, setOpen] = useState(false);
     const [selectedAgentId, setSelectedAgentId] = useState<string>("");
     const [expiresIn, setExpiresIn] = useState("24");
-    const [isLoading, setIsLoading] = useState(false);
-    const [generatedCode, setGeneratedCode] = useState<{ code: string; expires_at: string } | null>(null);
+    const [generatedCode, setGeneratedCode] = useState<GeneratedCode | null>(null);
     const [copied, setCopied] = useState(false);
 
     // Fetch agents for dropdown
     const { data: agentsData, isLoading: isLoadingAgents } = useAgents({ page: 1, per_page: 100 });
     const agents = agentsData?.data ?? [];
 
-    const handleGenerate = async () => {
+    const { mutate: generateCode, isPending: isGenerating } = useGenerateDeviceCode();
+
+    const handleGenerate = () => {
         if (!selectedAgentId) return;
 
-        setIsLoading(true);
-        try {
-            const response = await api.post<{ data: { code: string; expires_at: string } }>("/api/v1/admin/devices/codes", {
+        generateCode(
+            {
                 agent_id: parseInt(selectedAgentId),
                 expires_in_hours: parseInt(expiresIn),
-            });
-            setGeneratedCode(response.data);
-            setCopied(false);
-        } catch (error) {
-            console.error("Failed to generate code", error);
-        } finally {
-            setIsLoading(false);
-        }
+            },
+            {
+                onSuccess: (response) => {
+                    setGeneratedCode(response.data);
+                    setCopied(false);
+                    toast.success("Code generated successfully");
+                },
+                onError: (error: ApiError) => {
+                    toast.error(error.message || "Failed to generate code");
+                },
+            }
+        );
     };
 
     const copyToClipboard = () => {
@@ -123,8 +129,8 @@ export function DeviceRegistrationCodeDialog() {
 
                 <DialogFooter>
                     {!generatedCode ? (
-                        <Button onClick={handleGenerate} disabled={!selectedAgentId || isLoading}>
-                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        <Button onClick={handleGenerate} disabled={!selectedAgentId || isGenerating}>
+                            {isGenerating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             Generate Code
                         </Button>
                     ) : (

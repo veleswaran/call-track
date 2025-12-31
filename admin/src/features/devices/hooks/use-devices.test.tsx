@@ -9,6 +9,7 @@ import type { Device, PaginatedResponse } from "@shared/types";
 vi.mock("@shared/api/api", () => ({
     api: {
         get: vi.fn(),
+        post: vi.fn(),
     },
 }));
 
@@ -105,5 +106,34 @@ describe("deviceKeys", () => {
         expect(deviceKeys.all).toEqual(["devices"]);
         expect(deviceKeys.lists()).toEqual(["devices", "list"]);
         expect(deviceKeys.detail(1)).toEqual(["devices", "detail", 1]);
+    });
+});
+
+describe("useGenerateDeviceCode", () => {
+    it("should generate device code", async () => {
+        const mockResponse = {
+            data: {
+                code: "ABC1234",
+                expires_at: "2024-01-02T00:00:00Z",
+                agent_id: 1,
+            },
+        };
+        const { useGenerateDeviceCode } = await import("./use-devices");
+
+        vi.mocked(api.post).mockResolvedValueOnce(mockResponse);
+
+        const { result } = renderHook(() => useGenerateDeviceCode(), {
+            wrapper: createWrapper(),
+        });
+
+        result.current.mutate({ agent_id: 1, expires_in_hours: 24 });
+
+        await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+        expect(api.post).toHaveBeenCalledWith("/api/v1/admin/devices/codes", {
+            agent_id: 1,
+            expires_in_hours: 24,
+        });
+        expect(result.current.data).toEqual(mockResponse);
     });
 });

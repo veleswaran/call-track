@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Admin;
 
-use App\Domain\Devices\Models\DeviceRegistrationCode;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class DeviceCodeController extends Controller
 {
+    public function __construct(
+        protected \App\Contracts\Services\DeviceCodeServiceInterface $deviceCodeService
+    ) {}
+
     /**
      * Generate a new registration code for an agent
      */
@@ -21,17 +23,12 @@ class DeviceCodeController extends Controller
             'expires_in_hours' => 'nullable|integer|min:1|max:48',
         ]);
 
-        $code = strtoupper(Str::random(6)); // 6 character alphanumeric code
+        $dto = new \App\Domain\Devices\DTOs\GenerateDeviceCodeDTO(
+            agentId: (int) $validated['agent_id'],
+            expiresInHours: (int) ($validated['expires_in_hours'] ?? 24)
+        );
 
-        while (DeviceRegistrationCode::where('code', $code)->exists()) {
-            $code = strtoupper(Str::random(6));
-        }
-
-        $registrationCode = DeviceRegistrationCode::create([
-            'code' => $code,
-            'agent_id' => $validated['agent_id'],
-            'expires_at' => now()->addHours($validated['expires_in_hours'] ?? 24),
-        ]);
+        $registrationCode = $this->deviceCodeService->generateCode($dto);
 
         return response()->json([
             'data' => [
@@ -47,11 +44,7 @@ class DeviceCodeController extends Controller
      */
     public function index()
     {
-        $codes = DeviceRegistrationCode::with('agent')
-            ->whereNull('used_at')
-            ->where('expires_at', '>', now())
-            ->latest()
-            ->paginate(20);
+        $codes = $this->deviceCodeService->listActiveCodes();
 
         return response()->json($codes);
     }

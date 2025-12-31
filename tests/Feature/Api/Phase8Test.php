@@ -86,7 +86,7 @@ class Phase8Test extends TestCase
         ];
 
         $response = $this->withHeader('X-Device-Token', $token)
-            ->postJson('/api/v1/devices/sync', ['logs' => $logs]);
+            ->postJson('/api/v1/call-logs/sync', ['logs' => $logs]);
 
         $response->assertOk();
         $this->assertDatabaseHas('call_logs', [

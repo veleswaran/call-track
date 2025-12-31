@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Domain\Devices\Models\DeviceToken;
-use App\Jobs\ProcessCallLogAnalytics;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Queue;
@@ -53,7 +52,6 @@ class IngestCallLogsTest extends TestCase
             'call_hash' => 'hash-1',
         ]);
 
-        // Queue::assertPushed(ProcessCallLogAnalytics::class); -- Not dispatched in controller
     }
 
     public function test_it_rejects_invalid_token()

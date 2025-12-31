@@ -47,9 +47,4 @@ class DeviceRegistrationCode extends Model
     {
         return $this->belongsTo(Device::class, 'used_by_device_id');
     }
-
-    public function isValid(): bool
-    {
-        return is_null($this->used_at) && $this->expires_at->isFuture();
-    }
 }

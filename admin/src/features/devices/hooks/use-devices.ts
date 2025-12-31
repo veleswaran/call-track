@@ -54,3 +54,21 @@ export function useRevokeDeviceTokens() {
         },
     });
 }
+
+export interface GenerateDeviceCodeParams {
+    agent_id: number;
+    expires_in_hours: number;
+}
+
+export interface GeneratedCode {
+    code: string;
+    expires_at: string;
+    agent_id: number;
+}
+
+export function useGenerateDeviceCode() {
+    return useMutation({
+        mutationFn: (data: GenerateDeviceCodeParams) =>
+            api.post<{ data: GeneratedCode }>("/api/v1/admin/devices/codes", data),
+    });
+}

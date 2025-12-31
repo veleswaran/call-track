@@ -6,8 +6,10 @@ CallTrack AI is an API-first enterprise platform designed to capture, classify, 
 
 - **Immutable Ingestion**: Raw call logs are hashed and stored with strict immutability.
 - **Device Authentication**: Stateless, token-based authentication for devices (`X-Device-Token`).
+- **Two-Factor Authentication**: Secure admin access with TOTP-based 2FA.
 - **Admin Governance**: Laravel Sanctum-based admin API for classifying calls (Business/Personal/Ignored).
 - **Sales Agent Tagging**: Assign devices to sales agents for CRM attribution and analytics.
+- **Device Registration Codes**: Generate time-limited one-time codes for agent device registration.
 - **SIM Slot Filtering**: Track calls only from specific SIM slots (e.g. Work SIM).
 - **Agent Classification**: Agents can classify calls and add notes directly from the device.
 - **Analytics**: Async job processing for daily call statistics.
@@ -49,9 +51,9 @@ Note: Access to docs is gated by `Gate::define('viewApiDocs', ...)`. In this rep
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
 | `POST` | `/api/v1/devices/register` | Register a new device | None |
-| `POST` | `/api/v1/call-logs/sync` | Ingest batched call logs (primary) | Device Token |
+| `POST` | `/api/v1/devices/sync` | Ingest batched call logs | Device Token |
 | `POST` | `/api/v1/calls/{hash}/classify` | Classify/Note a call from device | Device Token |
-| `POST` | `/api/v1/devices/sync` | Alias to call logs sync | Device Token |
+| `GET` | `/api/v1/admin/dashboard` | Analytics Dashboard | Admin (Sanctum) |
 | `GET` | `/api/v1/admin/call-logs` | List paginated call logs | Admin (Sanctum) |
 | `POST` | `/api/v1/admin/calls/{id}/classify` | Classify a call log | Admin (Sanctum) |
 | `GET` | `/api/v1/admin/contacts` | List saved contacts | Admin (Sanctum) |
@@ -59,8 +61,11 @@ Note: Access to docs is gated by `Gate::define('viewApiDocs', ...)`. In this rep
 | `GET` | `/api/v1/admin/agents` | List all agents | Admin (Sanctum) |
 | `POST` | `/api/v1/admin/agents` | Create a sales agent | Admin (Sanctum) |
 | `PUT` | `/api/v1/admin/agents/{id}` | Update agent details | Admin (Sanctum) |
+| `POST` | `/api/v1/admin/devices/codes` | Generate registration code | Admin (Sanctum) |
 | `POST` | `/api/v1/admin/devices/{id}/assign-agent` | Assign agent to device | Admin (Sanctum) |
 | `POST` | `/api/v1/admin/devices/{id}/unassign-agent` | Unassign agent from device | Admin (Sanctum) |
+| `API` | `/api/v1/admin/users` | Admin User Management (resource) | Admin (Sanctum) |
+| `POST` | `/api/v1/auth/two-factor/*` | 2FA Management (enable, confirm, etc.) | Admin (Sanctum) |
 
 ## 📦 Setup Instructions
 
@@ -126,6 +131,7 @@ Automatically fix code style issues to follow PSR-12 and Laravel best practices:
 
 - **Device Tokens**: Devices authenticate using long-lived `X-Device-Token` headers.
 - **Admin Access**: Standard Bearer token authentication via Sanctum.
+- **Two-Factor Authentication**: Admins can enable 2FA for enhanced account security.
 
 ## 🔗 Admin vs Device API — Auth and cURL recipes
 
@@ -173,8 +179,6 @@ curl --request POST \
     ]
   }'
 ```
-
-Note: `/api/v1/devices/sync` is an alias pointing to the same controller.
 
 ### Device: Classify Call
 
