@@ -17,6 +17,17 @@ class LoginController extends Controller
         ]);
 
         if (Auth::guard('web')->attempt($credentials)) {
+            $user = Auth::guard('web')->user();
+
+            if ($user->two_factor_secret) {
+                Auth::guard('web')->logout();
+                $request->session()->put('auth.2fa.id', $user->id);
+
+                return response()->json([
+                    'requires_two_factor' => true,
+                ]);
+            }
+
             $request->session()->regenerate();
 
             return response()->json([
