@@ -48,10 +48,11 @@ export default function LoginPage() {
                 await queryClient.invalidateQueries({ queryKey: ["user"] });
                 router.push("/");
             }
-        } catch (err) {
-            setError(
-                err instanceof Error ? err.message : "Authentication failed"
-            );
+        } catch (err: any) {
+            // Check for specific validation errors/messages
+            const errorMessage = err.data?.message || err.message || "Authentication failed";
+            setError(errorMessage);
+
             // If 2FA fails, maybe reset code?
             if (requiresTwoFactor) {
                 setLoading(false);

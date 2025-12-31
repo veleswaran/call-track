@@ -69,7 +69,15 @@ export const api = {
         });
 
         if (!response.ok) {
-            throw createApiError(response.statusText, response.status);
+            let errorMessage = response.statusText;
+            let errorData = null;
+            try {
+                errorData = await response.json();
+                errorMessage = errorData.message || errorMessage;
+            } catch {
+                // Ignore JSON parse error
+            }
+            throw createApiError(errorMessage, response.status, errorData);
         }
 
         return response.json();
@@ -86,7 +94,15 @@ export const api = {
         });
 
         if (!response.ok) {
-            throw createApiError(response.statusText, response.status);
+            let errorMessage = response.statusText;
+            let errorData = null;
+            try {
+                errorData = await response.json();
+                errorMessage = errorData.message || errorMessage;
+            } catch {
+                // Ignore JSON parse error
+            }
+            throw createApiError(errorMessage, response.status, errorData);
         }
 
         return response.json();
@@ -103,7 +119,15 @@ export const api = {
         });
 
         if (!response.ok) {
-            throw createApiError(response.statusText, response.status);
+            let errorMessage = response.statusText;
+            let errorData = null;
+            try {
+                errorData = await response.json();
+                errorMessage = errorData.message || errorMessage;
+            } catch {
+                // Ignore JSON parse error
+            }
+            throw createApiError(errorMessage, response.status, errorData);
         }
 
         return response.json();
@@ -119,7 +143,15 @@ export const api = {
         });
 
         if (!response.ok) {
-            throw createApiError(response.statusText, response.status);
+            let errorMessage = response.statusText;
+            let errorData = null;
+            try {
+                errorData = await response.json();
+                errorMessage = errorData.message || errorMessage;
+            } catch {
+                // Ignore JSON parse error
+            }
+            throw createApiError(errorMessage, response.status, errorData);
         }
 
         return response.json();
