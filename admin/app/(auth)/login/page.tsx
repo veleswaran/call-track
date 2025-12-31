@@ -48,9 +48,16 @@ export default function LoginPage() {
                 await queryClient.invalidateQueries({ queryKey: ["user"] });
                 router.push("/");
             }
-        } catch (err: any) {
+        } catch (error: unknown) {
             // Check for specific validation errors/messages
-            const errorMessage = err.data?.message || err.message || "Authentication failed";
+            let errorMessage = "Authentication failed";
+
+            if (typeof error === "object" && error !== null) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const err = error as any;
+                errorMessage = err.data?.message || err.message || errorMessage;
+            }
+
             setError(errorMessage);
 
             // If 2FA fails, maybe reset code?
