@@ -67,6 +67,7 @@ class DemoDataSeeder extends Seeder
                 ['name' => $deviceData['name']],
                 array_merge($deviceData, [
                     'agent_id' => $createdAgents[$index % count($createdAgents)]->id,
+                    'device_uuid' => Str::uuid()->toString(),
                 ])
             );
             $createdDevices[] = $device;
