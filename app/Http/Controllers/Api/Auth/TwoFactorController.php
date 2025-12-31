@@ -4,17 +4,16 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Auth;
 
+use App\Contracts\Services\TwoFactorServiceInterface;
+use App\Domain\Auth\DTOs\TwoFactorChallengeDTO;
 use App\Http\Controllers\Controller;
-use App\Services\Auth\TwoFactorService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Crypt;
-use Illuminate\Validation\ValidationException;
 
 class TwoFactorController extends Controller
 {
     public function __construct(
-        protected TwoFactorService $twoFactorService,
+        protected TwoFactorServiceInterface $twoFactorService,
     ) {}
 
     public function enable(Request $request): JsonResponse
@@ -36,7 +35,7 @@ class TwoFactorController extends Controller
         ]);
 
         if (! $this->twoFactorService->verify($request->secret, $request->code)) {
-            throw ValidationException::withMessages([
+            throw \Illuminate\Validation\ValidationException::withMessages([
                 'code' => ['The provided two factor authentication code was invalid.'],
             ]);
         }
@@ -70,8 +69,6 @@ class TwoFactorController extends Controller
             return response()->json(['message' => 'Two factor authentication not enabled.'], 400);
         }
 
-        // Return existing codes? Or regenerate? Usually generic "show" vs "regenerate".
-        // For simplicity, let's regenerate.
         $codes = $this->twoFactorService->generateRecoveryCodes($request->user());
 
         return response()->json(['recovery_codes' => $codes]);
@@ -83,34 +80,12 @@ class TwoFactorController extends Controller
             'code' => ['required', 'string'],
         ]);
 
-        $userId = $request->session()->get('auth.2fa.id');
-
-        if (! $userId) {
-            return response()->json(['message' => 'Two factor authentication session expired.'], 401);
-        }
-
-        $user = \App\Domain\Users\Models\User::find($userId);
-
-        if (! $user) {
-            $request->session()->forget('auth.2fa.id');
-
-            return response()->json(['message' => 'User not found.'], 401);
-        }
-
-        $valid = $this->twoFactorService->verify(
-            Crypt::decryptString($user->two_factor_secret),
-            $request->code
+        $dto = new TwoFactorChallengeDTO(
+            code: $request->code,
+            userId: $request->session()->get('auth.2fa.id')
         );
 
-        if (! $valid) {
-            throw ValidationException::withMessages([
-                'code' => ['The provided two factor authentication code was invalid.'],
-            ]);
-        }
-
-        \Illuminate\Support\Facades\Auth::guard('web')->login($user);
-        $request->session()->forget('auth.2fa.id');
-        $request->session()->regenerate();
+        $user = $this->twoFactorService->handleChallenge($dto);
 
         return response()->json([
             'message' => 'Logged in successfully',

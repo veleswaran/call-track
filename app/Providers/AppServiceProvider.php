@@ -55,6 +55,16 @@ class AppServiceProvider extends ServiceProvider
             \App\Contracts\Services\UserManagementServiceInterface::class,
             \App\Services\Users\UserManagementService::class
         );
+
+        $this->app->bind(
+            \App\Contracts\Services\TwoFactorServiceInterface::class,
+            \App\Services\Auth\TwoFactorService::class
+        );
+
+        $this->app->bind(
+            \App\Contracts\Services\AuthServiceInterface::class,
+            \App\Services\Auth\AuthService::class
+        );
     }
 
     /**

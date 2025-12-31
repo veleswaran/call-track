@@ -5,16 +5,19 @@ declare(strict_types=1);
 namespace App\Services\Auth;
 
 use App\Domain\Users\Models\User;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Crypt;
 use PragmaRX\Google2FA\Google2FA;
 
-class TwoFactorService
+class TwoFactorService implements \App\Contracts\Services\TwoFactorServiceInterface
 {
     protected Google2FA $google2fa;
 
-    public function __construct()
-    {
+    public function __construct(
+        protected \App\Domain\Auth\Actions\EnableTwoFactorAction $enableTwoFactorAction,
+        protected \App\Domain\Auth\Actions\DisableTwoFactorAction $disableTwoFactorAction,
+        protected \App\Domain\Auth\Actions\GenerateRecoveryCodesAction $generateRecoveryCodesAction,
+        protected \App\Domain\Users\Actions\FindUserByIdAction $findUserByIdAction,
+    ) {
         $this->google2fa = new Google2FA;
     }
 
@@ -39,34 +42,51 @@ class TwoFactorService
 
     public function enable(User $user, string $secret): array
     {
-        $recoveryCodes = Collection::times(8, fn () => \Illuminate\Support\Str::random(10).'-'.\Illuminate\Support\Str::random(10))->all();
-
-        $user->forceFill([
-            'two_factor_secret' => Crypt::encryptString($secret),
-            'two_factor_recovery_codes' => Crypt::encryptString(json_encode($recoveryCodes)),
-            'two_factor_confirmed_at' => now(),
-        ])->save();
-
-        return $recoveryCodes;
+        return $this->enableTwoFactorAction->execute($user, $secret);
     }
 
     public function disable(User $user): void
     {
-        $user->forceFill([
-            'two_factor_secret' => null,
-            'two_factor_recovery_codes' => null,
-            'two_factor_confirmed_at' => null,
-        ])->save();
+        $this->disableTwoFactorAction->execute($user);
     }
 
     public function generateRecoveryCodes(User $user): array
     {
-        $recoveryCodes = Collection::times(8, fn () => \Illuminate\Support\Str::random(10).'-'.\Illuminate\Support\Str::random(10))->all();
+        return $this->generateRecoveryCodesAction->execute($user);
+    }
 
-        $user->forceFill([
-            'two_factor_recovery_codes' => Crypt::encryptString(json_encode($recoveryCodes)),
-        ])->save();
+    public function handleChallenge(\App\Domain\Auth\DTOs\TwoFactorChallengeDTO $dto): User
+    {
+        if (! $dto->userId) {
+            throw new \Illuminate\Auth\AuthenticationException('Two factor authentication session expired.');
+        }
 
-        return $recoveryCodes;
+        $user = $this->findUserByIdAction->execute($dto->userId);
+
+        if (! $user) {
+            session()->forget('auth.2fa.id');
+            throw new \Illuminate\Auth\AuthenticationException('User not found.');
+        }
+
+        if (! $user->two_factor_secret) {
+            throw new \Illuminate\Auth\AuthenticationException('Two factor authentication not enabled for this user.');
+        }
+
+        $valid = $this->verify(
+            Crypt::decryptString($user->two_factor_secret),
+            $dto->code
+        );
+
+        if (! $valid) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'code' => ['The provided two factor authentication code was invalid.'],
+            ]);
+        }
+
+        \Illuminate\Support\Facades\Auth::guard('web')->login($user);
+        session()->forget('auth.2fa.id');
+        session()->regenerate();
+
+        return $user;
     }
 }

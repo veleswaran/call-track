@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { usersApi, CreateUserData } from "@shared/api/users";
 import { toast } from "sonner";
+import { ApiError } from "@shared/api/api";
 
 export function useUsers(page = 1, perPage = 15) {
     return useQuery({
@@ -20,10 +21,8 @@ export function useCreateUser() {
             queryClient.invalidateQueries({ queryKey: ["users"] });
             toast.success("User created successfully");
         },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        onError: (error: any) => {
-            // Basic error handling, can be improved with specific message extraction
-            toast.error(error.response?.data?.message || "Failed to create user");
+        onError: (error: ApiError) => {
+            toast.error(error.message || "Failed to create user");
         },
     });
 }
@@ -37,9 +36,8 @@ export function useDeleteUser() {
             queryClient.invalidateQueries({ queryKey: ["users"] });
             toast.success("User deleted successfully");
         },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        onError: (error: any) => {
-            toast.error(error.response?.data?.message || "Failed to delete user");
+        onError: (error: ApiError) => {
+            toast.error(error.message || "Failed to delete user");
         },
     });
 }
@@ -50,9 +48,8 @@ export function useResetTwoFactor() {
         onSuccess: () => {
             toast.success("Two-factor authentication reset successfully");
         },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        onError: (error: any) => {
-            toast.error(error.response?.data?.message || "Failed to reset 2FA");
+        onError: (error: ApiError) => {
+            toast.error(error.message || "Failed to reset 2FA");
         },
     });
 }

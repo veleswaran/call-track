@@ -47,9 +47,9 @@ class AdminUserController extends Controller
 
     public function destroy(int $id): JsonResponse
     {
-        if (auth()->id() === $id) {
-            return response()->json(['message' => 'Cannot delete yourself.'], 403);
-        }
+        $user = \App\Domain\Users\Models\User::findOrFail($id);
+
+        $this->authorize('delete', $user);
 
         $this->userService->deleteUser($id);
 

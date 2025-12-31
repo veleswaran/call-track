@@ -14,11 +14,14 @@ class UserManagementService implements UserManagementServiceInterface
 {
     public function __construct(
         protected CreateAdminUserAction $createAdminUserAction,
+        protected \App\Domain\Users\Actions\GetPaginatedUsersAction $getPaginatedUsersAction,
+        protected \App\Domain\Users\Actions\DeleteUserAction $deleteUserAction,
+        protected \App\Domain\Users\Actions\ResetTwoFactorAction $resetTwoFactorAction,
     ) {}
 
     public function getPaginatedUsers(int $perPage = 15): LengthAwarePaginator
     {
-        return User::query()->latest()->paginate($perPage);
+        return $this->getPaginatedUsersAction->execute($perPage);
     }
 
     public function createAdminUser(CreateAdminUserDTO $dto): User
@@ -28,18 +31,11 @@ class UserManagementService implements UserManagementServiceInterface
 
     public function deleteUser(int $userId): void
     {
-        $user = User::findOrFail($userId);
-        $user->delete();
+        $this->deleteUserAction->execute($userId);
     }
 
     public function resetTwoFactor(int $userId): void
     {
-        $user = User::findOrFail($userId);
-
-        $user->forceFill([
-            'two_factor_secret' => null,
-            'two_factor_recovery_codes' => null,
-            'two_factor_confirmed_at' => null,
-        ])->save();
+        $this->resetTwoFactorAction->execute($userId);
     }
 }

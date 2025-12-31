@@ -37,15 +37,17 @@ export default function LoginPage() {
             if (requiresTwoFactor) {
                 await authService.twoFactorChallenge(twoFactorCode);
                 await queryClient.invalidateQueries({ queryKey: ["user"] });
+                setLoading(false);
                 router.push("/");
             } else {
                 const response = await authService.login({ email, password });
                 if (response.requires_two_factor) {
                     setRequiresTwoFactor(true);
-                    setLoading(false); // Stop loading to let user enter code
+                    setLoading(false);
                     return;
                 }
                 await queryClient.invalidateQueries({ queryKey: ["user"] });
+                setLoading(false);
                 router.push("/");
             }
         } catch (error: unknown) {
@@ -59,15 +61,7 @@ export default function LoginPage() {
             }
 
             setError(errorMessage);
-
-            // If 2FA fails, maybe reset code?
-            if (requiresTwoFactor) {
-                setLoading(false);
-            }
-        } finally {
-            if (!requiresTwoFactor) {
-                setLoading(false);
-            }
+            setLoading(false);
         }
     };
 
