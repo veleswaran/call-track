@@ -47,6 +47,11 @@ class AppServiceProvider extends ServiceProvider
         );
 
         $this->app->bind(
+            \App\Contracts\Services\CallNoteServiceInterface::class,
+            \App\Services\Calls\CallNoteService::class
+        );
+
+        $this->app->bind(
             \App\Contracts\Services\DeviceTokenServiceInterface::class,
             \App\Services\Devices\DeviceTokenService::class
         );

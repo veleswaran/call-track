@@ -13,10 +13,22 @@ class ContactManagementService implements ContactManagementServiceInterface
 {
     public function __construct(
         private readonly CreateOrUpdateContactAction $createOrUpdateContactAction,
+        private readonly \App\Actions\Contacts\UpdateContactAction $updateContactAction,
+        private readonly \App\Actions\Contacts\DeleteContactAction $deleteContactAction,
     ) {}
 
     public function storeContact(StoreContactDTO $data): Contact
     {
         return $this->createOrUpdateContactAction->execute($data);
+    }
+
+    public function updateContact(Contact $contact, StoreContactDTO $data): Contact
+    {
+        return $this->updateContactAction->execute($contact, $data);
+    }
+
+    public function deleteContact(Contact $contact): void
+    {
+        $this->deleteContactAction->execute($contact);
     }
 }

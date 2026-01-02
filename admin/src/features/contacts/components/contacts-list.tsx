@@ -2,10 +2,31 @@
 
 import { useState } from "react";
 import { useContacts } from "@features/contacts/hooks/use-contacts";
+import { EditContactDialog } from "./edit-contact-dialog";
+import { DeleteContactDialog } from "./delete-contact-dialog";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@shared/components/ui/dropdown-menu";
+import { Button } from "@shared/components/ui/button";
+import { MoreVertical, Pencil, Trash } from "lucide-react";
+import type { Contact } from "@shared/types";
 
 export function ContactsList() {
     const [page, setPage] = useState(1);
     const { data, isLoading, isError } = useContacts({ page, per_page: 15 });
+    const [editingContact, setEditingContact] = useState<Contact | null>(null);
+    const [deletingContact, setDeletingContact] = useState<Contact | null>(null);
+
+    const handleEdit = (contact: Contact) => {
+        setEditingContact(contact);
+    };
+
+    const handleDelete = (contact: Contact) => {
+        setDeletingContact(contact);
+    };
 
     if (isLoading) {
         return (
@@ -48,6 +69,9 @@ export function ContactsList() {
                             <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
                                 Created
                             </th>
+                            <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-zinc-500">
+                                Actions
+                            </th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800 bg-white dark:bg-zinc-950">
@@ -61,6 +85,28 @@ export function ContactsList() {
                                 </td>
                                 <td className="px-4 py-3 text-sm text-zinc-700 dark:text-zinc-300">
                                     {new Date(c.created_at).toLocaleString()}
+                                </td>
+                                <td className="px-4 py-3 text-right text-sm">
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                <MoreVertical className="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem onClick={() => handleEdit(c)}>
+                                                <Pencil className="mr-2 h-4 w-4" />
+                                                Edit
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem
+                                                onClick={() => handleDelete(c)}
+                                                className="text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400"
+                                            >
+                                                <Trash className="mr-2 h-4 w-4" />
+                                                Delete
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 </td>
                             </tr>
                         ))}
@@ -89,6 +135,22 @@ export function ContactsList() {
                     </button>
                 </div>
             </div>
+
+            {editingContact && (
+                <EditContactDialog
+                    contact={editingContact}
+                    open={!!editingContact}
+                    onOpenChange={(open) => !open && setEditingContact(null)}
+                />
+            )}
+
+            {deletingContact && (
+                <DeleteContactDialog
+                    contact={deletingContact}
+                    open={!!deletingContact}
+                    onOpenChange={(open) => !open && setDeletingContact(null)}
+                />
+            )}
         </div>
     );
 }

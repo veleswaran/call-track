@@ -40,4 +40,31 @@ class ContactController extends Controller
 
         return response()->json($contact, 201);
     }
+
+    public function update(StoreContactRequest $request, int $id): JsonResponse
+    {
+        $contact = \App\Domain\Calls\Models\Contact::findOrFail($id);
+
+        $dto = new StoreContactDTO(
+            name: $request->string('name')->toString(),
+            phoneNumber: $request->string('phone_number')->toString(),
+        );
+
+        $updatedContact = $this->contactService->updateContact($contact, $dto);
+
+        return response()->json($updatedContact);
+    }
+
+    public function destroy(int $id): JsonResponse
+    {
+        $contact = \App\Domain\Calls\Models\Contact::find($id);
+
+        if (! $contact) {
+            return response()->json(null, 204);
+        }
+
+        $this->contactService->deleteContact($contact);
+
+        return response()->json(null, 204);
+    }
 }

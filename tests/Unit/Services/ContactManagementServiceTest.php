@@ -16,7 +16,10 @@ class ContactManagementServiceTest extends TestCase
     public function test_it_delegates_contact_creation_to_action(): void
     {
         $action = Mockery::mock(CreateOrUpdateContactAction::class);
-        $service = new ContactManagementService($action);
+        $updateAction = Mockery::mock(\App\Actions\Contacts\UpdateContactAction::class);
+        $deleteAction = Mockery::mock(\App\Actions\Contacts\DeleteContactAction::class);
+
+        $service = new ContactManagementService($action, $updateAction, $deleteAction);
 
         $dto = new StoreContactDTO(
             name: 'Jane Doe',

@@ -13,4 +13,8 @@ interface ContactManagementServiceInterface
      * Create or update a contact
      */
     public function storeContact(StoreContactDTO $data): Contact;
+
+    public function updateContact(Contact $contact, StoreContactDTO $data): Contact;
+
+    public function deleteContact(Contact $contact): void;
 }

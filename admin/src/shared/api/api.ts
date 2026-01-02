@@ -80,6 +80,10 @@ export const api = {
             throw createApiError(errorMessage, response.status, errorData);
         }
 
+        if (response.status === 204) {
+            return {} as T;
+        }
+
         return response.json();
     },
 
@@ -103,6 +107,10 @@ export const api = {
                 // Ignore JSON parse error
             }
             throw createApiError(errorMessage, response.status, errorData);
+        }
+
+        if (response.status === 204) {
+            return {} as T;
         }
 
         return response.json();
@@ -130,6 +138,10 @@ export const api = {
             throw createApiError(errorMessage, response.status, errorData);
         }
 
+        if (response.status === 204) {
+            return {} as T;
+        }
+
         return response.json();
     },
 
@@ -152,6 +164,10 @@ export const api = {
                 // Ignore JSON parse error
             }
             throw createApiError(errorMessage, response.status, errorData);
+        }
+
+        if (response.status === 204) {
+            return {} as T;
         }
 
         return response.json();

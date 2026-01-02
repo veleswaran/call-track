@@ -29,6 +29,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/devices/codes', [\App\Http\Controllers\Api\Admin\DeviceCodeController::class, 'index']);
 
         Route::post('/calls/{id}/classify', [CallClassificationController::class, 'store']);
+        Route::put('/calls/{id}/note', [\App\Http\Controllers\Api\Admin\CallNoteController::class, 'update']);
 
         // Agent Management
         Route::apiResource('agents', \App\Http\Controllers\Api\Admin\AgentController::class);
@@ -45,6 +46,8 @@ Route::prefix('v1')->group(function () {
         // Contacts
         Route::post('/contacts', [\App\Http\Controllers\Api\Admin\ContactController::class, 'store']);
         Route::get('/contacts', [\App\Http\Controllers\Api\Admin\ContactController::class, 'index']);
+        Route::put('/contacts/{id}', [\App\Http\Controllers\Api\Admin\ContactController::class, 'update']);
+        Route::delete('/contacts/{id}', [\App\Http\Controllers\Api\Admin\ContactController::class, 'destroy']);
 
         // User Management
         Route::apiResource('users', \App\Http\Controllers\Api\Admin\AdminUserController::class);

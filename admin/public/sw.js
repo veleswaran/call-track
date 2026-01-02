@@ -32,6 +32,10 @@ self.addEventListener("fetch", (event) => {
     // Only handle GET requests
     if (event.request.method !== "GET") return;
 
+    // Check scheme (ignore chrome-extension, etc.)
+    const url = new URL(event.request.url);
+    if (!url.protocol.startsWith("http")) return;
+
     // Skip API requests
     if (event.request.url.includes("/api/")) return;
 
