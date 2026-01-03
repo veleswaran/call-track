@@ -42,6 +42,25 @@ class IngestCallLogsAction
         // Chunking for large batches
         foreach (array_chunk($records, 500) as $chunk) {
             CallLog::insertOrIgnore($chunk);
+
+            // Get IDs for these logs to insert default classification
+            $hashes = array_column($chunk, 'call_hash');
+            $logIds = CallLog::where('device_id', $dto->device->id)
+                ->whereIn('call_hash', $hashes)
+                ->pluck('id');
+
+            $classifications = $logIds->map(fn ($id) => [
+                'call_log_id' => $id,
+                'type' => 'BUSINESS', // Default to BUSINESS
+                'user_id' => null,
+                'agent_id' => null,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ])->toArray();
+
+            if (! empty($classifications)) {
+                \App\Domain\Classification\Models\CallClassification::insertOrIgnore($classifications);
+            }
         }
 
         // Dispatch analytics job for the device

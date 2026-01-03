@@ -127,13 +127,23 @@ class DemoDataSeeder extends Seeder
                 $callLogsCount++;
 
                 // Add classification for some calls
+                // Add classification for some calls
                 $classificationType = $classifications[array_rand($classifications)];
+
                 if ($classificationType !== null) {
                     \App\Domain\Classification\Models\CallClassification::create([
                         'call_log_id' => $callLog->id,
                         'user_id' => $admin->id,
                         'type' => $classificationType,
                         'reason' => $classificationType === 'BUSINESS' ? 'Client call' : ($classificationType === 'PERSONAL' ? 'Family call' : 'Spam'),
+                    ]);
+                    $classificationsCount++;
+                } else {
+                    // Default system classification (BUSINESS)
+                    \App\Domain\Classification\Models\CallClassification::create([
+                        'call_log_id' => $callLog->id,
+                        'user_id' => null,
+                        'type' => 'BUSINESS',
                     ]);
                     $classificationsCount++;
                 }

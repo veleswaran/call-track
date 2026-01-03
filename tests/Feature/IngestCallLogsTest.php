@@ -52,6 +52,14 @@ class IngestCallLogsTest extends TestCase
             'call_hash' => 'hash-1',
         ]);
 
+        // Check if default classification is created
+        $log = \App\Domain\Calls\Models\CallLog::where('call_hash', 'hash-1')->first();
+        $this->assertDatabaseHas('call_classifications', [
+            'call_log_id' => $log->id,
+            'type' => 'BUSINESS',
+            'user_id' => null,
+            'agent_id' => null,
+        ]);
     }
 
     public function test_it_rejects_invalid_token()
