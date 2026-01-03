@@ -23,6 +23,7 @@ class StoreCallLogsRequest extends FormRequest
             'logs.*.direction' => ['required', 'in:INCOMING,OUTGOING,MISSED'],
             'logs.*.duration' => ['required', 'integer', 'min:0'],
             'logs.*.timestamp' => ['required', 'date'],
+            'logs.*.sim_slot' => ['nullable', 'integer'],
         ];
     }
 }

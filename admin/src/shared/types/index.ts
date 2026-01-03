@@ -6,6 +6,9 @@ export interface User {
     name: string;
     email: string;
     email_verified_at: string | null;
+    roles?: string[];
+    two_factor_enabled?: boolean;
+    two_factor_confirmed_at?: string | null;
     created_at: string;
     updated_at: string;
 }
@@ -14,14 +17,23 @@ export interface User {
  * Call log entry from the API
  */
 export interface CallLog {
-    id: string;
-    device_id: string;
+    id: number;
+    device_id: number;
     phone_number: string;
-    contact_name: string | null;
+    contact_name?: string | null;
+    contact_notes?: string | null;
     call_type: "incoming" | "outgoing" | "missed";
     duration: number;
     timestamp: string;
     classification: CallClassification | null;
+    notes?: CallNote[];
+    created_at: string;
+}
+
+export interface CallNote {
+    id: number;
+    note: string;
+    agent_id: number | null;
     created_at: string;
 }
 
@@ -34,8 +46,8 @@ export type CallClassificationType = "business" | "personal" | "ignored";
  * Call classification record
  */
 export interface CallClassification {
-    id: string;
-    call_log_id: string;
+    id: number;
+    call_log_id?: number;
     classification: CallClassificationType;
     classified_by: number;
     classified_at: string;
@@ -45,14 +57,15 @@ export interface CallClassification {
  * Device registered in the system
  */
 export interface Device {
-    id: string;
+    id: number;
     device_identifier: string;
     device_name: string | null;
     device_model: string | null;
     os_version: string | null;
     app_version: string | null;
     status: "active" | "suspended";
-    agent_id: string | null;
+    agent_id: number | null;
+    tracked_sim_slots: number[] | null;
     last_sync_at: string | null;
     created_at: string;
     updated_at: string;
@@ -62,11 +75,10 @@ export interface Device {
  * Sales agent
  */
 export interface Agent {
-    id: string;
+    id: number;
     name: string;
-    email: string;
+    employee_code: string | null;
     status: "active" | "inactive";
-    phone: string | null;
     devices_count?: number;
     created_at: string;
     updated_at: string;
@@ -76,7 +88,7 @@ export interface Agent {
  * Contact saved from calls
  */
 export interface Contact {
-    id: string;
+    id: number;
     phone_number: string;
     name: string;
     company: string | null;
@@ -104,6 +116,13 @@ export interface PaginatedResponse<T> {
         prev: string | null;
         next: string | null;
     };
+}
+
+/**
+ * Single resource API response
+ */
+export interface ResourceResponse<T> {
+    data: T;
 }
 
 /**
@@ -136,4 +155,18 @@ export interface DashboardMetrics {
     total_devices: number;
     active_devices: number;
     total_agents: number;
+    // Week-over-week comparison percentages
+    total_calls_change_percent: number | null;
+    active_devices_change_percent: number | null;
+    average_call_duration_change_percent: number | null;
+    total_duration_change_percent: number | null;
+}
+
+export interface TwoFactorSetupResponse {
+    secret: string;
+    qr_code_url: string;
+}
+
+export interface RecoveryCodesResponse {
+    recovery_codes: string[];
 }

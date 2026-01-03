@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { X, Contact, Settings, LogOut } from "lucide-react";
-import { cn } from "@shared/utils/utils";
+import { cn } from "@shared/utils";
 import { Button } from "@shared/components/ui/button";
 
 export interface MobileMenuProps {

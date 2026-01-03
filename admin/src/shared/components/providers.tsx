@@ -3,6 +3,7 @@
 import * as React from "react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { createQueryClient } from "@shared/api/query-client";
+import { Toaster } from "@shared/components/ui/sonner";
 
 /**
  * Global providers for the application
@@ -13,6 +14,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
     const [queryClient] = React.useState(() => createQueryClient());
 
     return (
-        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+        <QueryClientProvider client={queryClient}>
+            {children}
+            <Toaster />
+        </QueryClientProvider>
     );
 }

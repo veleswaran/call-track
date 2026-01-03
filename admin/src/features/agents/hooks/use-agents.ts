@@ -50,7 +50,7 @@ export function useCreateAgent() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: async (data: { name: string; email: string; phone?: string }) => {
+        mutationFn: async (data: { name: string; employee_code?: string; status: string }) => {
             const response = await api.post<ResourceResponse<Agent>>(
                 "/api/v1/admin/agents",
                 data
@@ -75,7 +75,7 @@ export function useUpdateAgent() {
             data,
         }: {
             id: number;
-            data: { name?: string; email?: string; phone?: string };
+            data: { name?: string; employee_code?: string; status?: string };
         }) => {
             const response = await api.put<ResourceResponse<Agent>>(
                 `/api/v1/admin/agents/${id}`,
@@ -99,6 +99,63 @@ export function useDeleteAgent() {
     return useMutation({
         mutationFn: (id: number) => api.delete(`/api/v1/admin/agents/${id}`),
         onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: agentKeys.lists() });
+        },
+    });
+}
+
+/**
+ * Query keys for devices
+ */
+export const deviceKeys = {
+    all: ["devices"] as const,
+    lists: () => [...deviceKeys.all, "list"] as const,
+};
+
+/**
+ * Fetch devices list
+ */
+export function useDevices() {
+    return useQuery({
+        queryKey: deviceKeys.lists(),
+        queryFn: () =>
+            api.get<{ data: Array<{ id: number; device_identifier: string; device_name: string | null; agent_id: number | null }> }>(
+                "/api/v1/admin/devices"
+            ),
+    });
+}
+
+/**
+ * Assign agent to a device
+ */
+export function useAssignDevice() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async ({ deviceId, agentId }: { deviceId: number; agentId: number }) => {
+            return api.post(`/api/v1/admin/devices/${deviceId}/assign-agent`, {
+                agent_id: agentId,
+            });
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: deviceKeys.lists() });
+            queryClient.invalidateQueries({ queryKey: agentKeys.lists() });
+        },
+    });
+}
+
+/**
+ * Unassign agent from a device
+ */
+export function useUnassignDevice() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (deviceId: number) => {
+            return api.post(`/api/v1/admin/devices/${deviceId}/unassign-agent`);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: deviceKeys.lists() });
             queryClient.invalidateQueries({ queryKey: agentKeys.lists() });
         },
     });

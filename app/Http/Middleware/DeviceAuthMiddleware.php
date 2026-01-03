@@ -2,12 +2,18 @@
 
 namespace App\Http\Middleware;
 
+use App\Contracts\Services\DeviceTokenServiceInterface;
+use App\Domain\Devices\DTOs\DeviceTokenValidationResult;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class DeviceAuthMiddleware
 {
+    public function __construct(
+        protected DeviceTokenServiceInterface $tokenService
+    ) {}
+
     /**
      * Handle an incoming request.
      *
@@ -18,20 +24,25 @@ class DeviceAuthMiddleware
         $token = $request->header('X-Device-Token');
 
         if (! $token) {
-            return response()->json(['message' => 'Device Token Missing'], 401);
+            return response()->json([
+                'message' => 'Device Token Missing',
+                'error_code' => DeviceTokenValidationResult::ERROR_MISSING,
+            ], 401);
         }
 
-        $deviceToken = \App\Domain\Devices\Models\DeviceToken::with('device')
-            ->where('token', $token)
-            ->first();
+        $result = $this->tokenService->validateToken($token);
 
-        if (! $deviceToken) {
-            return response()->json(['message' => 'Invalid Device Token'], 401);
+        if (! $result->isValid) {
+            return response()->json([
+                'message' => 'Invalid Device Token',
+                'error_code' => $result->errorCode,
+            ], 401);
         }
 
-        $deviceToken->forceFill(['last_used_at' => now()])->save();
+        // Get the device model (optimization: could be cached or loaded via service)
+        $device = \App\Domain\Devices\Models\Device::find($result->deviceId);
 
-        $request->attributes->set('device', $deviceToken->device);
+        $request->attributes->set('device', $device);
 
         return $next($request);
     }

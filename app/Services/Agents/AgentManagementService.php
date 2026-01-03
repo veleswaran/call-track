@@ -32,13 +32,20 @@ class AgentManagementService implements AgentManagementServiceInterface
         return $this->updateAgentAction->execute($agent, $data);
     }
 
-    public function assignDevice(Device $device, Agent $agent): Device
+    public function assignDevice(Device $device, int $agentId): Device
     {
+        $agent = Agent::findOrFail($agentId); // Or validation handles ensure it exists
+
         return $this->assignAction->execute($device, $agent);
     }
 
     public function unassignDevice(Device $device): Device
     {
         return $this->unassignAction->execute($device);
+    }
+
+    public function getAgentsList(int $perPage = 20): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    {
+        return Agent::withCount('devices')->latest()->paginate($perPage);
     }
 }

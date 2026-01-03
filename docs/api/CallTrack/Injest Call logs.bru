@@ -1,0 +1,36 @@
+meta {
+  name: Injest Call logs
+  type: http
+  seq: 5
+}
+
+post {
+  url: http://127.0.0.1:8000/api/v1/call-logs/sync
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+  X-Device-Token: I8tG5avxAT2hFOh4vgbXXeRQQBNcGNqlbpEBPJhBa9qKNZVChUDmOGgvhhn2
+}
+
+body:json {
+  {
+    "logs": [
+      {
+        "call_hash": "dfg4b6rreyghebfdhdgdghdfhh",
+        "phone_number": "+919952507804",
+        "direction": "OUTGOING",
+        "duration": 50,
+        "timestamp": "2025-12-31T14:15:22Z",
+        "sim_slot": 0
+      }
+    ]
+  }
+}
+
+settings {
+  encodeUrl: true
+}

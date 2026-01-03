@@ -17,6 +17,13 @@ describe("MobileMenu", () => {
     beforeEach(() => {
         vi.clearAllMocks();
         document.body.style.overflow = "";
+        // Suppress jsdom navigation warning
+        vi.spyOn(console, "error").mockImplementation((msg) => {
+            if (typeof msg === "string" && msg.includes("Not implemented: navigation")) {
+                return;
+            }
+            console.warn(msg);
+        });
     });
 
     it("should render menu when open", () => {

@@ -33,10 +33,9 @@ function createWrapper() {
 const mockAgent: Agent = {
     id: 1,
     name: "John Doe",
-    email: "john@example.com",
-    phone: "123-456-7890",
-    is_active: true,
-    device_count: 2,
+    employee_code: "EMP001",
+    status: "active",
+    devices_count: 2,
     created_at: "2024-01-01T00:00:00Z",
     updated_at: "2024-01-01T00:00:00Z",
 };
@@ -92,7 +91,7 @@ describe("useAgents", () => {
 
 describe("useAgent", () => {
     it("should fetch single agent by ID", async () => {
-        vi.mocked(api.get).mockResolvedValueOnce(mockAgent);
+        vi.mocked(api.get).mockResolvedValueOnce({ data: mockAgent });
 
         const { result } = renderHook(() => useAgent(1), {
             wrapper: createWrapper(),

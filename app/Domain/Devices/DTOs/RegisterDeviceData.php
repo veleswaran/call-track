@@ -7,10 +7,12 @@ namespace App\Domain\Devices\DTOs;
 class RegisterDeviceData
 {
     public function __construct(
+        public readonly string $deviceUuid,
         public readonly string $name,
         public readonly string $model,
         public readonly string $osVersion,
         public readonly string $appVersion,
+        public readonly ?array $trackedSimSlots = null,
     ) {}
 
     /**
@@ -19,10 +21,12 @@ class RegisterDeviceData
     public static function fromArray(array $data): self
     {
         return new self(
+            deviceUuid: (string) $data['device_uuid'],
             name: (string) $data['name'],
             model: (string) $data['model'],
             osVersion: (string) $data['os_version'],
             appVersion: (string) $data['app_version'],
+            trackedSimSlots: $data['tracked_sim_slots'] ?? null,
         );
     }
 }

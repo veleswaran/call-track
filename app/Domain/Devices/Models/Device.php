@@ -9,6 +9,19 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property int $id
+ * @property string $device_uuid
+ * @property string $name
+ * @property string $model
+ * @property string|null $os_version
+ * @property string|null $app_version
+ * @property int|null $agent_id
+ * @property \Illuminate\Support\Carbon $created_at
+ * @property \Illuminate\Support\Carbon $updated_at
+ * @property bool|null $active_tokens_exists
+ * @property array|null $tracked_sim_slots
+ */
 class Device extends Model
 {
     use HasFactory;
@@ -24,13 +37,27 @@ class Device extends Model
      * @var list<string>
      */
     protected $fillable = [
+        'device_uuid',
         'name',
         'model',
         'os_version',
         'app_version',
         'user_id',
         'agent_id',
+        'tracked_sim_slots',
     ];
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'tracked_sim_slots' => 'array',
+        ];
+    }
 
     public function agent(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
@@ -40,6 +67,11 @@ class Device extends Model
     public function tokens(): HasMany
     {
         return $this->hasMany(DeviceToken::class);
+    }
+
+    public function activeTokens(): HasMany
+    {
+        return $this->hasMany(DeviceToken::class)->active();
     }
 
     public function callLogs(): HasMany

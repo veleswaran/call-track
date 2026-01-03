@@ -20,7 +20,7 @@ class AgentController extends Controller
 
     public function index(): JsonResponse
     {
-        return response()->json(Agent::paginate(20));
+        return response()->json($this->service->getAgentsList());
     }
 
     public function store(StoreAgentRequest $request): JsonResponse

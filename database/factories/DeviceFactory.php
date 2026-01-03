@@ -20,6 +20,7 @@ class DeviceFactory extends Factory
     public function definition(): array
     {
         return [
+            'device_uuid' => $this->faker->uuid,
             'name' => $this->faker->word,
             'model' => $this->faker->word,
             'os_version' => $this->faker->numerify('#.#'),

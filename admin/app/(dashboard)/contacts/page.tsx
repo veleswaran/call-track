@@ -1,7 +1,17 @@
+"use client";
+
 /**
  * Contacts page - displays saved contacts from calls
  */
+import { useState } from "react";
+import { ContactsList } from "@features/contacts/components/contacts-list";
+import { AddContactDialog } from "@features/contacts/components/add-contact-dialog";
+import { Button } from "@shared/components/ui/button";
+import { Plus } from "lucide-react";
+
 export default function ContactsPage() {
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -11,14 +21,18 @@ export default function ContactsPage() {
                         Saved contacts from call logs
                     </p>
                 </div>
+                <Button onClick={() => setIsDialogOpen(true)}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Contact
+                </Button>
             </div>
 
-            {/* Placeholder for contacts list */}
-            <div className="rounded-lg border border-dashed border-zinc-300 p-8 text-center dark:border-zinc-700">
-                <p className="text-zinc-500 dark:text-zinc-400">
-                    Contacts list will appear here
-                </p>
-            </div>
+            <ContactsList />
+
+            <AddContactDialog
+                open={isDialogOpen}
+                onOpenChange={setIsDialogOpen}
+            />
         </div>
     );
 }

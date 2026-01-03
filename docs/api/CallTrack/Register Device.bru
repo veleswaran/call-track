@@ -1,0 +1,31 @@
+meta {
+  name: Register Device
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://127.0.0.1:8000/api/v1/devices/register
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "code": "MWTO36",
+    "device_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "device_name": "Realme GT Device",
+    "device_model": "realme GT",
+    "os_version": "14",
+    "app_version": "1.0.0",
+    "tracked_sim_slots": [0]
+  }
+}
+
+settings {
+  encodeUrl: true
+}

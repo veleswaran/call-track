@@ -1,0 +1,29 @@
+meta {
+  name: Call Classify
+  type: http
+  seq: 6
+}
+
+post {
+  url: http://127.0.0.1:8000/api/v1/call-logs/4edsfgsdgheryherehdfh/classify
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+  X-Device-Token: ZPxVy513UwwAbkIM7xunDrWVt2LkCAjJeh5dtJZFA7Tc4Ip0rchNd2W9FGkp
+}
+
+body:json {
+  {
+    "type": "BUSINESS",
+    "note": "He will get back on 2nd week of Jan"
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+}

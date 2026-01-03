@@ -11,9 +11,17 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CallNote extends Model
 {
+    use \Illuminate\Database\Eloquent\Factories\HasFactory;
+
+    protected static function newFactory()
+    {
+        return \Database\Factories\CallNoteFactory::new();
+    }
+
     protected $fillable = [
         'call_log_id',
         'user_id',
+        'agent_id',
         'note',
     ];
 
@@ -25,5 +33,10 @@ class CallNote extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function agent(): BelongsTo
+    {
+        return $this->belongsTo(\App\Domain\Agents\Models\Agent::class);
     }
 }

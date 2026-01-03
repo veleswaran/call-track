@@ -4,27 +4,37 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
-use App\Actions\Devices\RegisterDeviceAction;
-use App\Domain\Devices\DTOs\RegisterDeviceData;
+use App\Domain\Devices\Models\Device;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\RegisterDeviceRequest;
-use Illuminate\Http\JsonResponse;
 
 class DeviceRegistrationController extends Controller
 {
     public function __construct(
-        protected RegisterDeviceAction $registerDeviceAction
+        protected \App\Contracts\Services\DeviceRegistrationServiceInterface $service
     ) {}
 
-    public function store(RegisterDeviceRequest $request): JsonResponse
+    /**
+     * Register a new device using a registration code
+     */
+    public function store(\App\Http\Requests\RegisterDeviceWithCodeRequest $request): \Illuminate\Http\JsonResponse
     {
-        $dto = RegisterDeviceData::fromArray($request->validated());
+        $dto = \App\Domain\Devices\DTOs\RegisterDeviceData::fromArray([
+            'device_uuid' => $request->validated('device_uuid'),
+            'name' => $request->validated('device_name'),
+            'model' => $request->validated('device_model'),
+            'os_version' => $request->validated('os_version'),
+            'app_version' => $request->validated('app_version'),
+            'tracked_sim_slots' => $request->validated('tracked_sim_slots'),
+        ]);
 
-        $result = $this->registerDeviceAction->execute($dto);
+        $result = $this->service->registerDevice(
+            $request->validated('code'),
+            $dto
+        );
 
         return response()->json([
             'message' => 'Device registered successfully',
-            'device_id' => $result['device']->id,
+            'device_id' => $result['device_id'],
             'token' => $result['token'],
         ], 201);
     }

@@ -4,23 +4,28 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Admin;
 
-use App\Domain\Calls\Models\CallLog;
+use App\Contracts\Services\CallLogQueryServiceContract;
+use App\Domain\Calls\DTOs\ListCallLogsDTO;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\IndexCallLogsRequest;
 use App\Http\Resources\CallLogResource;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class CallLogController extends Controller
 {
+    public function __construct(
+        private readonly CallLogQueryServiceContract $service,
+    ) {}
+
     /**
      * List all call logs
      */
-    public function index(Request $request): AnonymousResourceCollection
+    public function index(IndexCallLogsRequest $request): AnonymousResourceCollection
     {
-        $query = CallLog::query()->with('classification')->latest();
+        $dto = ListCallLogsDTO::fromRequest($request);
 
-        $callLogs = $query->paginate($request->input('per_page', 15));
+        $paginator = $this->service->list($dto);
 
-        return CallLogResource::collection($callLogs);
+        return CallLogResource::collection($paginator);
     }
 }

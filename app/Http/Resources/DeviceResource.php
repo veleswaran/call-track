@@ -7,6 +7,9 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin \App\Domain\Devices\Models\Device
+ */
 class DeviceResource extends JsonResource
 {
     /**
@@ -23,7 +26,8 @@ class DeviceResource extends JsonResource
             'device_model' => $this->model,
             'os_version' => $this->os_version,
             'app_version' => $this->app_version,
-            'status' => 'active', // Placeholder until we have real status logic or column
+            'tracked_sim_slots' => $this->tracked_sim_slots,
+            'status' => $this->active_tokens_exists ? 'active' : 'inactive',
             'agent_id' => $this->agent_id,
             'last_sync_at' => $this->created_at, // Placeholder or use specialized query
             'created_at' => $this->created_at,

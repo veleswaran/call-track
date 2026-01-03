@@ -23,6 +23,7 @@ export interface CallLogFilters {
     call_type?: "incoming" | "outgoing" | "missed";
     date_from?: string;
     date_to?: string;
+    search?: string;
 }
 
 /**

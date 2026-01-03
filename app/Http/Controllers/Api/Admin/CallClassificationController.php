@@ -17,18 +17,13 @@ class CallClassificationController extends Controller
     /**
      * Classify a call log.
      */
-    public function store(Request $request, string $id): JsonResponse
+    public function store(\App\Http\Requests\StoreClassificationRequest $request, string $id): JsonResponse
     {
-        $validated = $request->validate([
-            'type' => ['required', 'string', 'in:BUSINESS,PERSONAL,IGNORED'],
-            'reason' => ['nullable', 'string', 'max:500'],
-        ]);
-
         $dto = new CallClassificationDTO(
             callLogId: (int) $id,
             adminUserId: (int) $request->user()->id,
-            type: $validated['type'],
-            reason: $validated['reason'] ?? null,
+            type: $request->validated('type'),
+            reason: $request->validated('reason'),
         );
 
         $this->governanceService->classifyCall($dto);

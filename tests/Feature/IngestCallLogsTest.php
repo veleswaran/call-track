@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Domain\Devices\Models\DeviceToken;
-use App\Jobs\ProcessCallLogAnalytics;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Queue;
@@ -17,8 +16,11 @@ class IngestCallLogsTest extends TestCase
     {
         Queue::fake();
 
-        $tokenRecord = DeviceToken::factory()->create();
-        $token = $tokenRecord->token;
+        $plainToken = \Illuminate\Support\Str::random(60);
+        $tokenRecord = DeviceToken::factory()->create([
+            'token_hash' => hash('sha256', $plainToken),
+        ]);
+        $token = $plainToken;
 
         $payload = [
             'logs' => [
@@ -40,7 +42,7 @@ class IngestCallLogsTest extends TestCase
         ];
 
         $response = $this->withHeader('X-Device-Token', $token)
-            ->postJson('/api/v1/call-logs/bulk', $payload);
+            ->postJson('/api/v1/call-logs/sync', $payload);
 
         $response->assertOk(); // 200
 
@@ -50,7 +52,14 @@ class IngestCallLogsTest extends TestCase
             'call_hash' => 'hash-1',
         ]);
 
-        Queue::assertPushed(ProcessCallLogAnalytics::class);
+        // Check if default classification is created
+        $log = \App\Domain\Calls\Models\CallLog::where('call_hash', 'hash-1')->first();
+        $this->assertDatabaseHas('call_classifications', [
+            'call_log_id' => $log->id,
+            'type' => 'BUSINESS',
+            'user_id' => null,
+            'agent_id' => null,
+        ]);
     }
 
     public function test_it_rejects_invalid_token()
@@ -58,14 +67,17 @@ class IngestCallLogsTest extends TestCase
         $payload = ['logs' => []];
 
         $response = $this->withHeader('X-Device-Token', 'invalid-token')
-            ->postJson('/api/v1/call-logs/bulk', $payload);
+            ->postJson('/api/v1/call-logs/sync', $payload);
 
         $response->assertUnauthorized();
     }
 
     public function test_it_validates_payload()
     {
-        $tokenRecord = DeviceToken::factory()->create();
+        $plainToken = \Illuminate\Support\Str::random(60);
+        $tokenRecord = DeviceToken::factory()->create([
+            'token_hash' => hash('sha256', $plainToken),
+        ]);
 
         $payload = [
             'logs' => [
@@ -75,8 +87,8 @@ class IngestCallLogsTest extends TestCase
             ],
         ];
 
-        $response = $this->withHeader('X-Device-Token', $tokenRecord->token)
-            ->postJson('/api/v1/call-logs/bulk', $payload);
+        $response = $this->withHeader('X-Device-Token', $plainToken)
+            ->postJson('/api/v1/call-logs/sync', $payload);
 
         $response->assertUnprocessable();
     }

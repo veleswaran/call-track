@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { Menu, Bell, User, LogOut } from "lucide-react";
 import { Button } from "@shared/components/ui/button";
 
@@ -67,6 +68,15 @@ export function Header({ onMenuClick, userName = "Admin", onLogout }: HeaderProp
                             <div className="px-4 py-1 text-sm font-medium text-zinc-900 dark:text-white">
                                 {userName}
                             </div>
+                            <hr className="my-1 border-zinc-200 dark:border-zinc-800" />
+                            <Link
+                                href="/profile"
+                                className="flex w-full items-center gap-2 px-4 py-2 text-sm text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                                onClick={() => setUserMenuOpen(false)}
+                            >
+                                <User className="h-4 w-4" />
+                                Profile
+                            </Link>
                             <hr className="my-1 border-zinc-200 dark:border-zinc-800" />
                             {onLogout && (
                                 <button

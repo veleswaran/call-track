@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, Phone, Smartphone, Users } from "lucide-react";
-import { cn } from "@shared/utils/utils";
+import { cn } from "@shared/utils";
 
 /**
  * Primary navigation items for bottom bar

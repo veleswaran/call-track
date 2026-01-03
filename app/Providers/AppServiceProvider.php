@@ -12,6 +12,11 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(
+            \App\Contracts\Services\CallLogQueryServiceContract::class,
+            \App\Services\CallLogQueryService::class
+        );
+
+        $this->app->bind(
             \App\Contracts\Services\CallSyncServiceInterface::class,
             \App\Services\Calls\CallSyncService::class
         );
@@ -27,8 +32,48 @@ class AppServiceProvider extends ServiceProvider
         );
 
         $this->app->bind(
+            \App\Contracts\Services\DeviceRegistrationServiceInterface::class,
+            \App\Services\Devices\DeviceRegistrationService::class
+        );
+
+        $this->app->bind(
             \App\Contracts\Services\DashboardServiceContract::class,
             \App\Services\DashboardService::class
+        );
+
+        $this->app->bind(
+            \App\Contracts\Services\ContactManagementServiceInterface::class,
+            \App\Services\Contacts\ContactManagementService::class
+        );
+
+        $this->app->bind(
+            \App\Contracts\Services\CallNoteServiceInterface::class,
+            \App\Services\Calls\CallNoteService::class
+        );
+
+        $this->app->bind(
+            \App\Contracts\Services\DeviceTokenServiceInterface::class,
+            \App\Services\Devices\DeviceTokenService::class
+        );
+
+        $this->app->bind(
+            \App\Contracts\Services\UserManagementServiceInterface::class,
+            \App\Services\Users\UserManagementService::class
+        );
+
+        $this->app->bind(
+            \App\Contracts\Services\TwoFactorServiceInterface::class,
+            \App\Services\Auth\TwoFactorService::class
+        );
+
+        $this->app->bind(
+            \App\Contracts\Services\AuthServiceInterface::class,
+            \App\Services\Auth\AuthService::class
+        );
+
+        $this->app->bind(
+            \App\Contracts\Services\DeviceCodeServiceInterface::class,
+            \App\Services\Devices\DeviceCodeService::class
         );
     }
 

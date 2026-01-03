@@ -13,6 +13,17 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
+/**
+ * @property int $id
+ * @property int $device_id
+ * @property string $direction
+ * @property int $duration
+ * @property \Illuminate\Support\Carbon $timestamp
+ * @property \Illuminate\Support\Carbon $created_at
+ * @property-read Device $device
+ * @property-read CallClassification|null $classification
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, CallNote> $notes
+ */
 class CallLog extends Model
 {
     use HasFactory;
@@ -27,7 +38,9 @@ class CallLog extends Model
     protected $fillable = [
         'device_id',
         'call_hash',
-        'phone_number_hash',
+        'phone_number_hash', // We keep hash for lookups/deduplication
+        'phone_number',      // Encrypted
+        'sim_slot',
         'direction',
         'duration',
         'timestamp',
@@ -38,6 +51,8 @@ class CallLog extends Model
         'timestamp' => 'datetime',
         'created_at' => 'datetime',
         'duration' => 'integer',
+        'sim_slot' => 'integer',
+        'phone_number' => 'encrypted',
     ];
 
     public function device(): BelongsTo

@@ -32,6 +32,8 @@ class DemoDataSeeder extends Seeder
             ]
         );
 
+        $admin->assignRole('admin');
+
         $this->command->info('Created admin user: admin@calltrack.com / password');
 
         // Create agents (matching actual schema: name, employee_code, status)
@@ -50,7 +52,7 @@ class DemoDataSeeder extends Seeder
             );
         }
 
-        $this->command->info('Created ' . count($createdAgents) . ' agents');
+        $this->command->info('Created '.count($createdAgents).' agents');
 
         // Create devices (matching actual schema: name, model, os_version, app_version, agent_id)
         $devices = [
@@ -67,6 +69,7 @@ class DemoDataSeeder extends Seeder
                 ['name' => $deviceData['name']],
                 array_merge($deviceData, [
                     'agent_id' => $createdAgents[$index % count($createdAgents)]->id,
+                    'device_uuid' => Str::uuid()->toString(),
                 ])
             );
             $createdDevices[] = $device;
@@ -74,15 +77,16 @@ class DemoDataSeeder extends Seeder
             // Create device token
             DB::table('device_tokens')->insertOrIgnore([
                 'device_id' => $device->id,
-                'token' => 'demo_token_' . Str::random(40),
+                'token_hash' => 'demo_token_'.Str::random(40),
                 'device_name' => $deviceData['name'],
                 'last_used_at' => now()->subHours(rand(1, 48)),
+                'issued_at' => now(),
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
         }
 
-        $this->command->info('Created ' . count($createdDevices) . ' devices');
+        $this->command->info('Created '.count($createdDevices).' devices');
 
         // Create call logs
         $phoneNumbers = [
@@ -107,10 +111,13 @@ class DemoDataSeeder extends Seeder
                 $timestamp = now()->subDays(rand(0, 7))->subHours(rand(0, 23))->subMinutes(rand(0, 59));
                 $duration = $direction === 'MISSED' ? 0 : rand(15, 600);
 
-                $callLogId = DB::table('call_logs')->insertGetId([
+                /** @var \App\Domain\Calls\Models\CallLog $callLog */
+                $callLog = \App\Domain\Calls\Models\CallLog::create([
                     'device_id' => $device->id,
-                    'call_hash' => md5($device->id . $phoneNumber . $timestamp->timestamp . $i),
+                    'call_hash' => md5($device->id.$phoneNumber.$timestamp->timestamp.$i),
                     'phone_number_hash' => hash('sha256', $phoneNumber),
+                    'phone_number' => $phoneNumber, // Model cast will encrypt this
+                    'sim_slot' => rand(0, 1),
                     'direction' => $direction,
                     'duration' => $duration,
                     'timestamp' => $timestamp,
@@ -120,15 +127,23 @@ class DemoDataSeeder extends Seeder
                 $callLogsCount++;
 
                 // Add classification for some calls
-                $classification = $classifications[array_rand($classifications)];
-                if ($classification !== null) {
-                    DB::table('call_classifications')->insertOrIgnore([
-                        'call_log_id' => $callLogId,
+                // Add classification for some calls
+                $classificationType = $classifications[array_rand($classifications)];
+
+                if ($classificationType !== null) {
+                    \App\Domain\Classification\Models\CallClassification::create([
+                        'call_log_id' => $callLog->id,
                         'user_id' => $admin->id,
-                        'type' => $classification,
-                        'reason' => $classification === 'BUSINESS' ? 'Client call' : ($classification === 'PERSONAL' ? 'Family call' : 'Spam'),
-                        'created_at' => $timestamp->addMinutes(rand(1, 60)),
-                        'updated_at' => $timestamp->addMinutes(rand(1, 60)),
+                        'type' => $classificationType,
+                        'reason' => $classificationType === 'BUSINESS' ? 'Client call' : ($classificationType === 'PERSONAL' ? 'Family call' : 'Spam'),
+                    ]);
+                    $classificationsCount++;
+                } else {
+                    // Default system classification (BUSINESS)
+                    \App\Domain\Classification\Models\CallClassification::create([
+                        'call_log_id' => $callLog->id,
+                        'user_id' => null,
+                        'type' => 'BUSINESS',
                     ]);
                     $classificationsCount++;
                 }

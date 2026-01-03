@@ -76,9 +76,9 @@ class DashboardControllerTest extends TestCase
 
         $data = $response->json('data');
         $this->assertEquals(10, $data['total_calls']);
-        $this->assertEquals(3, $data['business_calls']);
+        $this->assertEquals(8, $data['business_calls']); // 3 explicit + 5 implicit
         $this->assertEquals(2, $data['personal_calls']);
-        $this->assertEquals(5, $data['unclassified_calls']);
+        $this->assertEquals(0, $data['unclassified_calls']);
         $this->assertEquals(2, $data['total_devices']);
         $this->assertEquals(1, $data['active_devices']); // 1 device has recent activity
         $this->assertEquals(1, $data['total_agents']);

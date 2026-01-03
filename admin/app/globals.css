@@ -12,6 +12,8 @@ body {
 @theme {
   --color-primary: #09090b;
   --color-primary-foreground: #fafafa;
+  --color-destructive: #ef4444;
+  --color-destructive-foreground: #fafafa;
 }
 
 /* Scrollbar styling for enterprise feel */

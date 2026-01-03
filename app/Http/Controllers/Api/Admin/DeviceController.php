@@ -17,7 +17,7 @@ class DeviceController extends Controller
      */
     public function index(Request $request): AnonymousResourceCollection
     {
-        $query = Device::query()->latest();
+        $query = Device::query()->withExists('activeTokens')->latest();
 
         $devices = $query->paginate($request->input('per_page', 15));
 
