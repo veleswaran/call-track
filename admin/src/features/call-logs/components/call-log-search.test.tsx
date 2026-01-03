@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { CallLogSearch } from "./call-log-search";
 import userEvent from "@testing-library/user-event";

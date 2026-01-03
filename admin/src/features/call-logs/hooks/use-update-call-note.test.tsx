@@ -1,6 +1,6 @@
 import { renderHook, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { createWrapper } from "@shared/utils/test-utils"; // You might need to check if this exists or create a wrapper
+// import { createWrapper } from "@shared/utils/test-utils"; 
 import { useUpdateCallNote } from "./use-update-call-note";
 import { api } from "@shared/api/api";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -20,9 +20,11 @@ const createTestWrapper = () => {
             },
         },
     });
-    return ({ children }: { children: React.ReactNode }) => (
+    const Wrapper = ({ children }: { children: React.ReactNode }) => (
         <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     );
+    Wrapper.displayName = "QueryClientWrapper";
+    return Wrapper;
 };
 
 describe("useUpdateCallNote", () => {

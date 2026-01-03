@@ -57,6 +57,8 @@ Route::prefix('v1')->group(function () {
 
     // 2FA Management (Session based)
     Route::middleware(['auth:sanctum'])->group(function () {
+        Route::post('/profile/password', [\App\Http\Controllers\Api\ProfileController::class, 'updatePassword']);
+
         Route::post('/auth/two-factor/enable', [\App\Http\Controllers\Api\Auth\TwoFactorController::class, 'enable']);
         Route::post('/auth/two-factor/confirm', [\App\Http\Controllers\Api\Auth\TwoFactorController::class, 'confirm']);
         Route::post('/auth/two-factor/disable', [\App\Http\Controllers\Api\Auth\TwoFactorController::class, 'disable']);

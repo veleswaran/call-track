@@ -17,7 +17,7 @@ const mockCallLog = {
     id: 1,
     phone_number: "1234567890",
     direction: "incoming",
-} as CallLog;
+} as unknown as CallLog;
 
 describe("EditNoteDialog", () => {
     beforeEach(() => {

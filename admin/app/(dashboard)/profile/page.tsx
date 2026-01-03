@@ -2,6 +2,7 @@
 
 import { useAuth } from "@features/auth/hooks/use-auth";
 import { TwoFactorSettings } from "@features/auth/components/two-factor-settings";
+import { ChangePasswordForm } from "@features/profile/components/change-password-form";
 import {
     Card,
     CardContent,
@@ -42,6 +43,8 @@ export default function ProfilePage() {
                     </div>
                 </CardContent>
             </Card>
+
+            <ChangePasswordForm />
 
             <TwoFactorSettings />
         </div>
