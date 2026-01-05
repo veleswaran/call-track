@@ -19,7 +19,7 @@ class GenerateDeviceCodeAction
         return DeviceRegistrationCode::create([
             'code' => $code,
             'agent_id' => $dto->agentId,
-            'expires_at' => now()->addHours($dto->expiresInHours),
+            'expires_at' => $dto->expiresInHours !== null ? now()->addHours($dto->expiresInHours) : null,
         ]);
     }
 }

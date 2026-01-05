@@ -8,6 +8,6 @@ readonly class GenerateDeviceCodeDTO
 {
     public function __construct(
         public int $agentId,
-        public int $expiresInHours = 24,
+        public ?int $expiresInHours = null,
     ) {}
 }

@@ -20,12 +20,12 @@ class DeviceCodeController extends Controller
     {
         $validated = $request->validate([
             'agent_id' => 'required|exists:agents,id',
-            'expires_in_hours' => 'nullable|integer|min:1|max:48',
+            'expires_in_hours' => 'nullable|integer|min:1',
         ]);
 
         $dto = new \App\Domain\Devices\DTOs\GenerateDeviceCodeDTO(
             agentId: (int) $validated['agent_id'],
-            expiresInHours: (int) ($validated['expires_in_hours'] ?? 24)
+            expiresInHours: isset($validated['expires_in_hours']) ? (int) $validated['expires_in_hours'] : null
         );
 
         $registrationCode = $this->deviceCodeService->generateCode($dto);
