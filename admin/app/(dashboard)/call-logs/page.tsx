@@ -10,6 +10,7 @@ import {
     TableRow,
 } from "@shared/components/ui/table";
 import { format } from "date-fns";
+import { formatInTimeZone } from "date-fns-tz";
 import { PhoneIncoming, PhoneOutgoing, PhoneMissed } from "lucide-react";
 import { CallActions } from "@features/call-logs/components/call-actions";
 import { formatDuration } from "@shared/utils/time";
@@ -142,7 +143,7 @@ export default function CallLogsPage() {
                                                 </span>
                                             </TableCell>
                                             <TableCell>
-                                                {format(new Date(log.timestamp), "MMM d, h:mm a")}
+                                                {formatInTimeZone(new Date(log.timestamp), "Asia/Kolkata", "MMM d, h:mm a")}
                                             </TableCell>
                                             <TableCell>
                                                 <div className="flex flex-col gap-1">

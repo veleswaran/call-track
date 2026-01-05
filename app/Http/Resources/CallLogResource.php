@@ -37,7 +37,7 @@ class CallLogResource extends JsonResource
             'phone_number' => $this->phone_number, // Auto-decrypted by encrypted cast
             'call_type' => strtolower($this->direction),
             'duration' => $this->duration,
-            'timestamp' => $this->timestamp,
+            'timestamp' => $this->timestamp->toIso8601ZuluString(),
             'contact_name' => $contact?->name,
             'contact_notes' => $contact?->notes,
             'classification' => $this->classification ? [
