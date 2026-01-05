@@ -39,16 +39,7 @@ export function AsyncSelect({
     const [search, setSearch] = React.useState("");
     const [selectedLabel, setSelectedLabel] = React.useState<string>("");
 
-    // Debounce search
-    React.useEffect(() => {
-        const timer = setTimeout(() => {
-            fetchOptions(search);
-        }, 300);
-
-        return () => clearTimeout(timer);
-    }, [search]);
-
-    const fetchOptions = async (query: string) => {
+    const fetchOptions = React.useCallback(async (query: string) => {
         setLoading(true);
         try {
             const data = await loadOptions(query);
@@ -58,7 +49,16 @@ export function AsyncSelect({
         } finally {
             setLoading(false);
         }
-    };
+    }, [loadOptions]);
+
+    // Debounce search
+    React.useEffect(() => {
+        const timer = setTimeout(() => {
+            fetchOptions(search);
+        }, 300);
+
+        return () => clearTimeout(timer);
+    }, [search, fetchOptions]);
 
     // Update selected label when value changes
     React.useEffect(() => {
