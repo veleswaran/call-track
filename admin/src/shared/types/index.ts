@@ -19,6 +19,8 @@ export interface User {
 export interface CallLog {
     id: number;
     device_id: number;
+    device_name?: string | null;
+    agent_name?: string | null;
     phone_number: string;
     contact_name?: string | null;
     contact_notes?: string | null;

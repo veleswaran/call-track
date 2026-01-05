@@ -18,6 +18,8 @@ import { cn } from "@shared/utils";
 import { format } from "date-fns";
 import { CalendarIcon, X } from "lucide-react";
 import type { CallLogFilters as FilterTypes } from "../hooks/use-call-logs";
+import { useDevices } from "@features/devices/hooks/use-devices";
+import { useAgents } from "@features/agents/hooks/use-agents";
 
 interface CallLogFiltersProps {
     filters: FilterTypes;
@@ -25,11 +27,19 @@ interface CallLogFiltersProps {
 }
 
 export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
+    const { data: devicesData } = useDevices({ page: 1, per_page: 100 });
+    const { data: agentsData } = useAgents({ page: 1, per_page: 100 });
+
+    const devices = devicesData?.data ?? [];
+    const agents = agentsData?.data ?? [];
+
     const hasFilters =
         filters.call_type ||
         filters.classification ||
         filters.date_from ||
-        filters.date_to;
+        filters.date_to ||
+        filters.device_id ||
+        filters.agent_id;
 
     const clearFilters = () => {
         onChange({
@@ -47,8 +57,50 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
         });
     };
 
+    const updateNumericFilter = (key: keyof FilterTypes, value: string) => {
+        onChange({
+            ...filters,
+            page: 1,
+            [key]: value === "all" ? undefined : parseInt(value),
+        });
+    };
+
     return (
         <div className="flex flex-wrap items-center gap-2">
+            <Select
+                value={filters.device_id?.toString() ?? "all"}
+                onValueChange={(val) => updateNumericFilter("device_id", val)}
+            >
+                <SelectTrigger className="w-[160px]">
+                    <SelectValue placeholder="Device" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="all">All Devices</SelectItem>
+                    {devices.map((device) => (
+                        <SelectItem key={device.id} value={device.id.toString()}>
+                            {device.device_name || device.device_model || `Device ${device.id}`}
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+
+            <Select
+                value={filters.agent_id?.toString() ?? "all"}
+                onValueChange={(val) => updateNumericFilter("agent_id", val)}
+            >
+                <SelectTrigger className="w-[160px]">
+                    <SelectValue placeholder="Agent" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="all">All Agents</SelectItem>
+                    {agents.map((agent) => (
+                        <SelectItem key={agent.id} value={agent.id.toString()}>
+                            {agent.name}
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+
             <Select
                 value={filters.call_type ?? "all"}
                 onValueChange={(val) => updateFilter("call_type", val)}

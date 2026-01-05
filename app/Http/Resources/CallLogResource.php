@@ -23,9 +23,17 @@ class CallLogResource extends JsonResource
         // We simply read the relation here to avoid per-row queries (N+1).
         $contact = $this->getRelationValue('contact_by_hash');
 
+        /** @var \App\Domain\Devices\Models\Device|null $device */
+        $device = $this->getRelationValue('device');
+
+        /** @var \App\Domain\Agents\Models\Agent|null $agent */
+        $agent = $device?->agent;
+
         return [
             'id' => $this->id,
             'device_id' => $this->device_id,
+            'device_name' => $device?->name,
+            'agent_name' => $agent?->name,
             'phone_number' => $this->phone_number, // Auto-decrypted by encrypted cast
             'call_type' => strtolower($this->direction),
             'duration' => $this->duration,

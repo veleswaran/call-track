@@ -16,7 +16,7 @@ final class BuildCallLogQueryAction
     public function execute(ListCallLogsDTO $dto): Builder
     {
         $query = CallLog::query()
-            ->with('classification')
+            ->with(['classification', 'device.agent'])
             ->orderByDesc('timestamp');
 
         if ($dto->deviceId !== null) {
@@ -59,7 +59,11 @@ final class BuildCallLogQueryAction
             });
         }
 
-        // agentId filter intentionally omitted until device-agent relationship is defined
+        if ($dto->agentId !== null) {
+            $query->whereHas('device', function (Builder $q) use ($dto): void {
+                $q->where('agent_id', $dto->agentId);
+            });
+        }
 
         return $query;
     }
