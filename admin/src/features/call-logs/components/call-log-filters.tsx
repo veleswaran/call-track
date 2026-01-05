@@ -14,12 +14,13 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@shared/components/ui/select";
+import { AsyncSelect } from "@shared/components/async-select";
 import { cn } from "@shared/utils";
 import { format } from "date-fns";
 import { CalendarIcon, X } from "lucide-react";
 import type { CallLogFilters as FilterTypes } from "../hooks/use-call-logs";
-import { useDevices } from "@features/devices/hooks/use-devices";
-import { useAgents } from "@features/agents/hooks/use-agents";
+import { api } from "@shared/api/api";
+import type { PaginatedResponse, Device, Agent } from "@shared/types";
 
 interface CallLogFiltersProps {
     filters: FilterTypes;
@@ -27,12 +28,6 @@ interface CallLogFiltersProps {
 }
 
 export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
-    const { data: devicesData } = useDevices({ page: 1, per_page: 100 });
-    const { data: agentsData } = useAgents({ page: 1, per_page: 100 });
-
-    const devices = devicesData?.data ?? [];
-    const agents = agentsData?.data ?? [];
-
     const hasFilters =
         filters.call_type ||
         filters.classification ||
@@ -65,41 +60,56 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
         });
     };
 
+    // Load functions for AsyncSelect
+    const loadDevices = async (search: string) => {
+        try {
+            const response = await api.get<PaginatedResponse<Device>>(
+                `/api/v1/admin/devices?page=1&per_page=20&search=${encodeURIComponent(search)}`
+            );
+            return response.data.map((d) => ({
+                label: d.device_name || d.device_model || `Device ${d.id}`,
+                value: d.id.toString(),
+            }));
+        } catch (e) {
+            console.error(e);
+            return [];
+        }
+    };
+
+    const loadAgents = async (search: string) => {
+        try {
+            const response = await api.get<PaginatedResponse<Agent>>(
+                `/api/v1/admin/agents?page=1&per_page=20&search=${encodeURIComponent(search)}`
+            );
+            return response.data.map((a) => ({
+                label: a.name,
+                value: a.id.toString(),
+            }));
+        } catch (e) {
+            console.error(e);
+            return [];
+        }
+    };
+
     return (
         <div className="flex flex-wrap items-center gap-2">
-            <Select
-                value={filters.device_id?.toString() ?? "all"}
-                onValueChange={(val) => updateNumericFilter("device_id", val)}
-            >
-                <SelectTrigger className="w-[160px]">
-                    <SelectValue placeholder="Device" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="all">All Devices</SelectItem>
-                    {devices.map((device) => (
-                        <SelectItem key={device.id} value={device.id.toString()}>
-                            {device.device_name || device.device_model || `Device ${device.id}`}
-                        </SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
+            <AsyncSelect
+                label="Device"
+                placeholder="Device..."
+                value={filters.device_id?.toString()}
+                onChange={(val) => updateNumericFilter("device_id", val)}
+                loadOptions={loadDevices}
+                className="w-[160px]"
+            />
 
-            <Select
-                value={filters.agent_id?.toString() ?? "all"}
-                onValueChange={(val) => updateNumericFilter("agent_id", val)}
-            >
-                <SelectTrigger className="w-[160px]">
-                    <SelectValue placeholder="Agent" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="all">All Agents</SelectItem>
-                    {agents.map((agent) => (
-                        <SelectItem key={agent.id} value={agent.id.toString()}>
-                            {agent.name}
-                        </SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
+            <AsyncSelect
+                label="Agent"
+                placeholder="Agent..."
+                value={filters.agent_id?.toString()}
+                onChange={(val) => updateNumericFilter("agent_id", val)}
+                loadOptions={loadAgents}
+                className="w-[160px]"
+            />
 
             <Select
                 value={filters.call_type ?? "all"}

@@ -53,9 +53,10 @@ final class BuildCallLogQueryAction
                         ->whereRaw('LOWER(name) LIKE ?', ["%{$termLower}%"]);
                 });
 
-                // 2. Search by Exact Phone Number
-                // We hash the input exactly as is.
-                $q->orWhere('phone_number_hash', hash('sha256', $searchTerm));
+                // 2. Search by Phone Number (normalized)
+                // Normalize search input to match stored normalized hash
+                $normalizedSearch = \App\Support\PhoneNormalizer::normalize($searchTerm);
+                $q->orWhere('phone_number_hash', hash('sha256', $normalizedSearch));
             });
         }
 

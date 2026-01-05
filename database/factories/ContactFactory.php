@@ -15,7 +15,7 @@ class ContactFactory extends Factory
 
         return [
             'name' => $this->faker->name,
-            'phone_hash' => hash('sha256', $phone),
+            'phone_hash' => hash('sha256', \App\Support\PhoneNormalizer::normalize($phone)),
             'phone_number' => $phone, // Encrypted by cast
             'created_at' => now(),
             'updated_at' => now(),

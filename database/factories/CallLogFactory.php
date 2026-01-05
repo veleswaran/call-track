@@ -15,7 +15,7 @@ class CallLogFactory extends Factory
         return [
             'device_id' => Device::factory(),
             'call_hash' => $this->faker->uuid,
-            'phone_number_hash' => hash('sha256', $this->faker->phoneNumber),
+            'phone_number_hash' => hash('sha256', \App\Support\PhoneNormalizer::normalize($this->faker->phoneNumber)),
             'direction' => $this->faker->randomElement(['incoming', 'outgoing', 'missed']),
             'duration' => $this->faker->numberBetween(0, 3600),
             'timestamp' => now()->toDateTimeString(),

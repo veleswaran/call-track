@@ -44,8 +44,16 @@ class AgentManagementService implements AgentManagementServiceInterface
         return $this->unassignAction->execute($device);
     }
 
-    public function getAgentsList(int $perPage = 20): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    public function getAgentsList(int $perPage = 20, ?string $search = null): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
-        return Agent::withCount('devices')->latest()->paginate($perPage);
+        return Agent::withCount('devices')
+            ->when($search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('employee_code', 'like', "%{$search}%");
+                });
+            })
+            ->latest()
+            ->paginate($perPage);
     }
 }

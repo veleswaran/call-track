@@ -29,7 +29,8 @@ final class EnrichCallLogsWithContactsAction
         $hashes = [];
         foreach ($collection as $log) {
             $phone = (string) $log->phone_number; // decrypted via cast
-            $hashes[] = hash('sha256', $phone);
+            $normalizedPhone = \App\Support\PhoneNormalizer::normalize($phone);
+            $hashes[] = hash('sha256', $normalizedPhone);
         }
 
         if ($hashes === []) {
@@ -51,7 +52,8 @@ final class EnrichCallLogsWithContactsAction
 
         foreach ($collection as $log) {
             $phone = (string) $log->phone_number;
-            $hash = hash('sha256', $phone);
+            $normalizedPhone = \App\Support\PhoneNormalizer::normalize($phone);
+            $hash = hash('sha256', $normalizedPhone);
             $log->setRelation('contact_by_hash', $map->get($hash));
         }
 

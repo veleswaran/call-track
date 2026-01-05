@@ -125,4 +125,28 @@ class RegisterDeviceTest extends TestCase
             'name' => 'Device v2',
         ]);
     }
+
+    public function test_it_registers_with_non_expiring_code()
+    {
+        $agent = \App\Domain\Agents\Models\Agent::factory()->create();
+        $code = \App\Domain\Devices\Models\DeviceRegistrationCode::create([
+            'code' => 'PERMCODE',
+            'agent_id' => $agent->id,
+            'expires_at' => null, // Never expires
+        ]);
+
+        $payload = [
+            'code' => 'PERMCODE',
+            'device_uuid' => \Illuminate\Support\Str::uuid()->toString(),
+            'device_name' => 'Permanent Device',
+        ];
+
+        $response = $this->postJson('/api/v1/devices/register', $payload);
+
+        $response->assertCreated();
+        $this->assertDatabaseHas('devices', [
+            'name' => 'Permanent Device',
+            'agent_id' => $agent->id,
+        ]);
+    }
 }

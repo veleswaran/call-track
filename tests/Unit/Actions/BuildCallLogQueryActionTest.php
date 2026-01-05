@@ -24,12 +24,12 @@ class BuildCallLogQueryActionTest extends TestCase
         $this->action = new BuildCallLogQueryAction;
     }
 
-    #[Test]
     public function it_filters_by_search_term_matching_phone_number(): void
     {
         // 1. Create a call log with a specific phone number
         $phoneNumber = '+15551234567';
-        $hash = hash('sha256', $phoneNumber);
+        // Phone is normalized before hashing: +15551234567 → 15551234567
+        $hash = hash('sha256', '15551234567');
 
         CallLog::factory()->create([
             'phone_number_hash' => $hash,
@@ -39,7 +39,7 @@ class BuildCallLogQueryActionTest extends TestCase
 
         // Create unrelated
         CallLog::factory()->create([
-            'phone_number_hash' => hash('sha256', '+1999999999'),
+            'phone_number_hash' => hash('sha256', '1999999999'),
         ]);
 
         // Search for exact phone number

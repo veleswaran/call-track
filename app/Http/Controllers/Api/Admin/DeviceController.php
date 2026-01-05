@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Admin;
 
-use App\Domain\Devices\Models\Device;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\DeviceResource;
 use Illuminate\Http\Request;
@@ -15,11 +14,12 @@ class DeviceController extends Controller
     /**
      * List all devices
      */
-    public function index(Request $request): AnonymousResourceCollection
-    {
-        $query = Device::query()->withExists('activeTokens')->latest();
-
-        $devices = $query->paginate($request->input('per_page', 15));
+    public function index(
+        Request $request,
+        \App\Actions\Devices\ListDevicesAction $listAction
+    ): AnonymousResourceCollection {
+        $dto = \App\Domain\Devices\DTOs\ListDevicesDTO::fromRequest($request);
+        $devices = $listAction->execute($dto);
 
         return DeviceResource::collection($devices);
     }

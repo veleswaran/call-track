@@ -22,10 +22,13 @@ class IngestCallLogsAction
                 continue;
             }
 
+            // Normalize phone number before hashing for consistent search
+            $normalizedPhone = \App\Support\PhoneNormalizer::normalize($log->phoneNumber);
+
             $records[] = [
                 'device_id' => $dto->device->id,
                 'call_hash' => $log->callHash,
-                'phone_number_hash' => hash('sha256', $log->phoneNumber),
+                'phone_number_hash' => hash('sha256', $normalizedPhone),
                 'phone_number' => \Illuminate\Support\Facades\Crypt::encryptString($log->phoneNumber),
                 'direction' => $log->direction,
                 'duration' => $log->duration,
