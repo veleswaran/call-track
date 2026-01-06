@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="16dp">
+
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:stretchColumns="2">
+
+        <TableRow>
+            <TextView android:text="Number:" android:textStyle="bold"/>
+            <TextView android:text="@string/colon" android:textStyle="bold"/>
+            <TextView android:id="@+id/tvDetailNumber"/>
+        </TableRow>
+
+        <TableRow>
+            <TextView android:text="Type" android:textStyle="bold"/>
+            <TextView android:text="@string/colon" android:textStyle="bold"/>
+            <TextView android:id="@+id/tvDetailType"/>
+        </TableRow>
+
+        <TableRow>
+            <TextView android:text="Date" android:textStyle="bold"/>
+            <TextView android:text="@string/colon" android:textStyle="bold"/>
+            <TextView android:id="@+id/tvDetailDate"/>
+        </TableRow>
+
+        <TableRow>
+            <TextView android:text="Duration(s)" android:textStyle="bold"/>
+            <TextView android:text="@string/colon" android:textStyle="bold"/>
+            <TextView android:id="@+id/tvDetailDuration"/>
+        </TableRow>
+
+        <TableRow>
+            <TextView android:text="SIM Slot" android:textStyle="bold"/>
+            <TextView android:text="@string/colon" android:textStyle="bold"/>
+            <TextView android:id="@+id/tvDetailSimSlot"/>
+        </TableRow>
+
+        <TableRow>
+            <TextView android:text="Carrier" android:textStyle="bold"/>
+            <TextView android:text="@string/colon" android:textStyle="bold"/>
+            <TextView android:id="@+id/tvDetailCarrier"/>
+        </TableRow>
+
+        <TableRow>
+            <TextView android:text="Category" android:textStyle="bold"/>
+            <TextView android:text="@string/colon" android:textStyle="bold"/>
+            <TextView android:id="@+id/tvDetailCategory"/>
+        </TableRow>
+
+        <TableRow>
+            <TextView android:text="Notes" android:textStyle="bold"/>
+            <TextView android:text="@string/colon" android:textStyle="bold"/>
+            <TextView android:id="@+id/tvDetailNotes"/>
+        </TableRow>
+
+        <TableRow>
+            <TextView android:text="Synced" android:textStyle="bold"/>
+            <TextView android:text="@string/colon" android:textStyle="bold"/>
+            <TextView android:id="@+id/tvSynced"/>
+        </TableRow>
+
+    </TableLayout>
+</ScrollView>
