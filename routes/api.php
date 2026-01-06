@@ -25,6 +25,12 @@ Route::prefix('v1')->group(function () {
         Route::get('/dashboard', [\App\Http\Controllers\Api\Admin\DashboardController::class, 'index']);
         Route::get('/dashboard/charts', [\App\Http\Controllers\Api\Admin\DashboardController::class, 'charts']);
 
+        Route::prefix('reports')->group(function () {
+            Route::get('/metrics', [\App\Http\Controllers\Api\Admin\ReportController::class, 'metrics']);
+            Route::get('/charts', [\App\Http\Controllers\Api\Admin\ReportController::class, 'charts']);
+            Route::get('/performance', [\App\Http\Controllers\Api\Admin\ReportController::class, 'performance']);
+        });
+
         // Device Codes
         Route::post('/devices/codes', [\App\Http\Controllers\Api\Admin\DeviceCodeController::class, 'store']);
         Route::get('/devices/codes', [\App\Http\Controllers\Api\Admin\DeviceCodeController::class, 'index']);
