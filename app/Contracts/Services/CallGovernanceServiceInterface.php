@@ -8,5 +8,7 @@ use App\Domain\Classification\DTOs\CallClassificationDTO;
 
 interface CallGovernanceServiceInterface
 {
+    public function classifyCalls(array $dtos): void;
+
     public function classifyCall(CallClassificationDTO $dto): void;
 }

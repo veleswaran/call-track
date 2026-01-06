@@ -18,4 +18,13 @@ class CallGovernanceService implements CallGovernanceServiceInterface
     {
         $this->classifyAction->execute($dto);
     }
+
+    public function classifyCalls(array $dtos): void
+    {
+        \Illuminate\Support\Facades\DB::transaction(function () use ($dtos) {
+            foreach ($dtos as $dto) {
+                $this->classifyAction->execute($dto);
+            }
+        });
+    }
 }
