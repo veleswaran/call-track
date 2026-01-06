@@ -24,7 +24,7 @@ final class ReportController extends Controller
     {
         $filters = ReportFilterDTO::fromArray($request->all());
         $data = $this->getMetricsAction->execute($filters);
-        
+
         return response()->json(['data' => $data]);
     }
 

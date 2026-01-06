@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Admin;
 
 use App\Domain\Calls\Models\CallLog;
-use App\Domain\Classification\Models\CallClassification;
 use App\Domain\Devices\Models\Device;
 use App\Domain\Users\Models\User;
 use Carbon\Carbon;
@@ -17,6 +16,7 @@ class ReportControllerTest extends TestCase
     use RefreshDatabase;
 
     private User $admin;
+
     private Device $device;
 
     private \App\Domain\Agents\Models\Agent $agent;
@@ -24,13 +24,13 @@ class ReportControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Create role if not exists
         \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
-        
+
         $this->admin = User::factory()->create();
         $this->admin->assignRole('admin');
-        
+
         // Create Agent and linked Device
         $this->agent = \App\Domain\Agents\Models\Agent::factory()->create();
         $this->device = Device::factory()->create(['agent_id' => $this->agent->id]);
@@ -54,11 +54,11 @@ class ReportControllerTest extends TestCase
             'duration' => 60,
         ]);
 
-        $response = $this->actingAs($this->admin)->getJson('/api/v1/admin/reports/metrics?start_date=' . $today->copy()->subDay()->toDateString() . '&end_date=' . $today->copy()->addDay()->toDateString());
+        $response = $this->actingAs($this->admin)->getJson('/api/v1/admin/reports/metrics?start_date='.$today->copy()->subDay()->toDateString().'&end_date='.$today->copy()->addDay()->toDateString());
 
         $response->assertOk()
-            ->assertJsonPath('data.0.value', "1") // Total calls
-            ->assertJsonPath('data.1.value', "1") // Connected
+            ->assertJsonPath('data.0.value', '1') // Total calls
+            ->assertJsonPath('data.1.value', '1') // Connected
             ->assertJsonPath('data.1.percentage', 100);
     }
 
@@ -72,8 +72,8 @@ class ReportControllerTest extends TestCase
                     'calls_per_day',
                     'status_distribution',
                     'peak_call_hours',
-                    'caller_types'
-                ]
+                    'caller_types',
+                ],
             ]);
     }
 

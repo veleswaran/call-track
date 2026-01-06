@@ -26,36 +26,36 @@ final class GetReportChartsAction
             ->leftJoin('call_classifications', 'call_logs.id', '=', 'call_classifications.call_log_id')
             ->whereBetween('call_logs.timestamp', [$filters->startDate, $filters->endDate]);
 
-        if (!empty($filters->agentIds)) {
+        if (! empty($filters->agentIds)) {
             $query->join('devices', 'call_logs.device_id', '=', 'devices.id')
-                  ->whereIn('devices.agent_id', $filters->agentIds);
+                ->whereIn('devices.agent_id', $filters->agentIds);
         }
-        if (!empty($filters->types)) {
+        if (! empty($filters->types)) {
             $query->whereIn('call_classifications.type', $filters->types);
         }
         // Helper to apply status filters if needed, but charts usually show ALL statuses unless specifically filtered.
         // For consistency, we should apply them.
-        if (!empty($filters->statuses)) {
-             $query->where(function ($q) use ($filters) {
-                 foreach ($filters->statuses as $status) {
-                     switch ($status) {
-                         case 'MISSED':
-                             $q->orWhere('call_logs.direction', 'MISSED');
-                             break;
-                         case 'NO_ANSWER':
-                             $q->orWhere(function($sq) {
-                                 $sq->where('call_logs.direction', 'OUTGOING')
+        if (! empty($filters->statuses)) {
+            $query->where(function ($q) use ($filters) {
+                foreach ($filters->statuses as $status) {
+                    switch ($status) {
+                        case 'MISSED':
+                            $q->orWhere('call_logs.direction', 'MISSED');
+                            break;
+                        case 'NO_ANSWER':
+                            $q->orWhere(function ($sq) {
+                                $sq->where('call_logs.direction', 'OUTGOING')
                                     ->where('call_logs.duration', 0);
-                             });
-                             break;
-                         case 'CONNECTED':
-                             $q->orWhere('call_logs.duration', '>', 0);
-                             break;
-                     }
-                 }
-             });
+                            });
+                            break;
+                        case 'CONNECTED':
+                            $q->orWhere('call_logs.duration', '>', 0);
+                            break;
+                    }
+                }
+            });
         }
-        
+
         return $query;
     }
 
@@ -81,7 +81,7 @@ final class GetReportChartsAction
             $dateStr = $date->format('Y-m-d');
             $result[] = [
                 'date' => $date->format('d M'), // Display format e.g. 05 Jan
-                'value' => isset($keyedData[$dateStr]) ? (int)$keyedData[$dateStr]->count : 0,
+                'value' => isset($keyedData[$dateStr]) ? (int) $keyedData[$dateStr]->count : 0,
             ];
         }
 
@@ -100,17 +100,17 @@ final class GetReportChartsAction
             ->first();
 
         return [
-            ['name' => 'Connected', 'value' => (int)($stats->connected ?? 0), 'fill' => '#22c55e'], // Green
-            ['name' => 'Missed', 'value' => (int)($stats->missed ?? 0), 'fill' => '#ef4444'],   // Red
-            ['name' => 'No Answer', 'value' => (int)($stats->no_answer ?? 0), 'fill' => '#eab308'], // Yellow
+            ['name' => 'Connected', 'value' => (int) ($stats->connected ?? 0), 'fill' => '#22c55e'], // Green
+            ['name' => 'Missed', 'value' => (int) ($stats->missed ?? 0), 'fill' => '#ef4444'],   // Red
+            ['name' => 'No Answer', 'value' => (int) ($stats->no_answer ?? 0), 'fill' => '#eab308'], // Yellow
         ];
     }
 
     private function getPeakCallHours(ReportFilterDTO $filters): array
     {
         $driver = DB::connection()->getDriverName();
-        $hourExpression = $driver === 'sqlite' 
-            ? "CAST(strftime('%H', call_logs.timestamp) AS INTEGER)" 
+        $hourExpression = $driver === 'sqlite'
+            ? "CAST(strftime('%H', call_logs.timestamp) AS INTEGER)"
             : 'EXTRACT(HOUR FROM call_logs.timestamp)';
 
         $data = $this->getBaseQuery($filters)
@@ -126,11 +126,11 @@ final class GetReportChartsAction
         for ($i = 0; $i < 24; $i++) {
             $result[] = [
                 'hour' => $i,
-                'label' => ($i == 0 ? '12 AM' : ($i < 12 ? "$i AM" : ($i == 12 ? '12 PM' : ($i-12) . ' PM'))),
-                'value' => isset($keyedData[$i]) ? (int)$keyedData[$i]->count : 0,
+                'label' => ($i == 0 ? '12 AM' : ($i < 12 ? "$i AM" : ($i == 12 ? '12 PM' : ($i - 12).' PM'))),
+                'value' => isset($keyedData[$i]) ? (int) $keyedData[$i]->count : 0,
             ];
         }
-        
+
         return $result;
     }
 
@@ -139,44 +139,44 @@ final class GetReportChartsAction
         // New vs Returning callers based on phone_number in the period?
         // Or historically?
         // "First-Time Callers" vs "Returning Callers".
-        // Returning = Phone number exists in call_logs BEFORE this call? 
+        // Returning = Phone number exists in call_logs BEFORE this call?
         // This is expensive to calculate for every call in range.
-        // Simplified: 
+        // Simplified:
         // Count total unique numbers in range.
         // For each, check if min(timestamp) < range_start.
         // If min < range_start, Returning. Else New.
-        
-        // This query might be heavy. 
+
+        // This query might be heavy.
         // Faster approach:
-        // Join self? 
+        // Join self?
         // Let's try a simpler metric for MVP or use classification types if strictly requested (Business vs Personal).
         // User image shows "Caller Type Breakdown: First-Time Callers vs Returning Callers".
         // I will implement a simplified version or placeholder if too complex for single query.
-        
+
         // Let's approximate: count distinct numbers that have calls BEFORE start date.
-        
+
         // 1. Get unique numbers in current range.
         // 2. Count how many of them appear in logs BEFORE start date.
-        
+
         // Get unique numbers in range
         $numbersInRange = $this->getBaseQuery($filters)->distinct()->pluck('phone_number_hash');
-        
+
         if ($numbersInRange->isEmpty()) {
-             return [
+            return [
                 ['name' => 'First-Time Callers', 'value' => 0, 'fill' => '#3b82f6'],
                 ['name' => 'Returning Callers', 'value' => 0, 'fill' => '#a855f7'],
             ];
         }
-        
+
         $returningCount = DB::table('call_logs')
             ->whereIn('phone_number_hash', $numbersInRange)
             ->where('timestamp', '<', $filters->startDate)
             ->distinct('phone_number_hash')
             ->count('phone_number_hash');
-            
+
         $totalUnique = $numbersInRange->count();
         $firstTime = $totalUnique - $returningCount;
-        
+
         return [
             ['name' => 'First-Time Callers', 'value' => $firstTime, 'fill' => '#3b82f6'], // Blue
             ['name' => 'Returning Callers', 'value' => $returningCount, 'fill' => '#a855f7'], // Purple
