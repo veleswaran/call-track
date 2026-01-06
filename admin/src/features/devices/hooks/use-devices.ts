@@ -57,12 +57,12 @@ export function useRevokeDeviceTokens() {
 
 export interface GenerateDeviceCodeParams {
     agent_id: number;
-    expires_in_hours: number;
+    expires_in_hours: number | null;
 }
 
 export interface GeneratedCode {
     code: string;
-    expires_at: string;
+    expires_at: string | null;
     agent_id: number;
 }
 

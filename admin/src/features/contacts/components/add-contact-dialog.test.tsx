@@ -75,7 +75,7 @@ describe("AddContactDialog", () => {
         );
 
         expect(screen.getByText("Add Contact")).toBeInTheDocument();
-        expect(screen.getByPlaceholderText("+1234567890")).toBeEnabled();
+        expect(screen.getByPlaceholderText("9876543210")).toBeEnabled();
         expect(screen.getByPlaceholderText("John Doe")).toBeEnabled();
     });
 
@@ -131,10 +131,10 @@ describe("AddContactDialog", () => {
             { wrapper: createWrapper() }
         );
 
-        const phoneInput = screen.getByPlaceholderText("+1234567890");
-        fireEvent.change(phoneInput, { target: { value: "+9876543210" } });
+        const phoneInput = screen.getByPlaceholderText("9876543210");
+        fireEvent.change(phoneInput, { target: { value: "9876543210" } });
 
-        expect(phoneInput).toHaveValue("+9876543210");
+        expect(phoneInput).toHaveValue("9876543210");
     });
 
     it("should disable save button when name is empty", () => {
@@ -169,8 +169,8 @@ describe("AddContactDialog", () => {
         expect(saveButton).toBeDisabled();
 
         // Fill phone number too
-        const phoneInput = screen.getByPlaceholderText("+1234567890");
-        fireEvent.change(phoneInput, { target: { value: "+9876543210" } });
+        const phoneInput = screen.getByPlaceholderText("9876543210");
+        fireEvent.change(phoneInput, { target: { value: "9876543210" } });
         expect(saveButton).toBeEnabled();
     });
 

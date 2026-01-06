@@ -11,6 +11,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreAgentRequest;
 use App\Http\Requests\UpdateAgentRequest;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class AgentController extends Controller
 {
@@ -18,9 +19,12 @@ class AgentController extends Controller
         protected AgentManagementServiceInterface $service
     ) {}
 
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        return response()->json($this->service->getAgentsList());
+        $search = $request->input('search');
+        $perPage = (int) $request->input('per_page', 20);
+
+        return response()->json($this->service->getAgentsList($perPage, $search));
     }
 
     public function store(StoreAgentRequest $request): JsonResponse

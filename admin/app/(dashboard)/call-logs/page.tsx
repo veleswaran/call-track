@@ -62,6 +62,8 @@ export default function CallLogsPage() {
                             <TableRow>
                                 <TableHead className="w-[50px]"></TableHead>
                                 <TableHead>Phone Number</TableHead>
+                                <TableHead>Device</TableHead>
+                                <TableHead>Agent</TableHead>
                                 <TableHead>Duration</TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead>Time</TableHead>
@@ -73,19 +75,19 @@ export default function CallLogsPage() {
                         <TableBody>
                             {isLoading ? (
                                 <TableRow>
-                                    <TableCell colSpan={8} className="h-24 text-center">
+                                    <TableCell colSpan={10} className="h-24 text-center">
                                         Loading...
                                     </TableCell>
                                 </TableRow>
                             ) : isError ? (
                                 <TableRow>
-                                    <TableCell colSpan={8} className="h-24 text-center text-red-500">
+                                    <TableCell colSpan={10} className="h-24 text-center text-red-500">
                                         Failed to load call logs
                                     </TableCell>
                                 </TableRow>
                             ) : callLogs.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={8} className="h-24 text-center">
+                                    <TableCell colSpan={10} className="h-24 text-center">
                                         No call logs found
                                     </TableCell>
                                 </TableRow>
@@ -114,6 +116,16 @@ export default function CallLogsPage() {
                                                     </div>
                                                 ) : null}
                                                 <div>{log.phone_number}</div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                                                    {log.device_name || "-"}
+                                                </span>
+                                            </TableCell>
+                                            <TableCell>
+                                                <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                                                    {log.agent_name || "-"}
+                                                </span>
                                             </TableCell>
                                             <TableCell>
                                                 {formatDuration(log.duration)}

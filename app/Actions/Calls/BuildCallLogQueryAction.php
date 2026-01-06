@@ -16,7 +16,7 @@ final class BuildCallLogQueryAction
     public function execute(ListCallLogsDTO $dto): Builder
     {
         $query = CallLog::query()
-            ->with('classification')
+            ->with(['classification', 'device.agent'])
             ->orderByDesc('timestamp');
 
         if ($dto->deviceId !== null) {
@@ -53,13 +53,18 @@ final class BuildCallLogQueryAction
                         ->whereRaw('LOWER(name) LIKE ?', ["%{$termLower}%"]);
                 });
 
-                // 2. Search by Exact Phone Number
-                // We hash the input exactly as is.
-                $q->orWhere('phone_number_hash', hash('sha256', $searchTerm));
+                // 2. Search by Phone Number (normalized)
+                // Normalize search input to match stored normalized hash
+                $normalizedSearch = \App\Support\PhoneNormalizer::normalize($searchTerm);
+                $q->orWhere('phone_number_hash', hash('sha256', $normalizedSearch));
             });
         }
 
-        // agentId filter intentionally omitted until device-agent relationship is defined
+        if ($dto->agentId !== null) {
+            $query->whereHas('device', function (Builder $q) use ($dto): void {
+                $q->where('agent_id', $dto->agentId);
+            });
+        }
 
         return $query;
     }

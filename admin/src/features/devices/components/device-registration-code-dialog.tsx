@@ -13,7 +13,7 @@ import { ApiError } from "@shared/api/api";
 export function DeviceRegistrationCodeDialog() {
     const [open, setOpen] = useState(false);
     const [selectedAgentId, setSelectedAgentId] = useState<string>("");
-    const [expiresIn, setExpiresIn] = useState("24");
+    const [expiresIn, setExpiresIn] = useState("");
     const [generatedCode, setGeneratedCode] = useState<GeneratedCode | null>(null);
     const [copied, setCopied] = useState(false);
 
@@ -29,7 +29,7 @@ export function DeviceRegistrationCodeDialog() {
         generateCode(
             {
                 agent_id: parseInt(selectedAgentId),
-                expires_in_hours: parseInt(expiresIn),
+                expires_in_hours: expiresIn ? parseInt(expiresIn) : null,
             },
             {
                 onSuccess: (response) => {
@@ -55,7 +55,7 @@ export function DeviceRegistrationCodeDialog() {
     const reset = () => {
         setGeneratedCode(null);
         setSelectedAgentId("");
-        setExpiresIn("24");
+        setExpiresIn("");
         setCopied(false);
     };
 
@@ -104,9 +104,10 @@ export function DeviceRegistrationCodeDialog() {
                                 value={expiresIn}
                                 onChange={(e) => setExpiresIn(e.target.value)}
                             >
-                                <option value="1">1 Hour</option>
-                                <option value="24">24 Hours</option>
-                                <option value="48">48 Hours</option>
+                                <option value="">No Expiration</option>
+                                <option value="168">1 Week</option>
+                                <option value="720">1 Month</option>
+                                <option value="2160">3 Months</option>
                             </select>
                         </div>
                     </div>
@@ -122,7 +123,9 @@ export function DeviceRegistrationCodeDialog() {
                             </Button>
                         </div>
                         <div className="text-xs text-zinc-500">
-                            Expires on {format(new Date(generatedCode.expires_at), "PPP p")}
+                            {generatedCode.expires_at
+                                ? `Expires on ${format(new Date(generatedCode.expires_at), "PPP p")}`
+                                : "Never expires"}
                         </div>
                     </div>
                 )}

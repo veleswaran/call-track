@@ -18,5 +18,5 @@ interface AgentManagementServiceInterface
 
     public function unassignDevice(Device $device): Device;
 
-    public function getAgentsList(int $perPage = 20): \Illuminate\Contracts\Pagination\LengthAwarePaginator;
+    public function getAgentsList(int $perPage = 20, ?string $search = null): \Illuminate\Contracts\Pagination\LengthAwarePaginator;
 }

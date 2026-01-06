@@ -27,7 +27,8 @@ class CreateOrUpdateContactActionTest extends TestCase
         $this->assertInstanceOf(Contact::class, $contact);
         $this->assertEquals('John Doe', $contact->name);
         $this->assertEquals('+1234567890', $contact->phone_number);
-        $this->assertEquals(hash('sha256', '+1234567890'), $contact->phone_hash);
+        // Phone is normalized before hashing: +1234567890 → 1234567890
+        $this->assertEquals(hash('sha256', '1234567890'), $contact->phone_hash);
     }
 
     public function test_it_updates_existing_contact_with_same_phone_hash(): void
@@ -36,10 +37,11 @@ class CreateOrUpdateContactActionTest extends TestCase
         $phoneHash = hash('sha256', $phoneNumber);
 
         // Create existing contact
+        // Phone is normalized before hashing: +1234567890 → 1234567890
         $existingContact = Contact::create([
             'name' => 'Old Name',
             'phone_number' => $phoneNumber,
-            'phone_hash' => $phoneHash,
+            'phone_hash' => hash('sha256', '1234567890'),
         ]);
 
         $dto = new StoreContactDTO(

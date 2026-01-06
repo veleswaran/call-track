@@ -34,7 +34,7 @@ export function AddContactDialog({ callLog, open, onOpenChange }: AddContactDial
 
         createContact({
             name: name.trim(),
-            phone_number: effectivePhoneNumber,
+            phone_number: isStandaloneMode ? `+91${phoneNumber.trim()}` : effectivePhoneNumber,
         }, {
             onSuccess: () => {
                 onOpenChange(false);
@@ -69,11 +69,17 @@ export function AddContactDialog({ callLog, open, onOpenChange }: AddContactDial
                     <div className="space-y-2">
                         <label className="text-sm font-medium">Phone Number</label>
                         {isStandaloneMode ? (
-                            <Input
-                                value={phoneNumber}
-                                onChange={(e) => setPhoneNumber(e.target.value)}
-                                placeholder="+1234567890"
-                            />
+                            <div className="flex">
+                                <span className="inline-flex items-center rounded-l-md border border-r-0 border-zinc-200 bg-zinc-100 px-3 text-sm text-zinc-600 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-400">
+                                    +91
+                                </span>
+                                <Input
+                                    value={phoneNumber}
+                                    onChange={(e) => setPhoneNumber(e.target.value)}
+                                    placeholder="9876543210"
+                                    className="rounded-l-none"
+                                />
+                            </div>
                         ) : (
                             <Input value={callLog?.phone_number} disabled className="bg-zinc-100 dark:bg-zinc-800" />
                         )}

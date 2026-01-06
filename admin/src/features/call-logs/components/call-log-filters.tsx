@@ -14,10 +14,13 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@shared/components/ui/select";
+import { AsyncSelect } from "@shared/components/async-select";
 import { cn } from "@shared/utils";
 import { format } from "date-fns";
 import { CalendarIcon, X } from "lucide-react";
 import type { CallLogFilters as FilterTypes } from "../hooks/use-call-logs";
+import { api } from "@shared/api/api";
+import type { PaginatedResponse, Device, Agent } from "@shared/types";
 
 interface CallLogFiltersProps {
     filters: FilterTypes;
@@ -29,7 +32,9 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
         filters.call_type ||
         filters.classification ||
         filters.date_from ||
-        filters.date_to;
+        filters.date_to ||
+        filters.device_id ||
+        filters.agent_id;
 
     const clearFilters = () => {
         onChange({
@@ -47,8 +52,65 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
         });
     };
 
+    const updateNumericFilter = (key: keyof FilterTypes, value: string) => {
+        onChange({
+            ...filters,
+            page: 1,
+            [key]: value === "all" ? undefined : parseInt(value),
+        });
+    };
+
+    // Load functions for AsyncSelect
+    const loadDevices = async (search: string) => {
+        try {
+            const response = await api.get<PaginatedResponse<Device>>(
+                `/api/v1/admin/devices?page=1&per_page=20&search=${encodeURIComponent(search)}`
+            );
+            return response.data.map((d) => ({
+                label: d.device_name || d.device_model || `Device ${d.id}`,
+                value: d.id.toString(),
+            }));
+        } catch (e) {
+            console.error(e);
+            return [];
+        }
+    };
+
+    const loadAgents = async (search: string) => {
+        try {
+            const response = await api.get<PaginatedResponse<Agent>>(
+                `/api/v1/admin/agents?page=1&per_page=20&search=${encodeURIComponent(search)}`
+            );
+            return response.data.map((a) => ({
+                label: a.name,
+                value: a.id.toString(),
+            }));
+        } catch (e) {
+            console.error(e);
+            return [];
+        }
+    };
+
     return (
         <div className="flex flex-wrap items-center gap-2">
+            <AsyncSelect
+                label="Device"
+                placeholder="Device..."
+                value={filters.device_id?.toString()}
+                onChange={(val) => updateNumericFilter("device_id", val)}
+                loadOptions={loadDevices}
+                className="w-[160px]"
+            />
+
+            <AsyncSelect
+                label="Agent"
+                placeholder="Agent..."
+                value={filters.agent_id?.toString()}
+                onChange={(val) => updateNumericFilter("agent_id", val)}
+                loadOptions={loadAgents}
+                className="w-[160px]"
+            />
+
             <Select
                 value={filters.call_type ?? "all"}
                 onValueChange={(val) => updateFilter("call_type", val)}

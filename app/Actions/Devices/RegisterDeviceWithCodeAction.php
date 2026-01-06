@@ -27,7 +27,10 @@ class RegisterDeviceWithCodeAction
         return DB::transaction(function () use ($code, $data) {
             $registrationCode = DeviceRegistrationCode::where('code', $code)
                 ->whereNull('used_at')
-                ->where('expires_at', '>', now())
+                ->where(function ($query) {
+                    $query->whereNull('expires_at')
+                        ->orWhere('expires_at', '>', now());
+                })
                 ->lockForUpdate()
                 ->firstOrFail();
 

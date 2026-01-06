@@ -14,7 +14,8 @@ class CreateOrUpdateContactAction
      */
     public function execute(StoreContactDTO $data): Contact
     {
-        $phoneHash = hash('sha256', $data->phoneNumber);
+        $normalizedPhone = \App\Support\PhoneNormalizer::normalize($data->phoneNumber);
+        $phoneHash = hash('sha256', $normalizedPhone);
 
         return Contact::updateOrCreate(
             [

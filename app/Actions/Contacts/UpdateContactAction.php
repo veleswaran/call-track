@@ -11,15 +11,11 @@ class UpdateContactAction
 {
     public function execute(Contact $contact, StoreContactDTO $dto): Contact
     {
+        $normalizedPhone = \App\Support\PhoneNormalizer::normalize($dto->phoneNumber);
+
         $contact->update([
             'name' => $dto->name,
-            // We hash/encrypt based on existing patterns.
-            // Looking at CreateOrUpdateContactAction might be good to ensure consistency,
-            // but usually we just update the fields.
-            // Wait, phone number is unique logic in CreateOrUpdate.
-            // Simple update might just need to update name?
-            // If phone number changes, we need to update hash and encryption.
-            'phone_hash' => hash('sha256', $dto->phoneNumber),
+            'phone_hash' => hash('sha256', $normalizedPhone),
             'phone_number' => $dto->phoneNumber, // Casts handle encryption
         ]);
 

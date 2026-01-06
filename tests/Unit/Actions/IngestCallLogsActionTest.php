@@ -40,7 +40,8 @@ class IngestCallLogsActionTest extends TestCase
         $this->assertDatabaseHas('call_logs', [
             'device_id' => $device->id,
             'call_hash' => 'unique-hash-123',
-            'phone_number_hash' => hash('sha256', '+1234567890'),
+            // Phone is normalized before hashing: +1234567890 → 1234567890
+            'phone_number_hash' => hash('sha256', '1234567890'),
             'duration' => 120,
         ]);
 
