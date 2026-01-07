@@ -9,6 +9,7 @@ interface ReportChartsProps {
         status_distribution: any[]
         peak_call_hours: any[]
         caller_types: any[]
+        call_direction_distribution: any[]
     }
 }
 
@@ -50,7 +51,10 @@ export function ReportCharts({ data }: ReportChartsProps) {
                                 cursor={{ fill: 'transparent' }}
                                 contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                             />
-                            <Bar dataKey="value" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={40} />
+                            <Legend verticalAlign="top" height={36} />
+                            <Bar dataKey="connected" name="Connected" stackId="a" fill="#22c55e" radius={[0, 0, 4, 4]} barSize={40} />
+                            <Bar dataKey="missed" name="Missed" stackId="a" fill="#ef4444" radius={[0, 0, 0, 0]} barSize={40} />
+                            <Bar dataKey="no_answer" name="No Answer" stackId="a" fill="#eab308" radius={[4, 4, 0, 0]} barSize={40} />
                         </BarChart>
                     </ResponsiveContainer>
                 </CardContent>
@@ -153,6 +157,35 @@ export function ReportCharts({ data }: ReportChartsProps) {
                                 dataKey="value"
                             >
                                 {data.caller_types.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={entry.fill || COLORS[index % COLORS.length]} />
+                                ))}
+                            </Pie>
+                            <Tooltip />
+                            <Legend verticalAlign="middle" align="right" layout="vertical" />
+                        </PieChart>
+                    </ResponsiveContainer>
+                </CardContent>
+            </Card>
+
+            {/* Call Direction Distribution */}
+            <Card className="col-span-3 lg:col-span-4">
+                <CardHeader>
+                    <CardTitle>Call Direction</CardTitle>
+                    <CardDescription>Incoming vs Outgoing</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <ResponsiveContainer width="100%" height={200}>
+                        <PieChart>
+                            <Pie
+                                data={data.call_direction_distribution}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={60}
+                                outerRadius={80}
+                                paddingAngle={5}
+                                dataKey="value"
+                            >
+                                {data.call_direction_distribution?.map((entry, index) => (
                                     <Cell key={`cell-${index}`} fill={entry.fill || COLORS[index % COLORS.length]} />
                                 ))}
                             </Pie>

@@ -20,11 +20,40 @@ final class GetAgentPerformanceAction
         $query = DB::table('agents')
             ->join('devices', 'agents.id', '=', 'devices.agent_id')
             ->join('call_logs', 'devices.id', '=', 'call_logs.device_id')
+            ->leftJoin('call_classifications', 'call_logs.id', '=', 'call_classifications.call_log_id')
             ->whereBetween('call_logs.timestamp', [$filters->startDate, $filters->endDate]);
 
         // Filters
         if (! empty($filters->agentIds)) {
             $query->whereIn('agents.id', $filters->agentIds);
+        }
+
+        // Filter by Classification (mapped from 'types' in DTO)
+        if (! empty($filters->types)) {
+            // Frontend sends BUSINESS/PERSONAL. Column in CallClassification is 'type'.
+            $query->whereIn('call_classifications.type', array_map('strtoupper', $filters->types));
+        }
+
+        // Filter by Statuses
+        if (! empty($filters->statuses)) {
+            $query->where(function ($q) use ($filters) {
+                foreach ($filters->statuses as $status) {
+                    $q->orWhere(function ($sub) use ($status) {
+                        switch ($status) {
+                            case 'Connected':
+                                $sub->where('call_logs.duration', '>', 0);
+                                break;
+                            case 'Missed':
+                                $sub->where('call_logs.direction', 'MISSED');
+                                break;
+                            case 'No Answer':
+                                $sub->where('call_logs.direction', 'INCOMING')
+                                    ->where('call_logs.duration', 0);
+                                break;
+                        }
+                    });
+                }
+            });
         }
 
         // Group by Agent

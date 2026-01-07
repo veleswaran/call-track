@@ -17,6 +17,7 @@ final class GetReportChartsAction
             'status_distribution' => $this->getStatusDistribution($filters),
             'peak_call_hours' => $this->getPeakCallHours($filters),
             'caller_types' => $this->getCallerTypeBreakdown($filters),
+            'call_direction_distribution' => $this->getCallDirectionDistribution($filters),
         ];
     }
 
@@ -62,7 +63,12 @@ final class GetReportChartsAction
     private function getCallsPerDay(ReportFilterDTO $filters): array
     {
         $data = $this->getBaseQuery($filters)
-            ->selectRaw('DATE(call_logs.timestamp) as date, COUNT(*) as count')
+            ->selectRaw("
+                DATE(call_logs.timestamp) as date,
+                SUM(CASE WHEN call_logs.direction = 'MISSED' THEN 1 ELSE 0 END) as missed,
+                SUM(CASE WHEN call_logs.direction = 'OUTGOING' AND call_logs.duration = 0 THEN 1 ELSE 0 END) as no_answer,
+                SUM(CASE WHEN call_logs.duration > 0 THEN 1 ELSE 0 END) as connected
+            ")
             ->groupBy('date')
             ->orderBy('date')
             ->get();
@@ -79,9 +85,13 @@ final class GetReportChartsAction
 
         foreach ($period as $date) {
             $dateStr = $date->format('Y-m-d');
+            $record = $keyedData[$dateStr] ?? null;
+
             $result[] = [
                 'date' => $date->format('d M'), // Display format e.g. 05 Jan
-                'value' => isset($keyedData[$dateStr]) ? (int) $keyedData[$dateStr]->count : 0,
+                'connected' => $record ? (int) $record->connected : 0,
+                'missed' => $record ? (int) $record->missed : 0,
+                'no_answer' => $record ? (int) $record->no_answer : 0,
             ];
         }
 
@@ -137,24 +147,11 @@ final class GetReportChartsAction
     private function getCallerTypeBreakdown(ReportFilterDTO $filters): array
     {
         // New vs Returning callers based on phone_number in the period?
-        // Or historically?
-        // "First-Time Callers" vs "Returning Callers".
-        // Returning = Phone number exists in call_logs BEFORE this call?
-        // This is expensive to calculate for every call in range.
-        // Simplified:
-        // Count total unique numbers in range.
-        // For each, check if min(timestamp) < range_start.
-        // If min < range_start, Returning. Else New.
-
-        // This query might be heavy.
-        // Faster approach:
-        // Join self?
-        // Let's try a simpler metric for MVP or use classification types if strictly requested (Business vs Personal).
-        // User image shows "Caller Type Breakdown: First-Time Callers vs Returning Callers".
-        // I will implement a simplified version or placeholder if too complex for single query.
+        // The current logic implements a "New to the Company" (Acquisition) definition:
+        // First-Time Caller: Someone whose very first interaction with the system occurred within the selected date range.
+        // Returning Caller: Someone who called during the selected range but had already called at least once before the selected range started.
 
         // Let's approximate: count distinct numbers that have calls BEFORE start date.
-
         // 1. Get unique numbers in current range.
         // 2. Count how many of them appear in logs BEFORE start date.
 
@@ -180,6 +177,21 @@ final class GetReportChartsAction
         return [
             ['name' => 'First-Time Callers', 'value' => $firstTime, 'fill' => '#3b82f6'], // Blue
             ['name' => 'Returning Callers', 'value' => $returningCount, 'fill' => '#a855f7'], // Purple
+        ];
+    }
+
+    private function getCallDirectionDistribution(ReportFilterDTO $filters): array
+    {
+        $stats = $this->getBaseQuery($filters)
+            ->selectRaw("
+                SUM(CASE WHEN call_logs.direction IN ('INCOMING', 'MISSED') THEN 1 ELSE 0 END) as incoming,
+                SUM(CASE WHEN call_logs.direction = 'OUTGOING' THEN 1 ELSE 0 END) as outgoing
+            ")
+            ->first();
+
+        return [
+            ['name' => 'Incoming', 'value' => (int) ($stats->incoming ?? 0), 'fill' => '#3b82f6'], // Blue
+            ['name' => 'Outgoing', 'value' => (int) ($stats->outgoing ?? 0), 'fill' => '#22c55e'], // Green
         ];
     }
 }

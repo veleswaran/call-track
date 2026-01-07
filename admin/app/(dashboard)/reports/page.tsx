@@ -103,7 +103,7 @@ export default function ReportsPage() {
 
                 {/* Stats Banner? (Skipping for now or using Summary) */}
 
-                <AgentPerformanceTable data={performanceQuery.data || []} />
+                <AgentPerformanceTable data={performanceQuery.data || []} filters={filters} />
             </div>
         </div>
     )

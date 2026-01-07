@@ -10,13 +10,17 @@ import {
 } from "@shared/components/ui/table"
 import { Badge } from "@shared/components/ui/badge"
 import { Button } from "@shared/components/ui/button"
-import { Info } from "lucide-react"
+import { Info, ArrowUpDown } from "lucide-react"
 import {
     Tooltip,
     TooltipContent,
     TooltipProvider,
     TooltipTrigger,
 } from "@shared/components/ui/tooltip"
+import { useState } from "react"
+import Link from "next/link";
+import { format } from "date-fns";
+import { ReportFiltersData } from "./report-filters";
 
 interface AgentPerformance {
     id: number
@@ -33,6 +37,7 @@ interface AgentPerformance {
 
 interface AgentPerformanceTableProps {
     data: AgentPerformance[]
+    filters: ReportFiltersData
 }
 
 const getPerformanceColor = (perf: string) => {
@@ -45,7 +50,115 @@ const getPerformanceColor = (perf: string) => {
     }
 }
 
-export function AgentPerformanceTable({ data }: AgentPerformanceTableProps) {
+/**
+ * Helper to parse duration string (e.g. "1h 30m" or "45s") to seconds for sorting
+ */
+const durationToSeconds = (duration: string): number => {
+    if (!duration) return 0;
+
+    let totalSeconds = 0;
+    const parts = duration.split(' ');
+
+    parts.forEach(part => {
+        if (part.endsWith('h')) {
+            totalSeconds += parseInt(part) * 3600;
+        } else if (part.endsWith('m')) {
+            totalSeconds += parseInt(part) * 60;
+        } else if (part.endsWith('s')) {
+            totalSeconds += parseInt(part);
+        }
+    });
+
+    return totalSeconds;
+}
+
+export function AgentPerformanceTable({ data, filters }: AgentPerformanceTableProps) {
+    const [sortConfig, setSortConfig] = useState<{
+        key: keyof AgentPerformance | null;
+        direction: 'asc' | 'desc';
+    }>({ key: null, direction: 'asc' });
+
+    const handleSort = (key: keyof AgentPerformance) => {
+        let direction: 'asc' | 'desc' = 'asc';
+        if (sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc';
+        }
+        setSortConfig({ key, direction });
+    };
+
+    const sortedData = [...data].sort((a, b) => {
+        if (!sortConfig.key) return 0;
+
+        let aValue: any = a[sortConfig.key];
+        let bValue: any = b[sortConfig.key];
+
+        // Handle duration sorting
+        if (sortConfig.key === 'total_duration' || sortConfig.key === 'avg_duration') {
+            aValue = durationToSeconds(aValue);
+            bValue = durationToSeconds(bValue);
+        }
+
+        if (aValue < bValue) {
+            return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+            return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+    });
+
+    const SortableHeader = ({ label, sortKey, align = "left", className = "" }: { label: React.ReactNode, sortKey: keyof AgentPerformance, align?: "left" | "right", className?: string }) => (
+        <TableHead className={className}>
+            <Button
+                variant="ghost"
+                onClick={() => handleSort(sortKey)}
+                className={`p-0 hover:bg-transparent flex items-center gap-1 ${align === "right" ? "ml-auto" : ""}`}
+            >
+                {label}
+                <ArrowUpDown className="h-3 w-3" />
+            </Button>
+        </TableHead>
+    );
+
+    // Helper to build call logs URL
+    const getCallLogsUrl = (agentId: number) => {
+        const params = new URLSearchParams();
+
+        // Agent Filter
+        params.append('agents[]', String(agentId));
+
+        // Date Range
+        if (filters.dateRange?.from) {
+            params.append('start_date', format(filters.dateRange.from, 'yyyy-MM-dd'));
+        }
+        if (filters.dateRange?.to) {
+            params.append('end_date', format(filters.dateRange.to, 'yyyy-MM-dd'));
+        }
+
+        // Classification (mapped from 'type' filter in ReportFilters)
+        if (filters.type && filters.type !== 'all') {
+            // Frontend 'type' filter values are BUSINESS, PERSONAL, IGNORED which match backend classification
+            // Backend expects lowercase for simple match or validation allows string. 
+            // Request validation: in:business,personal,ignored
+            // Frontend sends: BUSINESS (uppercase).
+            // Backend validation in:business,personal,ignored is case sensitive usually.
+            // Let's send lowercase.
+            params.append('classifications[]', filters.type.toLowerCase());
+        }
+
+        // Status
+        if (filters.status && filters.status !== 'all') {
+            let statusValue = filters.status;
+            if (filters.status === 'CONNECTED') statusValue = 'Connected';
+            if (filters.status === 'MISSED') statusValue = 'Missed';
+            if (filters.status === 'NO_ANSWER') statusValue = 'No Answer';
+
+            params.append('statuses[]', statusValue);
+        }
+
+        return `/call-logs?${params.toString()}`;
+    };
+
     return (
         <div className="rounded-md border">
             <TooltipProvider>
@@ -55,11 +168,11 @@ export function AgentPerformanceTable({ data }: AgentPerformanceTableProps) {
                             <TableHead className="w-[80px]">Avatar</TableHead>
                             <TableHead>Agent</TableHead>
                             <TableHead>EMP Code</TableHead>
-                            <TableHead className="text-right">Total Calls</TableHead>
-                            <TableHead className="text-right">Connected</TableHead>
-                            <TableHead className="text-right">Missed</TableHead>
-                            <TableHead>Total Duration</TableHead>
-                            <TableHead>Avg Duration</TableHead>
+                            <SortableHeader label="Total Calls" sortKey="total_calls" align="right" className="text-right" />
+                            <SortableHeader label="Connected" sortKey="connected" align="right" className="text-right" />
+                            <SortableHeader label="Missed" sortKey="missed" align="right" className="text-right" />
+                            <SortableHeader label="Total Duration" sortKey="total_duration" />
+                            <SortableHeader label="Avg Duration" sortKey="avg_duration" />
                             <TableHead>
                                 <div className="flex items-center gap-1">
                                     Handling Rate
@@ -92,7 +205,7 @@ export function AgentPerformanceTable({ data }: AgentPerformanceTableProps) {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {data.map((row) => (
+                        {sortedData.map((row) => (
                             <TableRow key={row.id}>
                                 <TableCell>
                                     <div className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold ${row.id % 2 === 0 ? 'bg-blue-100 text-blue-600' : 'bg-purple-100 text-purple-600'
@@ -121,7 +234,12 @@ export function AgentPerformanceTable({ data }: AgentPerformanceTableProps) {
                                     </Badge>
                                 </TableCell>
                                 <TableCell className="text-right">
-                                    <Button variant="link" size="sm">View Calls</Button>
+                                    <Link
+                                        href={getCallLogsUrl(row.id)}
+                                        className="text-sm font-medium text-primary hover:underline"
+                                    >
+                                        View Calls
+                                    </Link>
                                 </TableCell>
                             </TableRow>
                         ))}

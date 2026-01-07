@@ -30,24 +30,30 @@ final class GetDashboardMetricsAction
 
         // Get current week metrics
         $currentStats = $this->getCallStats($currentWeekStart, $currentWeekEnd);
-        $currentActiveDevices = $this->getActiveDevices($currentWeekStart, $currentWeekEnd);
+        $currentMissedCalls = $currentStats->missed_calls ?? 0;
 
         // Get previous week metrics for comparison
         $previousStats = $this->getCallStats($previousWeekStart, $previousWeekEnd);
-        $previousActiveDevices = $this->getActiveDevices($previousWeekStart, $previousWeekEnd);
+        $previousMissedCalls = $previousStats->missed_calls ?? 0;
 
         // Device and agent counts (total, not time-filtered)
         $totalDevices = Device::count();
         $totalAgents = Agent::count();
+
+        // Active devices: Devices that have synced calls in the current period
+        $activeDevices = DB::table('call_logs')
+            ->whereBetween('timestamp', [$currentWeekStart, $currentWeekEnd])
+            ->distinct('device_id')
+            ->count('device_id');
 
         // Calculate comparison percentages
         $totalCallsChange = $this->calculatePercentChange(
             (int) ($previousStats->total_calls ?? 0),
             (int) ($currentStats->total_calls ?? 0)
         );
-        $activeDevicesChange = $this->calculatePercentChange(
-            $previousActiveDevices,
-            $currentActiveDevices
+        $missedCallsChange = $this->calculatePercentChange(
+            (int) $previousMissedCalls,
+            (int) $currentMissedCalls
         );
         $avgDurationChange = $this->calculatePercentChange(
             (float) ($previousStats->average_call_duration_seconds ?? 0),
@@ -65,12 +71,13 @@ final class GetDashboardMetricsAction
             'ignored_calls' => $currentStats->ignored_calls ?? 0,
             'unclassified_calls' => $currentStats->unclassified_calls ?? 0,
             'total_devices' => $totalDevices,
-            'active_devices' => $currentActiveDevices,
+            'active_devices' => $activeDevices,
+            'missed_calls' => $currentMissedCalls,
             'total_agents' => $totalAgents,
             'total_duration_seconds' => $currentStats->total_duration_seconds ?? 0,
             'average_call_duration_seconds' => $currentStats->average_call_duration_seconds ?? 0,
             'total_calls_change_percent' => $totalCallsChange,
-            'active_devices_change_percent' => $activeDevicesChange,
+            'missed_calls_change_percent' => $missedCallsChange,
             'average_call_duration_change_percent' => $avgDurationChange,
             'total_duration_change_percent' => $totalDurationChange,
         ]);
@@ -89,22 +96,12 @@ final class GetDashboardMetricsAction
                 DB::raw("SUM(CASE WHEN call_classifications.type = 'BUSINESS' OR call_classifications.type IS NULL THEN 1 ELSE 0 END) as business_calls"),
                 DB::raw("SUM(CASE WHEN call_classifications.type = 'PERSONAL' THEN 1 ELSE 0 END) as personal_calls"),
                 DB::raw("SUM(CASE WHEN call_classifications.type = 'IGNORED' THEN 1 ELSE 0 END) as ignored_calls"),
+                DB::raw("SUM(CASE WHEN call_logs.direction = 'MISSED' THEN 1 ELSE 0 END) as missed_calls"),
                 DB::raw('0 as unclassified_calls'),
                 DB::raw('COALESCE(SUM(call_logs.duration), 0) as total_duration_seconds'),
                 DB::raw('COALESCE(AVG(call_logs.duration), 0) as average_call_duration_seconds'),
             ])
             ->first() ?? (object) [];
-    }
-
-    /**
-     * Get active device count for a given date range
-     */
-    private function getActiveDevices(Carbon $start, Carbon $end): int
-    {
-        return DB::table('call_logs')
-            ->whereBetween('timestamp', [$start, $end])
-            ->distinct('device_id')
-            ->count('device_id');
     }
 
     /**

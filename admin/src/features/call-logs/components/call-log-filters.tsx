@@ -28,13 +28,14 @@ interface CallLogFiltersProps {
 }
 
 export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
-    const hasFilters =
-        filters.call_type ||
-        filters.classification ||
-        filters.date_from ||
-        filters.date_to ||
+    const hasActiveFilters =
+        filters.start_date ||
+        filters.end_date ||
         filters.device_id ||
-        filters.agent_id;
+        (filters.agents && filters.agents.length > 0) ||
+        (filters.types && filters.types.length > 0) ||
+        (filters.statuses && filters.statuses.length > 0) ||
+        (filters.classifications && filters.classifications.length > 0);
 
     const clearFilters = () => {
         onChange({
@@ -44,19 +45,20 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
         });
     };
 
-    const updateFilter = (key: keyof FilterTypes, value: string) => {
-        onChange({
-            ...filters,
-            page: 1, // Reset to page 1 on filter change
-            [key]: value === "all" ? undefined : value,
-        });
-    };
-
     const updateNumericFilter = (key: keyof FilterTypes, value: string) => {
         onChange({
             ...filters,
             page: 1,
             [key]: value === "all" ? undefined : parseInt(value),
+        });
+    };
+
+    // Helper for single-select dropdowns that map to array filters
+    const updateArrayFilter = (key: 'types' | 'classifications', value: string) => {
+        onChange({
+            ...filters,
+            page: 1,
+            [key]: value === "all" ? undefined : [value],
         });
     };
 
@@ -105,15 +107,21 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
             <AsyncSelect
                 label="Agent"
                 placeholder="Agent..."
-                value={filters.agent_id?.toString()}
-                onChange={(val) => updateNumericFilter("agent_id", val)}
+                value={filters.agents?.[0]?.toString()}
+                onChange={(val) => {
+                    onChange({
+                        ...filters,
+                        page: 1,
+                        agents: val ? [parseInt(val)] : undefined
+                    });
+                }}
                 loadOptions={loadAgents}
                 className="w-[160px]"
             />
 
             <Select
-                value={filters.call_type ?? "all"}
-                onValueChange={(val) => updateFilter("call_type", val)}
+                value={filters.types?.[0] ?? "all"}
+                onValueChange={(val) => updateArrayFilter("types", val)}
             >
                 <SelectTrigger className="w-[140px]">
                     <SelectValue placeholder="Call Type" />
@@ -127,8 +135,8 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
             </Select>
 
             <Select
-                value={filters.classification ?? "all"}
-                onValueChange={(val) => updateFilter("classification", val)}
+                value={filters.classifications?.[0] ?? "all"}
+                onValueChange={(val) => updateArrayFilter("classifications", val)}
             >
                 <SelectTrigger className="w-[140px]">
                     <SelectValue placeholder="Classification" />
@@ -147,18 +155,18 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
                         variant={"outline"}
                         className={cn(
                             "w-[240px] justify-start text-left font-normal",
-                            !filters.date_from && "text-muted-foreground"
+                            !filters.start_date && "text-muted-foreground"
                         )}
                     >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {filters.date_from ? (
-                            filters.date_to ? (
+                        {filters.start_date ? (
+                            filters.end_date ? (
                                 <>
-                                    {format(new Date(filters.date_from), "LLL dd, y")} -{" "}
-                                    {format(new Date(filters.date_to), "LLL dd, y")}
+                                    {format(new Date(filters.start_date), "LLL dd, y")} -{" "}
+                                    {format(new Date(filters.end_date), "LLL dd, y")}
                                 </>
                             ) : (
-                                format(new Date(filters.date_from), "LLL dd, y")
+                                format(new Date(filters.start_date), "LLL dd, y")
                             )
                         ) : (
                             <span>Pick a date range</span>
@@ -169,17 +177,17 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
                     <Calendar
                         initialFocus
                         mode="range"
-                        defaultMonth={filters.date_from ? new Date(filters.date_from) : undefined}
+                        defaultMonth={filters.start_date ? new Date(filters.start_date) : undefined}
                         selected={{
-                            from: filters.date_from ? new Date(filters.date_from) : undefined,
-                            to: filters.date_to ? new Date(filters.date_to) : undefined,
+                            from: filters.start_date ? new Date(filters.start_date) : undefined,
+                            to: filters.end_date ? new Date(filters.end_date) : undefined,
                         }}
                         onSelect={(range) => {
                             onChange({
                                 ...filters,
                                 page: 1,
-                                date_from: range?.from?.toISOString(),
-                                date_to: range?.to?.toISOString(),
+                                start_date: range?.from?.toISOString(),
+                                end_date: range?.to?.toISOString(),
                             });
                         }}
                         numberOfMonths={2}
@@ -187,7 +195,7 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
                 </PopoverContent>
             </Popover>
 
-            {hasFilters && (
+            {hasActiveFilters && (
                 <Button
                     variant="ghost"
                     onClick={clearFilters}

@@ -23,23 +23,46 @@ final class BuildCallLogQueryAction
             $query->where('device_id', $dto->deviceId);
         }
 
-        if ($dto->callType !== null) {
-            // Normalize to lower for comparison; DB may store mixed case
-            $query->whereRaw('LOWER(direction) = ?', [strtolower($dto->callType)]);
+        // Filter by Call Types (Direction)
+        if (! empty($dto->callTypes)) {
+            $query->whereIn('direction', array_map('strtoupper', $dto->callTypes));
         }
 
-        if ($dto->classification !== null) {
+        // Filter by Classifications
+        if (! empty($dto->classifications)) {
             $query->whereHas('classification', function (Builder $q) use ($dto): void {
-                $q->whereRaw('LOWER(type) = ?', [strtolower($dto->classification)]);
+                $q->whereIn('type', array_map('strtoupper', $dto->classifications));
             });
         }
 
+        // Filter by Statuses (Connected, Missed, No Answer)
+        if (! empty($dto->statuses)) {
+            $query->where(function (Builder $q) use ($dto) {
+                foreach ($dto->statuses as $status) {
+                    $q->orWhere(function (Builder $sub) use ($status) {
+                        switch ($status) {
+                            case 'Connected':
+                                $sub->where('duration', '>', 0);
+                                break;
+                            case 'Missed':
+                                $sub->where('direction', 'MISSED');
+                                break;
+                            case 'No Answer':
+                                $sub->where('direction', 'INCOMING')->where('duration', 0);
+                                break;
+                        }
+                    });
+                }
+            });
+        }
+
+        // Date Filters
         if ($dto->dateFrom !== null) {
             $query->where('timestamp', '>=', $dto->dateFrom);
         }
 
         if ($dto->dateTo !== null) {
-            $query->where('timestamp', '<=', $dto->dateTo);
+            $query->where('timestamp', '<=', $dto->dateTo.' 23:59:59'); // Ensure end of day coverage if time missing
         }
 
         if ($dto->search !== null) {
@@ -54,15 +77,15 @@ final class BuildCallLogQueryAction
                 });
 
                 // 2. Search by Phone Number (normalized)
-                // Normalize search input to match stored normalized hash
                 $normalizedSearch = \App\Support\PhoneNormalizer::normalize($searchTerm);
                 $q->orWhere('phone_number_hash', hash('sha256', $normalizedSearch));
             });
         }
 
-        if ($dto->agentId !== null) {
+        // Filter by Agents
+        if (! empty($dto->agentIds)) {
             $query->whereHas('device', function (Builder $q) use ($dto): void {
-                $q->where('agent_id', $dto->agentId);
+                $q->whereIn('agent_id', $dto->agentIds);
             });
         }
 

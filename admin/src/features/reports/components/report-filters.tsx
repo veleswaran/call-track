@@ -115,10 +115,10 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
 
                     <Select value={type} onValueChange={setType}>
                         <SelectTrigger className="w-[140px]">
-                            <SelectValue placeholder="All Types" />
+                            <SelectValue placeholder="All Classes" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="all">All Types</SelectItem>
+                            <SelectItem value="all">All Classes</SelectItem>
                             <SelectItem value="BUSINESS">Business</SelectItem>
                             <SelectItem value="PERSONAL">Personal</SelectItem>
                             <SelectItem value="IGNORED">Ignored</SelectItem>
