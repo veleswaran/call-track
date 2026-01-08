@@ -5,14 +5,13 @@ declare(strict_types=1);
 namespace App\Domain\Reports\Actions;
 
 use App\Domain\Reports\DTOs\ReportFilterDTO;
-use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
 final class GetReportMetricsAction
 {
     public function execute(ReportFilterDTO $filters): array
     {
-        $baseQuery = DB::table('call_logs')
+        $baseQuery = \App\Domain\Calls\Models\CallLog::query()
             ->leftJoin('call_classifications', 'call_logs.id', '=', 'call_classifications.call_log_id')
             ->whereBetween('call_logs.timestamp', [$filters->startDate, $filters->endDate]);
 
@@ -35,7 +34,7 @@ final class GetReportMetricsAction
             // Assuming average duration excludes missed/no-answer (duration=0) or includes all?
             // Usually "Average Handle Time" includes talk time.
             DB::raw('AVG(call_logs.duration) as avg_duration_seconds'),
-        ])->first();
+        ])->toBase()->first();
 
         $total = $stats->total_calls ?? 0;
 
@@ -75,7 +74,7 @@ final class GetReportMetricsAction
         ];
     }
 
-    private function applyFilters(Builder $query, ReportFilterDTO $filters): void
+    private function applyFilters(\Illuminate\Database\Eloquent\Builder $query, ReportFilterDTO $filters): void
     {
         if (! empty($filters->agentIds)) {
             // Join devices to filter by agent/user

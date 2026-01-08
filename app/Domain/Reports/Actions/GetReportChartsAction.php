@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Domain\Reports\Actions;
 
 use App\Domain\Reports\DTOs\ReportFilterDTO;
-use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
 final class GetReportChartsAction
@@ -21,9 +20,9 @@ final class GetReportChartsAction
         ];
     }
 
-    private function getBaseQuery(ReportFilterDTO $filters): Builder
+    private function getBaseQuery(ReportFilterDTO $filters): \Illuminate\Database\Eloquent\Builder
     {
-        $query = DB::table('call_logs')
+        $query = \App\Domain\Calls\Models\CallLog::query()
             ->leftJoin('call_classifications', 'call_logs.id', '=', 'call_classifications.call_log_id')
             ->whereBetween('call_logs.timestamp', [$filters->startDate, $filters->endDate]);
 
@@ -71,6 +70,7 @@ final class GetReportChartsAction
             ")
             ->groupBy('date')
             ->orderBy('date')
+            ->toBase()
             ->get();
 
         // Fill missing dates
@@ -107,6 +107,7 @@ final class GetReportChartsAction
                 SUM(CASE WHEN call_logs.direction = 'OUTGOING' AND call_logs.duration = 0 THEN 1 ELSE 0 END) as no_answer,
                 SUM(CASE WHEN call_logs.duration > 0 THEN 1 ELSE 0 END) as connected
             ")
+            ->toBase()
             ->first();
 
         return [
@@ -127,6 +128,7 @@ final class GetReportChartsAction
             ->selectRaw("$hourExpression as hour, COUNT(*) as count")
             ->groupBy('hour')
             ->orderBy('hour')
+            ->toBase()
             ->get();
 
         $result = [];
@@ -187,6 +189,7 @@ final class GetReportChartsAction
                 SUM(CASE WHEN call_logs.direction IN ('INCOMING', 'MISSED') THEN 1 ELSE 0 END) as incoming,
                 SUM(CASE WHEN call_logs.direction = 'OUTGOING' THEN 1 ELSE 0 END) as outgoing
             ")
+            ->toBase()
             ->first();
 
         return [

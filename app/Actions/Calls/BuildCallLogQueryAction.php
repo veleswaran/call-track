@@ -6,11 +6,12 @@ namespace App\Actions\Calls;
 
 use App\Domain\Calls\DTOs\ListCallLogsDTO;
 use App\Domain\Calls\Models\CallLog;
-use Illuminate\Database\Eloquent\Builder;
-
+use Carbon\Carbon;
 /**
  * Builds the base query for listing call logs with allowed filters and eager loads.
  */
+use Illuminate\Database\Eloquent\Builder;
+
 final class BuildCallLogQueryAction
 {
     public function execute(ListCallLogsDTO $dto): Builder
@@ -48,7 +49,7 @@ final class BuildCallLogQueryAction
                                 $sub->where('direction', 'MISSED');
                                 break;
                             case 'No Answer':
-                                $sub->where('direction', 'INCOMING')->where('duration', 0);
+                                $sub->where('direction', 'OUTGOING')->where('duration', 0);
                                 break;
                         }
                     });
@@ -58,11 +59,11 @@ final class BuildCallLogQueryAction
 
         // Date Filters
         if ($dto->dateFrom !== null) {
-            $query->where('timestamp', '>=', $dto->dateFrom);
+            $query->where('timestamp', '>=', Carbon::parse($dto->dateFrom));
         }
 
         if ($dto->dateTo !== null) {
-            $query->where('timestamp', '<=', $dto->dateTo.' 23:59:59'); // Ensure end of day coverage if time missing
+            $query->where('timestamp', '<=', Carbon::parse($dto->dateTo)->endOfDay());
         }
 
         if ($dto->search !== null) {

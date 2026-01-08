@@ -9,8 +9,8 @@ use Carbon\Carbon;
 final class ReportFilterDTO
 {
     public function __construct(
-        public readonly Carbon $startDate,
-        public readonly Carbon $endDate,
+        public readonly ?Carbon $startDate,
+        public readonly ?Carbon $endDate,
         public readonly ?array $agentIds = null,
         public readonly ?array $statuses = null,
         public readonly ?array $types = null,
@@ -20,8 +20,8 @@ final class ReportFilterDTO
     public static function fromArray(array $data): self
     {
         return new self(
-            startDate: isset($data['start_date']) ? Carbon::parse($data['start_date']) : Carbon::now()->startOfWeek(),
-            endDate: isset($data['end_date']) ? Carbon::parse($data['end_date']) : Carbon::now()->endOfWeek(),
+            startDate: isset($data['start_date']) ? Carbon::parse($data['start_date']) : null,
+            endDate: isset($data['end_date']) ? Carbon::parse($data['end_date']) : null,
             agentIds: $data['agent_ids'] ?? null,
             statuses: $data['statuses'] ?? null,
             types: $data['types'] ?? null,

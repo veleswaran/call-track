@@ -4,43 +4,41 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Admin;
 
-use App\Domain\Reports\Actions\GetAgentPerformanceAction;
-use App\Domain\Reports\Actions\GetReportChartsAction;
-use App\Domain\Reports\Actions\GetReportMetricsAction;
+use App\Contracts\Services\ReportServiceInterface;
 use App\Domain\Reports\DTOs\ReportFilterDTO;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use App\Http\Requests\Admin\GetReportDataRequest;
+use App\Http\Resources\AgentPerformanceCollection;
+use App\Http\Resources\ReportChartResource;
+use App\Http\Resources\ReportMetricCollection;
 
 final class ReportController extends Controller
 {
     public function __construct(
-        private readonly GetReportMetricsAction $getMetricsAction,
-        private readonly GetReportChartsAction $getChartsAction,
-        private readonly GetAgentPerformanceAction $getPerformanceAction,
+        private readonly ReportServiceInterface $reportService,
     ) {}
 
-    public function metrics(Request $request): JsonResponse
+    public function metrics(GetReportDataRequest $request): ReportMetricCollection
     {
-        $filters = ReportFilterDTO::fromArray($request->all());
-        $data = $this->getMetricsAction->execute($filters);
+        $filters = ReportFilterDTO::fromArray($request->validated());
+        $data = $this->reportService->getMetrics($filters);
 
-        return response()->json(['data' => $data]);
+        return new ReportMetricCollection($data);
     }
 
-    public function charts(Request $request): JsonResponse
+    public function charts(GetReportDataRequest $request): ReportChartResource
     {
-        $filters = ReportFilterDTO::fromArray($request->all());
-        $data = $this->getChartsAction->execute($filters);
+        $filters = ReportFilterDTO::fromArray($request->validated());
+        $data = $this->reportService->getCharts($filters);
 
-        return response()->json(['data' => $data]);
+        return new ReportChartResource($data);
     }
 
-    public function performance(Request $request): JsonResponse
+    public function performance(GetReportDataRequest $request): AgentPerformanceCollection
     {
-        $filters = ReportFilterDTO::fromArray($request->all());
-        $data = $this->getPerformanceAction->execute($filters);
+        $filters = ReportFilterDTO::fromArray($request->validated());
+        $data = $this->reportService->getPerformance($filters);
 
-        return response()->json(['data' => $data]);
+        return new AgentPerformanceCollection($data);
     }
 }

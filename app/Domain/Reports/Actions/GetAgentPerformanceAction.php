@@ -17,7 +17,7 @@ final class GetAgentPerformanceAction
         // Let's check `Device` model relationships later to be sure.
         // Assuming `agent_id` -> `users` (Admin is User, Agent is User).
 
-        $query = DB::table('agents')
+        $query = \App\Domain\Agents\Models\Agent::query()
             ->join('devices', 'agents.id', '=', 'devices.agent_id')
             ->join('call_logs', 'devices.id', '=', 'call_logs.device_id')
             ->leftJoin('call_classifications', 'call_logs.id', '=', 'call_classifications.call_log_id')
@@ -47,7 +47,7 @@ final class GetAgentPerformanceAction
                                 $sub->where('call_logs.direction', 'MISSED');
                                 break;
                             case 'No Answer':
-                                $sub->where('call_logs.direction', 'INCOMING')
+                                $sub->where('call_logs.direction', 'OUTGOING')
                                     ->where('call_logs.duration', 0);
                                 break;
                         }
@@ -68,6 +68,7 @@ final class GetAgentPerformanceAction
             DB::raw('SUM(call_logs.duration) as total_duration'),
         ])
             ->groupBy('agents.id', 'agents.name', 'agents.employee_code')
+            ->toBase()
             ->get();
 
         $result = [];
