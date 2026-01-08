@@ -7,7 +7,7 @@ interface ChartDataPoint {
     name: string
     value: number
     fill?: string
-    [key: string]: any
+    [key: string]: string | number | undefined
 }
 
 interface CallsPerDayPoint {
