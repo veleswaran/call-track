@@ -101,7 +101,7 @@ export function ReportCharts({ data }: ReportChartsProps) {
                                     labelLine={false}
                                     label={({ value }) => `${((value / totalCalls) * 100).toFixed(0)}%`}
                                 >
-                                    {data.status_distribution.map((entry, index) => (
+                                    {data.status_distribution?.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={entry.fill || COLORS[index % COLORS.length]} />
                                     ))}
                                 </Pie>
