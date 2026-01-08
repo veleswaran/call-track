@@ -77,11 +77,34 @@ export function ReportCharts({ data }: ReportChartsProps) {
                                     outerRadius={80}
                                     paddingAngle={5}
                                     dataKey="value"
+                                    nameKey="name"
+                                    labelLine={false}
+                                    label={({ value }) => `${((value / totalCalls) * 100).toFixed(0)}%`}
                                 >
                                     {data.status_distribution.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={entry.fill || COLORS[index % COLORS.length]} />
                                     ))}
                                 </Pie>
+                                {/* CENTER NUMBER */}
+                                <text
+                                    x="39%"
+                                    y="45%"
+                                    textAnchor="middle"
+                                    dominantBaseline="central"
+                                    className="text-xl font-semibold fill-gray-900"
+                                >
+                                    {totalCalls}
+                                </text>
+                                <text
+                                    x="39%"
+                                    y="50%"
+                                    dy={20}
+                                    textAnchor="middle"
+                                    dominantBaseline="central"
+                                    className="text-xs fill-gray-500 uppercase"
+                                >
+                                    Calls
+                                </text>
                                 <Tooltip />
                                 <Legend verticalAlign="middle" align="right" layout="vertical" iconType="circle" />
                             </PieChart>
@@ -145,7 +168,7 @@ export function ReportCharts({ data }: ReportChartsProps) {
                     <CardDescription>New vs Returning Callers</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <ResponsiveContainer width="100%" height={200}>
+                    <ResponsiveContainer width="100%" height={250}>
                         <PieChart>
                             <Pie
                                 data={data.caller_types}
@@ -155,11 +178,33 @@ export function ReportCharts({ data }: ReportChartsProps) {
                                 outerRadius={80}
                                 paddingAngle={5}
                                 dataKey="value"
+                                nameKey="name"
+                                labelLine={false}
+                                label={({ value }) => `${((value / totalCalls) * 100).toFixed(0)}%`}
                             >
                                 {data.caller_types.map((entry, index) => (
                                     <Cell key={`cell-${index}`} fill={entry.fill || COLORS[index % COLORS.length]} />
                                 ))}
                             </Pie>
+                            <text
+                                x="35%"
+                                y="45%"
+                                textAnchor="middle"
+                                dominantBaseline="central"
+                                className="text-xl font-semibold fill-gray-900"
+                            >
+                                {data.caller_types.reduce((sum, item) => sum + item.value, 0)}
+                            </text>
+                            <text
+                                x="35%"
+                                y="50%"
+                                dy={20} 
+                                textAnchor="middle"
+                                dominantBaseline="central"
+                                className="text-xs fill-gray-500 uppercase"
+                            >
+                                Callers
+                            </text>
                             <Tooltip />
                             <Legend verticalAlign="middle" align="right" layout="vertical" />
                         </PieChart>
@@ -174,7 +219,7 @@ export function ReportCharts({ data }: ReportChartsProps) {
                     <CardDescription>Incoming vs Outgoing</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <ResponsiveContainer width="100%" height={200}>
+                    <ResponsiveContainer width="100%" height={250}>
                         <PieChart>
                             <Pie
                                 data={data.call_direction_distribution}
@@ -184,11 +229,37 @@ export function ReportCharts({ data }: ReportChartsProps) {
                                 outerRadius={80}
                                 paddingAngle={5}
                                 dataKey="value"
+                                nameKey="name"
+                                labelLine={false}
+                                label={({ value }) => `${((value / totalCalls) * 100).toFixed(0)}%`}
                             >
                                 {data.call_direction_distribution?.map((entry, index) => (
                                     <Cell key={`cell-${index}`} fill={entry.fill || COLORS[index % COLORS.length]} />
                                 ))}
                             </Pie>
+                            <text
+                                x="43%"
+                                y="44%"
+                                textAnchor="middle"
+                                dominantBaseline="central"
+                                className="text-xl font-semibold fill-gray-900"
+                            >
+                                {data.call_direction_distribution?.reduce(
+                                    (sum, item) => sum + item.value,
+                                    0
+                                )}
+                            </text>
+
+                            <text
+                                x="43%"
+                                y="50%"
+                                dy={20} 
+                                textAnchor="middle"
+                                dominantBaseline="central"
+                                className="text-xs fill-gray-500 uppercase"
+                            >
+                                Calls
+                            </text>
                             <Tooltip />
                             <Legend verticalAlign="middle" align="right" layout="vertical" />
                         </PieChart>

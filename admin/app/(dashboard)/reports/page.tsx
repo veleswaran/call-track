@@ -76,7 +76,6 @@ export default function ReportsPage() {
                     Analyze call activity, agent performance, and follow-up status using real call data.
                 </p>
             </div>
-
             <ReportFilters onFilterChange={setFilters} />
 
             <ReportSummary metrics={metricsQuery.data || []} isLoading={metricsQuery.isLoading} />
