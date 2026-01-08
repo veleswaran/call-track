@@ -23,7 +23,12 @@ class CallSyncService implements CallSyncServiceInterface
 
         Log::info("Syncing calls for device: {$dto->device->id}", [
             'count' => count($dto->logs),
+            'battery_level' => $dto->batteryLevel,
         ]);
+
+        if ($dto->batteryLevel !== null) {
+            $dto->device->update(['battery_level' => $dto->batteryLevel]);
+        }
 
         $this->ingestAction->execute($dto);
     }

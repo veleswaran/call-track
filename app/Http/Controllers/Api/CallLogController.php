@@ -41,7 +41,8 @@ class CallLogController extends Controller
 
         $dto = new SyncCallLogsDTO(
             device: $device,
-            logs: $logsData
+            logs: $logsData,
+            batteryLevel: $request->has('battery_level') ? (int) $request->validated('battery_level') : null,
         );
 
         $this->syncService->sync($dto);

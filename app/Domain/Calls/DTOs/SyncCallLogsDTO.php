@@ -14,5 +14,6 @@ readonly class SyncCallLogsDTO
     public function __construct(
         public Device $device,
         public array $logs,
+        public ?int $batteryLevel = null,
     ) {}
 }

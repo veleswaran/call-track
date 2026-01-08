@@ -17,7 +17,8 @@ class StoreCallLogsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'logs' => ['required', 'array', 'max:1000'],
+            'battery_level' => ['nullable', 'integer', 'min:0', 'max:100'],
+            'logs' => ['present', 'array', 'max:1000'],
             'logs.*.call_hash' => ['required', 'string'],
             'logs.*.phone_number' => ['required', 'string'],
             'logs.*.direction' => ['required', 'in:INCOMING,OUTGOING,MISSED'],

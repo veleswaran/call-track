@@ -92,4 +92,27 @@ class IngestCallLogsTest extends TestCase
 
         $response->assertUnprocessable();
     }
+
+    public function test_it_updates_device_battery_level_during_sync()
+    {
+        $plainToken = \Illuminate\Support\Str::random(60);
+        $tokenRecord = DeviceToken::factory()->create([
+            'token_hash' => hash('sha256', $plainToken),
+        ]);
+
+        $payload = [
+            'battery_level' => 85,
+            'logs' => [],
+        ];
+
+        $response = $this->withHeader('X-Device-Token', $plainToken)
+            ->postJson('/api/v1/call-logs/sync', $payload);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('devices', [
+            'id' => $tokenRecord->device_id,
+            'battery_level' => 85,
+        ]);
+    }
 }
