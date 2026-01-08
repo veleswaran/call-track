@@ -1,4 +1,4 @@
-import { ArrowDownIcon, ArrowUpIcon, Phone, CheckCircle, XCircle, PhoneOff, Clock } from "lucide-react"
+import { Phone, CheckCircle, XCircle, PhoneOff, Clock, LucideIcon } from "lucide-react"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@shared/components/ui/card"
 import { cn } from "@shared/utils"
@@ -16,7 +16,7 @@ interface ReportSummaryProps {
     isLoading?: boolean
 }
 
-const iconMap: Record<string, any> = {
+const iconMap: Record<string, LucideIcon> = {
     phone: Phone,
     'check-circle': CheckCircle,
     'x-circle': XCircle,

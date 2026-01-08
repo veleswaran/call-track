@@ -6,7 +6,7 @@ import {
     CardHeader,
     CardTitle,
 } from "@shared/components/ui/card";
-import { Phone, Clock, Smartphone, Timer, TrendingUp, TrendingDown, PhoneMissed } from "lucide-react";
+import { Phone, Clock, Timer, TrendingUp, TrendingDown, PhoneMissed } from "lucide-react";
 import { useDashboardMetrics, useDashboardCharts } from "@features/dashboard/hooks/use-dashboard";
 import { CallVolumeTrendsChart } from "@features/dashboard/components/CallVolumeTrendsChart";
 import { CallOutcomeChart } from "@features/dashboard/components/CallOutcomeChart";

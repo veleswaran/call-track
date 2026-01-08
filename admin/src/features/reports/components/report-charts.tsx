@@ -3,13 +3,33 @@
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend, PieChart, Pie, Cell } from "recharts"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@shared/components/ui/card"
 
+interface ChartDataPoint {
+    name: string
+    value: number
+    fill?: string
+    [key: string]: any
+}
+
+interface CallsPerDayPoint {
+    date: string
+    connected: number
+    missed: number
+    no_answer: number
+}
+
+interface PeakHourPoint {
+    hour: number
+    label: string
+    value: number
+}
+
 interface ReportChartsProps {
     data: {
-        calls_per_day: any[]
-        status_distribution: any[]
-        peak_call_hours: any[]
-        caller_types: any[]
-        call_direction_distribution: any[]
+        calls_per_day: CallsPerDayPoint[]
+        status_distribution: ChartDataPoint[]
+        peak_call_hours: PeakHourPoint[]
+        caller_types: ChartDataPoint[]
+        call_direction_distribution: ChartDataPoint[]
     }
 }
 
@@ -198,7 +218,7 @@ export function ReportCharts({ data }: ReportChartsProps) {
                             <text
                                 x="35%"
                                 y="50%"
-                                dy={20} 
+                                dy={20}
                                 textAnchor="middle"
                                 dominantBaseline="central"
                                 className="text-xs fill-gray-500 uppercase"
@@ -253,7 +273,7 @@ export function ReportCharts({ data }: ReportChartsProps) {
                             <text
                                 x="43%"
                                 y="50%"
-                                dy={20} 
+                                dy={20}
                                 textAnchor="middle"
                                 dominantBaseline="central"
                                 className="text-xs fill-gray-500 uppercase"

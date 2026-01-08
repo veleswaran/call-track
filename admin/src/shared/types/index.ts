@@ -152,13 +152,15 @@ export interface DashboardMetrics {
     personal_calls: number;
     ignored_calls: number;
     unclassified_calls: number;
+    missed_calls: number;
     total_duration_seconds: number;
     average_call_duration_seconds: number;
     total_devices: number;
-    missed_calls: number;
+    active_devices: number;
     total_agents: number;
     // Week-over-week comparison percentages
     total_calls_change_percent: number | null;
+    active_devices_change_percent: number | null;
     missed_calls_change_percent: number | null;
     average_call_duration_change_percent: number | null;
     total_duration_change_percent: number | null;

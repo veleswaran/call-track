@@ -27,12 +27,12 @@ export default function ReportsPage() {
         types: filters.type !== 'all' ? [filters.type] : undefined,
     }
 
-    const getQueryString = (params: Record<string, any>) => {
+    const getQueryString = (params: Record<string, string | number | (string | number)[] | undefined | null>) => {
         const searchParams = new URLSearchParams();
         Object.entries(params).forEach(([key, value]) => {
             if (value !== undefined && value !== null && value !== '') {
                 if (Array.isArray(value)) {
-                    value.forEach(v => searchParams.append(`${key}[]`, v));
+                    value.forEach(v => searchParams.append(`${key}[]`, String(v)));
                 } else {
                     searchParams.append(key, String(value));
                 }
@@ -45,7 +45,7 @@ export default function ReportsPage() {
         queryKey: ['reports', 'metrics', queryParams],
         queryFn: async () => {
             const qs = getQueryString(queryParams);
-            const res = await api.get<{ data: any[] }>(`/api/v1/admin/reports/metrics?${qs}`)
+            const res = await api.get<{ data: React.ComponentProps<typeof ReportSummary>['metrics'] }>(`/api/v1/admin/reports/metrics?${qs}`)
             return res.data
         }
     })
@@ -54,7 +54,11 @@ export default function ReportsPage() {
         queryKey: ['reports', 'charts', queryParams],
         queryFn: async () => {
             const qs = getQueryString(queryParams);
-            const res = await api.get<{ data: any }>(`/api/v1/admin/reports/charts?${qs}`)
+            // Use ReportChartsProps['data'] if possible, or define a compatible type
+            // The chart component expects specific structure. 
+            // For now, removing 'any' explicit usage or silencing if needed, but better to type it.
+            // Let's use a looser type that passes lint but is safer than any.
+            const res = await api.get<{ data: React.ComponentProps<typeof ReportCharts>['data'] }>(`/api/v1/admin/reports/charts?${qs}`)
             return res.data
         }
     })
@@ -63,7 +67,7 @@ export default function ReportsPage() {
         queryKey: ['reports', 'performance', queryParams],
         queryFn: async () => {
             const qs = getQueryString(queryParams);
-            const res = await api.get<{ data: any[] }>(`/api/v1/admin/reports/performance?${qs}`)
+            const res = await api.get<{ data: React.ComponentProps<typeof AgentPerformanceTable>['data'] }>(`/api/v1/admin/reports/performance?${qs}`)
             return res.data
         }
     })

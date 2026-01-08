@@ -35,6 +35,7 @@ describe("useDashboardMetrics", () => {
             personal_calls: 245,
             ignored_calls: 97,
             unclassified_calls: 50,
+            missed_calls: 15,
             total_devices: 10,
             active_devices: 8,
             total_agents: 5,
@@ -42,6 +43,7 @@ describe("useDashboardMetrics", () => {
             average_call_duration_seconds: 142,
             total_calls_change_percent: 12.5,
             active_devices_change_percent: 5.0,
+            missed_calls_change_percent: -5.0,
             average_call_duration_change_percent: -2.1,
             total_duration_change_percent: 10.0,
         };

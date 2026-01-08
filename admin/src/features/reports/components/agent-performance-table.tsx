@@ -72,6 +72,31 @@ const durationToSeconds = (duration: string): number => {
     return totalSeconds;
 }
 
+const SortableHeader = ({
+    label,
+    sortKey,
+    onSort,
+    align = "left",
+    className = ""
+}: {
+    label: React.ReactNode,
+    sortKey: keyof AgentPerformance,
+    onSort: (key: keyof AgentPerformance) => void,
+    align?: "left" | "right",
+    className?: string
+}) => (
+    <TableHead className={className}>
+        <Button
+            variant="ghost"
+            onClick={() => onSort(sortKey)}
+            className={`p-0 hover:bg-transparent flex items-center gap-1 ${align === "right" ? "ml-auto" : ""}`}
+        >
+            {label}
+            <ArrowUpDown className="h-3 w-3" />
+        </Button>
+    </TableHead>
+);
+
 export function AgentPerformanceTable({ data, filters }: AgentPerformanceTableProps) {
     const [sortConfig, setSortConfig] = useState<{
         key: keyof AgentPerformance | null;
@@ -89,13 +114,13 @@ export function AgentPerformanceTable({ data, filters }: AgentPerformanceTablePr
     const sortedData = [...data].sort((a, b) => {
         if (!sortConfig.key) return 0;
 
-        let aValue: any = a[sortConfig.key];
-        let bValue: any = b[sortConfig.key];
+        let aValue = a[sortConfig.key];
+        let bValue = b[sortConfig.key];
 
         // Handle duration sorting
         if (sortConfig.key === 'total_duration' || sortConfig.key === 'avg_duration') {
-            aValue = durationToSeconds(aValue);
-            bValue = durationToSeconds(bValue);
+            aValue = durationToSeconds(aValue as string);
+            bValue = durationToSeconds(bValue as string);
         }
 
         if (aValue < bValue) {
@@ -107,18 +132,7 @@ export function AgentPerformanceTable({ data, filters }: AgentPerformanceTablePr
         return 0;
     });
 
-    const SortableHeader = ({ label, sortKey, align = "left", className = "" }: { label: React.ReactNode, sortKey: keyof AgentPerformance, align?: "left" | "right", className?: string }) => (
-        <TableHead className={className}>
-            <Button
-                variant="ghost"
-                onClick={() => handleSort(sortKey)}
-                className={`p-0 hover:bg-transparent flex items-center gap-1 ${align === "right" ? "ml-auto" : ""}`}
-            >
-                {label}
-                <ArrowUpDown className="h-3 w-3" />
-            </Button>
-        </TableHead>
-    );
+
 
     // Helper to build call logs URL
     const getCallLogsUrl = (agentId: number) => {
@@ -168,11 +182,11 @@ export function AgentPerformanceTable({ data, filters }: AgentPerformanceTablePr
                             <TableHead className="w-[80px]">Avatar</TableHead>
                             <TableHead>Agent</TableHead>
                             <TableHead>EMP Code</TableHead>
-                            <SortableHeader label="Total Calls" sortKey="total_calls" align="right" className="text-right" />
-                            <SortableHeader label="Connected" sortKey="connected" align="right" className="text-right" />
-                            <SortableHeader label="Missed" sortKey="missed" align="right" className="text-right" />
-                            <SortableHeader label="Total Duration" sortKey="total_duration" />
-                            <SortableHeader label="Avg Duration" sortKey="avg_duration" />
+                            <SortableHeader label="Total Calls" sortKey="total_calls" align="right" className="text-right" onSort={handleSort} />
+                            <SortableHeader label="Connected" sortKey="connected" align="right" className="text-right" onSort={handleSort} />
+                            <SortableHeader label="Missed" sortKey="missed" align="right" className="text-right" onSort={handleSort} />
+                            <SortableHeader label="Total Duration" sortKey="total_duration" onSort={handleSort} />
+                            <SortableHeader label="Avg Duration" sortKey="avg_duration" onSort={handleSort} />
                             <TableHead>
                                 <div className="flex items-center gap-1">
                                     Handling Rate
