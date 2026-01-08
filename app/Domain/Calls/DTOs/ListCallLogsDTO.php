@@ -15,9 +15,12 @@ final readonly class ListCallLogsDTO
         public int $page,
         public int $perPage,
         public ?int $deviceId = null,
-        public ?int $agentId = null,
-        public ?string $classification = null,
-        public ?string $callType = null,
+        // Arrays for multi-select
+        public array $agentIds = [],
+        public array $callTypes = [], // incoming, outgoing, missed
+        public array $classifications = [], // business, personal, ignored
+        public array $statuses = [], // Connected, Missed, No Answer
+
         public ?string $dateFrom = null,
         public ?string $dateTo = null,
         public ?string $search = null,
@@ -28,15 +31,36 @@ final readonly class ListCallLogsDTO
         $page = (int) ($request->integer('page') ?: 1);
         $perPage = (int) ($request->integer('per_page') ?: 15);
 
+        // Normalize legacy single inputs to arrays
+        $agentIds = $request->input('agents', []);
+        if (empty($agentIds) && $agentId = $request->integer('agent_id')) {
+            $agentIds = [$agentId];
+        }
+
+        $callTypes = $request->input('types', []);
+        if (empty($callTypes) && $type = $request->input('call_type')) {
+            $callTypes = [$type];
+        }
+
+        $classifications = $request->input('classifications', []);
+        if (empty($classifications) && $cls = $request->input('classification')) {
+            $classifications = [$cls];
+        }
+
+        // Map start_date/end_date to dateFrom/dateTo
+        $dateFrom = $request->input('start_date') ?? $request->input('date_from');
+        $dateTo = $request->input('end_date') ?? $request->input('date_to');
+
         return new self(
             page: $page,
             perPage: $perPage,
             deviceId: $request->integer('device_id') ?: null,
-            agentId: $request->integer('agent_id') ?: null,
-            classification: $request->string('classification')->toString() ?: null,
-            callType: $request->string('call_type')->toString() ?: null,
-            dateFrom: $request->string('date_from')->toString() ?: null,
-            dateTo: $request->string('date_to')->toString() ?: null,
+            agentIds: array_map('intval', (array) $agentIds),
+            callTypes: (array) $callTypes,
+            classifications: (array) $classifications,
+            statuses: (array) $request->input('statuses', []),
+            dateFrom: $dateFrom ? (string) $dateFrom : null,
+            dateTo: $dateTo ? (string) $dateTo : null,
             search: $request->string('search')->toString() ?: null,
         );
     }

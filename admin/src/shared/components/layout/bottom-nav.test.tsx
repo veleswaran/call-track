@@ -89,8 +89,8 @@ describe("BottomNav", () => {
 });
 
 describe("navItems", () => {
-    it("should have 4 navigation items", () => {
-        expect(navItems).toHaveLength(4);
+    it("should have 5 navigation items", () => {
+        expect(navItems).toHaveLength(5);
     });
 
     it("should have Dashboard as first item", () => {

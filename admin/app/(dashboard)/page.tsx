@@ -6,7 +6,7 @@ import {
     CardHeader,
     CardTitle,
 } from "@shared/components/ui/card";
-import { Phone, Clock, Smartphone, Timer, TrendingUp, TrendingDown } from "lucide-react";
+import { Phone, Clock, Timer, TrendingUp, TrendingDown, PhoneMissed } from "lucide-react";
 import { useDashboardMetrics, useDashboardCharts } from "@features/dashboard/hooks/use-dashboard";
 import { CallVolumeTrendsChart } from "@features/dashboard/components/CallVolumeTrendsChart";
 import { CallOutcomeChart } from "@features/dashboard/components/CallOutcomeChart";
@@ -96,7 +96,7 @@ export default function DashboardPage() {
     const { data: charts, isLoading: chartsLoading } = useDashboardCharts();
 
     const totalCalls = metrics?.total_calls ?? 0;
-    const activeDevices = metrics?.active_devices ?? 0;
+    const missedCalls = metrics?.missed_calls ?? 0;
     const avgDuration = metrics?.average_call_duration_seconds ?? 0;
     const durationSeconds = metrics?.total_duration_seconds ?? 0;
 
@@ -120,10 +120,10 @@ export default function DashboardPage() {
                     isLoading={metricsLoading}
                 />
                 <MetricCard
-                    title="Active Devices"
-                    value={activeDevices.toLocaleString()}
-                    icon={Smartphone}
-                    changePercent={metrics?.active_devices_change_percent}
+                    title="Missed Calls"
+                    value={missedCalls.toLocaleString()}
+                    icon={PhoneMissed}
+                    changePercent={metrics?.missed_calls_change_percent}
                     isLoading={metricsLoading}
                 />
                 <MetricCard
