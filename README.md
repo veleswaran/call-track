@@ -55,6 +55,7 @@ Note: Access to docs is gated by `Gate::define('viewApiDocs', ...)`. In this rep
 | `POST` | `/api/v1/devices/register` | Register a new device | None |
 | `POST` | `/api/v1/call-logs/sync` | Ingest batched call logs | Device Token |
 | `POST` | `/api/v1/calls/{hash}/classify` | Classify/Note a call from device | Device Token |
+| `POST` | `/api/v1/call-logs/classify` | Batch Classify/Note a call from device | Device Token |
 | `GET` | `/api/v1/admin/dashboard` | Analytics Dashboard | Admin (Sanctum) |
 | `GET` | `/api/v1/admin/call-logs` | List paginated call logs | Admin (Sanctum) |
 | `POST` | `/api/v1/admin/calls/{id}/classify` | Classify a call log | Admin (Sanctum) |
