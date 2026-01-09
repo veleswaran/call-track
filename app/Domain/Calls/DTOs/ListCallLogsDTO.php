@@ -25,6 +25,7 @@ final readonly class ListCallLogsDTO
         public ?string $dateTo = null,
         public ?string $search = null,
         public ?\App\Domain\Users\Models\User $user = null,
+        public ?int $teamId = null,
     ) {}
 
     public static function fromRequest(IndexCallLogsRequest $request): self
@@ -64,6 +65,7 @@ final readonly class ListCallLogsDTO
             dateTo: $dateTo ? (string) $dateTo : null,
             search: $request->string('search')->toString() ?: null,
             user: $request->user(),
+            teamId: $request->integer('team_id') ?: null,
         );
     }
 }

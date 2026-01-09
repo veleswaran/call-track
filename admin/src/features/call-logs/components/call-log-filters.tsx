@@ -35,7 +35,8 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
         (filters.agents && filters.agents.length > 0) ||
         (filters.types && filters.types.length > 0) ||
         (filters.statuses && filters.statuses.length > 0) ||
-        (filters.classifications && filters.classifications.length > 0);
+        (filters.classifications && filters.classifications.length > 0) ||
+        filters.team_id;
 
     const clearFilters = () => {
         onChange({
@@ -131,6 +132,48 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
                     <SelectItem value="incoming">Incoming</SelectItem>
                     <SelectItem value="outgoing">Outgoing</SelectItem>
                     <SelectItem value="missed">Missed</SelectItem>
+                </SelectContent>
+            </Select>
+
+            {/* Team Filter */}
+            <AsyncSelect
+                label="Team"
+                placeholder="Team..."
+                value={filters.team_id?.toString()}
+                onChange={(val) => updateNumericFilter("team_id", val)}
+                loadOptions={async (search) => {
+                    try {
+                        // Dynamically import to avoid circular dependencies if any, though likely fine
+                        const { teamsApi } = await import("@features/teams/api/teams-api");
+                        const response = await teamsApi.getTeams({
+                            page: 1,
+                            per_page: 20,
+                            search: search
+                        });
+                        return response.data.map((t) => ({
+                            label: t.name,
+                            value: t.id.toString(),
+                        }));
+                    } catch (e) {
+                        console.error(e);
+                        return [];
+                    }
+                }}
+                className="w-[160px]"
+            />
+
+            <Select
+                value={filters.status?.[0] ?? "all"}
+                onValueChange={(val) => updateArrayFilter("statuses", val)}
+            >
+                <SelectTrigger className="w-[140px]">
+                    <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="all">All Statuses</SelectItem>
+                    <SelectItem value="Connected">Connected</SelectItem>
+                    <SelectItem value="Missed">Missed</SelectItem>
+                    <SelectItem value="No Answer">No Answer</SelectItem>
                 </SelectContent>
             </Select>
 

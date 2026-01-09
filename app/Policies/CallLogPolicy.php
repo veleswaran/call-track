@@ -12,7 +12,9 @@ class CallLogPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasRole(['super-admin', 'admin']);
+        // Access is scoped by the query builder, so we allow any authenticated user
+        // to attempt to view the list. The query will return empty or scoped results.
+        return true;
     }
 
     /**
