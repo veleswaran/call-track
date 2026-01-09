@@ -115,4 +115,51 @@ class IngestCallLogsTest extends TestCase
             'battery_level' => 85,
         ]);
     }
+
+    public function test_it_applies_inline_classification_during_sync()
+    {
+        Queue::fake();
+
+        $plainToken = \Illuminate\Support\Str::random(60);
+        $tokenRecord = DeviceToken::factory()->create([
+            'token_hash' => hash('sha256', $plainToken),
+        ]);
+
+        $payload = [
+            'logs' => [
+                [
+                    'call_hash' => 'classified-hash-1',
+                    'phone_number' => '+15550200',
+                    'direction' => 'OUTGOING',
+                    'duration' => 120,
+                    'timestamp' => now()->toDateTimeString(),
+                    'classification' => [
+                        'type' => 'PERSONAL',
+                        'note' => 'Personal call to family',
+                    ],
+                ],
+            ],
+        ];
+
+        $response = $this->withHeader('X-Device-Token', $plainToken)
+            ->postJson('/api/v1/call-logs/sync', $payload);
+
+        $response->assertOk();
+
+        // Verify call log was created
+        $log = \App\Domain\Calls\Models\CallLog::where('call_hash', 'classified-hash-1')->first();
+        $this->assertNotNull($log);
+
+        // Verify classification is PERSONAL (not default BUSINESS)
+        $this->assertDatabaseHas('call_classifications', [
+            'call_log_id' => $log->id,
+            'type' => 'PERSONAL',
+        ]);
+
+        // Verify note was created
+        $this->assertDatabaseHas('call_notes', [
+            'call_log_id' => $log->id,
+            'note' => 'Personal call to family',
+        ]);
+    }
 }

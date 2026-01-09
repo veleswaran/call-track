@@ -15,7 +15,6 @@ Route::prefix('v1')->group(function () {
 
     Route::middleware([DeviceAuthMiddleware::class])->group(function () {
         Route::post('/call-logs/sync', [\App\Http\Controllers\Api\CallLogController::class, 'store']);
-        Route::post('/call-logs/classify', [\App\Http\Controllers\Api\DeviceCallClassificationController::class, 'classifyBatch']);
         Route::post('/call-logs/{callHash}/classify', [\App\Http\Controllers\Api\DeviceCallClassificationController::class, 'classify']);
     });
 

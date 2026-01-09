@@ -36,6 +36,8 @@ class CallLogController extends Controller
                 duration: (int) $log['duration'],
                 timestamp: $log['timestamp'],
                 simSlot: (int) ($log['sim_slot'] ?? 0),
+                classificationType: $log['classification']['type'] ?? null,
+                classificationNote: $log['classification']['note'] ?? null,
             );
         }
 

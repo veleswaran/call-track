@@ -53,9 +53,8 @@ Note: Access to docs is gated by `Gate::define('viewApiDocs', ...)`. In this rep
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
 | `POST` | `/api/v1/devices/register` | Register a new device | None |
-| `POST` | `/api/v1/call-logs/sync` | Ingest batched call logs | Device Token |
-| `POST` | `/api/v1/calls/{hash}/classify` | Classify/Note a call from device | Device Token |
-| `POST` | `/api/v1/call-logs/classify` | Batch Classify/Note a call from device | Device Token |
+| `POST` | `/api/v1/call-logs/sync` | Ingest batched call logs (with inline classification) | Device Token |
+| `POST` | `/api/v1/call-logs/{hash}/classify` | Classify/Note a call from device | Device Token |
 | `GET` | `/api/v1/admin/dashboard` | Analytics Dashboard | Admin (Sanctum) |
 | `GET` | `/api/v1/admin/call-logs` | List paginated call logs | Admin (Sanctum) |
 | `POST` | `/api/v1/admin/calls/{id}/classify` | Classify a call log | Admin (Sanctum) |
@@ -170,17 +169,23 @@ curl --request POST \
   --header 'Accept: application/json' \
   --header 'Content-Type: application/json' \
   --header 'X-Device-Token: YOUR_DEVICE_TOKEN' \
-  --data '{
-    "battery_level": 85,
-    "logs": [
-      {
-        "call_id": "1699999999999-0001",
-        "number": "+15551234567",
-        "direction": "outgoing",
-        "duration": 42,
-        "timestamp": "2025-12-29T10:15:00Z"
+  --data '
+  {
+  "battery_level": 85,
+  "logs": [
+    {
+      "call_hash": "abc123",
+      "phone_number": "+919952507884",
+      "direction": "OUTGOING",
+      "duration": 500,
+      "timestamp": "2026-01-09T18:36:22Z",
+      "sim_slot": 0,
+      "classification": {
+        "type": "PERSONAL",
+        "note": "Personal call to family"
       }
-    ]
+    }
+  ]
   }'
 ```
 
