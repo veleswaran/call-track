@@ -17,7 +17,7 @@ class CallSyncService implements CallSyncServiceInterface
         protected UpdateDeviceBatteryLevelAction $updateBatteryAction,
     ) {}
 
-    public function sync(SyncCallLogsDTO $dto): void
+    public function sync(SyncCallLogsDTO $dto): array
     {
         Log::info("Syncing calls for device: {$dto->device->id}", [
             'count' => count($dto->logs),
@@ -28,6 +28,6 @@ class CallSyncService implements CallSyncServiceInterface
             $this->updateBatteryAction->execute($dto->device, $dto->batteryLevel);
         }
 
-        $this->ingestAction->execute($dto);
+        return $this->ingestAction->execute($dto);
     }
 }

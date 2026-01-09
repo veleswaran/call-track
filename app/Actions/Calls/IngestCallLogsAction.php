@@ -12,16 +12,26 @@ use App\Jobs\ProcessCallLogAnalytics;
 
 class IngestCallLogsAction
 {
-    public function execute(SyncCallLogsDTO $dto): void
+    /**
+     * @return array{ingested: int, skipped: int, skipped_slots: int[]}
+     */
+    public function execute(SyncCallLogsDTO $dto): array
     {
         $records = [];
         $classificationMap = []; // call_hash => [type, note, agentId]
         $now = now();
         $trackedSlots = $dto->device->tracked_sim_slots;
+        $skippedCount = 0;
+        $skippedSlots = [];
 
         foreach ($dto->logs as $log) {
             // Filter by tracked SIM slots if configured
             if ($trackedSlots !== null && ! in_array($log->simSlot, $trackedSlots, true)) {
+                $skippedCount++;
+                if (! in_array($log->simSlot, $skippedSlots, true)) {
+                    $skippedSlots[] = $log->simSlot;
+                }
+
                 continue;
             }
 
@@ -49,7 +59,11 @@ class IngestCallLogsAction
         }
 
         if (empty($records)) {
-            return;
+            return [
+                'ingested' => 0,
+                'skipped' => $skippedCount,
+                'skipped_slots' => $skippedSlots,
+            ];
         }
 
         // Chunking for large batches
@@ -114,5 +128,11 @@ class IngestCallLogsAction
 
         // Dispatch analytics job for the device
         ProcessCallLogAnalytics::dispatch($dto->device->id);
+
+        return [
+            'ingested' => count($records),
+            'skipped' => $skippedCount,
+            'skipped_slots' => $skippedSlots,
+        ];
     }
 }
