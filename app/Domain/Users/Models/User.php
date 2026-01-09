@@ -11,8 +11,17 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    /**
+     * @property-read \App\Domain\Agents\Models\Agent|null $agent
+     *
+     * @use HasFactory<\Database\Factories\UserFactory>
+     */
     use HasApiTokens, HasFactory, HasRoles, Notifiable;
+
+    public function agent(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(\App\Domain\Agents\Models\Agent::class);
+    }
 
     protected static function newFactory()
     {

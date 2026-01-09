@@ -20,6 +20,34 @@ final class BuildCallLogQueryAction
             ->with(['classification', 'device.agent'])
             ->orderByDesc('timestamp');
 
+        // Access Control Scope
+        if ($dto->user && ! $dto->user->hasRole(['super-admin', 'admin'])) {
+            /** @var \App\Domain\Agents\Models\Agent|null $userAgent */
+            $userAgent = $dto->user->agent;
+
+            if (! $userAgent) {
+                // If user has no agent (and not admin), they shouldn't see anything or handle error.
+                // For safety, return empty.
+                $query->whereRaw('1 = 0');
+            } else {
+                $query->whereHas('device', function ($deviceQuery) use ($userAgent) {
+                    $deviceQuery->where(function ($q) use ($userAgent) {
+                        // 1. Own records
+                        $q->where('agent_id', $userAgent->id);
+
+                        // 2. Team records where I am a manager
+                        $q->orWhereIn('agent_id', function ($sub) use ($userAgent) {
+                            $sub->select('team_members.agent_id')
+                                ->from('team_members')
+                                ->join('team_members as my_membership', 'team_members.team_id', '=', 'my_membership.team_id')
+                                ->where('my_membership.agent_id', $userAgent->id)
+                                ->where('my_membership.role', 'MANAGER');
+                        });
+                    });
+                });
+            }
+        }
+
         if ($dto->deviceId !== null) {
             $query->where('device_id', $dto->deviceId);
         }

@@ -20,7 +20,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property int $duration
  * @property \Illuminate\Support\Carbon $timestamp
  * @property \Illuminate\Support\Carbon $created_at
- * @property-read Device $device
+ * @property-read Device|null $device
  * @property-read CallClassification|null $classification
  * @property-read \Illuminate\Database\Eloquent\Collection<int, CallNote> $notes
  */

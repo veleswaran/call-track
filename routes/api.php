@@ -59,6 +59,11 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('users', \App\Http\Controllers\Api\Admin\AdminUserController::class);
         Route::post('/users/{id}/reset-2fa', [\App\Http\Controllers\Api\Admin\AdminUserController::class, 'resetTwoFactor']);
 
+        // Team Management
+        Route::get('teams', [\App\Http\Controllers\Api\Teams\TeamController::class, 'index']);
+        Route::post('teams', [\App\Http\Controllers\Api\Teams\TeamController::class, 'store']);
+        Route::post('teams/{team}/members', [\App\Http\Controllers\Api\Teams\TeamController::class, 'addMember']);
+
     });
 
     // 2FA Management (Session based)

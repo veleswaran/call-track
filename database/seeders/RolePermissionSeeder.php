@@ -20,16 +20,21 @@ class RolePermissionSeeder extends Seeder
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
         // Create permissions
+        // Create permissions
         Permission::firstOrCreate(['name' => 'manage users']);
         Permission::firstOrCreate(['name' => 'view dashboard']);
         Permission::firstOrCreate(['name' => 'manage devices']);
         Permission::firstOrCreate(['name' => 'view reports']);
+        Permission::firstOrCreate(['name' => 'view own calls']);
 
         // Create roles and assign existing permissions
-        $adminRole = Role::firstOrCreate(['name' => 'admin']);
-        $adminRole->givePermissionTo(Permission::all());
+        $superAdminRole = Role::firstOrCreate(['name' => 'super-admin']);
+        $superAdminRole->givePermissionTo(Permission::all());
 
-        $managerRole = Role::firstOrCreate(['name' => 'manager']);
-        $managerRole->givePermissionTo(['view dashboard', 'view reports', 'manage devices']);
+        $adminRole = Role::firstOrCreate(['name' => 'admin']);
+        $adminRole->givePermissionTo(['manage users', 'view dashboard', 'manage devices', 'view reports']);
+
+        $agentRole = Role::firstOrCreate(['name' => 'agent']);
+        $agentRole->givePermissionTo(['view own calls']);
     }
 }

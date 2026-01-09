@@ -1,0 +1,90 @@
+<?php
+
+namespace Tests\Feature\Api\Teams;
+
+use App\Domain\Agents\Models\Agent;
+use App\Domain\Teams\Models\Team;
+use App\Domain\Users\Models\User;
+use Database\Seeders\RolePermissionSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\Models\Role;
+use Tests\TestCase;
+
+class TeamManagementTest extends TestCase
+{
+    use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->seed(RolePermissionSeeder::class);
+    }
+
+    public function test_admin_can_create_team()
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+
+        $response = $this->actingAs($admin)->postJson('/api/v1/admin/teams', [
+            'name' => 'Sales Team',
+        ]);
+
+        $response->assertCreated();
+        $this->assertDatabaseHas('teams', ['name' => 'Sales Team']);
+    }
+
+    public function test_admin_can_add_member_to_team()
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+
+        $team = Team::create(['name' => 'Support Team']);
+        $agent = Agent::factory()->create();
+
+        $response = $this->actingAs($admin)->postJson("/api/v1/admin/teams/{$team->id}/members", [
+            'agent_id' => $agent->id,
+            'role' => 'MEMBER',
+        ]);
+
+        $response->assertOk();
+        $this->assertDatabaseHas('team_members', [
+            'team_id' => $team->id,
+            'agent_id' => $agent->id,
+            'role' => 'MEMBER',
+        ]);
+    }
+
+    public function test_admin_can_assign_manager_to_team()
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+
+        $team = Team::create(['name' => 'Dev Team']);
+        $agent = Agent::factory()->create();
+
+        $response = $this->actingAs($admin)->postJson("/api/v1/admin/teams/{$team->id}/members", [
+            'agent_id' => $agent->id,
+            'role' => 'MANAGER',
+        ]);
+
+        $response->assertOk();
+        $this->assertDatabaseHas('team_members', [
+            'team_id' => $team->id,
+            'agent_id' => $agent->id,
+            'role' => 'MANAGER',
+        ]);
+    }
+
+    public function test_regular_agent_cannot_manage_teams()
+    {
+        $user = User::factory()->create();
+        $user->assignRole('agent'); // Should use agent role, not Team Manager role implicitly
+        // Note: Agent role doesn't have team management permissions
+
+        $response = $this->actingAs($user)->postJson('/api/v1/admin/teams', [
+            'name' => 'Hacker Team',
+        ]);
+
+        $response->assertForbidden();
+    }
+}

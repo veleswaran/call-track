@@ -36,4 +36,17 @@ class Agent extends Model
     {
         return $this->hasMany(Device::class);
     }
+
+    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(\App\Domain\Users\Models\User::class);
+    }
+
+    public function teams(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(\App\Domain\Teams\Models\Team::class, 'team_members')
+            ->using(\App\Domain\Teams\Models\TeamMember::class)
+            ->withPivot('role')
+            ->withTimestamps();
+    }
 }

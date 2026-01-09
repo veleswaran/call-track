@@ -5,7 +5,7 @@ meta {
 }
 
 post {
-  url: http://127.0.0.1:8000/api/v1/call-logs/sync
+  url: http://localhost:8000/api/v1/call-logs/sync
   body: json
   auth: inherit
 }
@@ -13,34 +13,19 @@ post {
 headers {
   Content-Type: application/json
   Accept: application/json
-  X-Device-Token: cOnDi0ZULdsht5excgQN2ipAx7adHJce1V2JCAz1tE2sqRGEzcZYVFBeQTY1
+  X-Device-Token: NYei1rEIqXN88vF5a8RGZS0zRgL4EYoa3zmVNNTq2ozqiCUuOxFPAjXDdMAi
 }
 
 body:json {
   {
+    "batter_level":85,
     "logs": [
       {
-        "call_hash": "dfg4b6rreyghebfdsdhdfhh",
+        "call_hash": "sfdfdghdfdfhfhgdg",
         "phone_number": "+919952507804",
         "direction": "OUTGOING",
         "duration": 50,
-        "timestamp": "2025-12-31T14:15:22Z",
-        "sim_slot": 0
-      },
-      {
-        "call_hash": "dsfsgdfg5dsadtgrygrh",
-        "phone_number": "+919952506704",
-        "direction": "OUTGOING",
-        "duration": 150,
-        "timestamp": "2026-01-03T14:15:22Z",
-        "sim_slot": 0
-      },
-      {
-        "call_hash": "dfgdfghsddsfgrtretret4",
-        "phone_number": "+919952504504",
-        "direction": "OUTGOING",
-        "duration": 510,
-        "timestamp": "2026-01-03T14:15:22Z",
+        "timestamp": "2026-01-07T18:36:22Z",
         "sim_slot": 0
       }
     ]
