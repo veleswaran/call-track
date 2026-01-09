@@ -50,7 +50,8 @@ export default function DevicesPage() {
                             <TableHead className="w-[50px]"></TableHead>
                             <TableHead>Device Name</TableHead>
                             <TableHead>Model</TableHead>
-                            <TableHead>OS Version</TableHead>
+                            <TableHead>Agent</TableHead>
+                            <TableHead>Battery</TableHead>
                             <TableHead>Tracked SIMs</TableHead>
                             <TableHead>Last Sync</TableHead>
                             <TableHead>Status</TableHead>
@@ -60,19 +61,19 @@ export default function DevicesPage() {
                     <TableBody>
                         {isLoading ? (
                             <TableRow>
-                                <TableCell colSpan={6} className="h-24 text-center">
+                                <TableCell colSpan={9} className="h-24 text-center">
                                     Loading...
                                 </TableCell>
                             </TableRow>
                         ) : isError ? (
                             <TableRow>
-                                <TableCell colSpan={6} className="h-24 text-center text-red-500">
+                                <TableCell colSpan={9} className="h-24 text-center text-red-500">
                                     Failed to load devices
                                 </TableCell>
                             </TableRow>
                         ) : devices.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={6} className="h-24 text-center">
+                                <TableCell colSpan={9} className="h-24 text-center">
                                     No devices found
                                 </TableCell>
                             </TableRow>
@@ -86,7 +87,25 @@ export default function DevicesPage() {
                                         {device.device_name}
                                     </TableCell>
                                     <TableCell>{device.device_model}</TableCell>
-                                    <TableCell>{device.os_version}</TableCell>
+                                    <TableCell>
+                                        {device.agent ? (
+                                            <span className="text-blue-600 dark:text-blue-400">{device.agent.name}</span>
+                                        ) : (
+                                            <span className="text-zinc-400">—</span>
+                                        )}
+                                    </TableCell>
+                                    <TableCell>
+                                        {device.battery_level !== null && device.battery_level !== undefined ? (
+                                            <span className={`font-medium ${device.battery_level > 50 ? 'text-green-600 dark:text-green-400' :
+                                                    device.battery_level > 20 ? 'text-yellow-600 dark:text-yellow-400' :
+                                                        'text-red-600 dark:text-red-400'
+                                                }`}>
+                                                {device.battery_level}%
+                                            </span>
+                                        ) : (
+                                            <span className="text-zinc-400">—</span>
+                                        )}
+                                    </TableCell>
                                     <TableCell>
                                         {device.tracked_sim_slots === null
                                             ? <span className="text-zinc-400">All</span>

@@ -45,6 +45,7 @@ class Device extends Model
         'user_id',
         'agent_id',
         'tracked_sim_slots',
+        'battery_level',
     ];
 
     /**

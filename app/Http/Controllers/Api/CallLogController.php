@@ -36,16 +36,31 @@ class CallLogController extends Controller
                 duration: (int) $log['duration'],
                 timestamp: $log['timestamp'],
                 simSlot: (int) ($log['sim_slot'] ?? 0),
+                classificationType: $log['classification']['type'] ?? null,
+                classificationNote: $log['classification']['note'] ?? null,
             );
         }
 
         $dto = new SyncCallLogsDTO(
             device: $device,
-            logs: $logsData
+            logs: $logsData,
+            batteryLevel: $request->has('battery_level') ? (int) $request->validated('battery_level') : null,
         );
 
-        $this->syncService->sync($dto);
+        $result = $this->syncService->sync($dto);
 
-        return response()->json(['message' => 'Logs synced successfully']);
+        // Build response based on results
+        $response = [
+            'message' => 'Logs synced successfully',
+            'ingested' => $result['ingested'],
+        ];
+
+        if ($result['skipped'] > 0) {
+            $response['warning'] = "Skipped {$result['skipped']} log(s) from untracked SIM slot(s): ".implode(', ', $result['skipped_slots']);
+            $response['skipped'] = $result['skipped'];
+            $response['skipped_slots'] = $result['skipped_slots'];
+        }
+
+        return response()->json($response);
     }
 }

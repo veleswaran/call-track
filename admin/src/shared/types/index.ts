@@ -61,12 +61,15 @@ export interface CallClassification {
 export interface Device {
     id: number;
     device_identifier: string;
+    device_uuid: string | null;
     device_name: string | null;
     device_model: string | null;
     os_version: string | null;
     app_version: string | null;
     status: "active" | "suspended";
     agent_id: number | null;
+    agent: { id: number; name: string } | null;
+    battery_level: number | null;
     tracked_sim_slots: number[] | null;
     last_sync_at: string | null;
     created_at: string;

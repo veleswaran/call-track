@@ -8,5 +8,8 @@ use App\Domain\Calls\DTOs\SyncCallLogsDTO;
 
 interface CallSyncServiceInterface
 {
-    public function sync(SyncCallLogsDTO $dto): void;
+    /**
+     * @return array{ingested: int, skipped: int, skipped_slots: int[]}
+     */
+    public function sync(SyncCallLogsDTO $dto): array;
 }

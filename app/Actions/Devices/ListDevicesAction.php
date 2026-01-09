@@ -14,6 +14,7 @@ class ListDevicesAction
     public function execute(ListDevicesDTO $dto): LengthAwarePaginator
     {
         return Device::query()
+            ->with('agent')
             ->withExists('activeTokens')
             ->when($dto->search, function (Builder $query, string $search) {
                 $query->where(function ($q) use ($search) {
