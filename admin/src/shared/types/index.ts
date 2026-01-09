@@ -172,8 +172,38 @@ export interface DashboardMetrics {
 export interface TwoFactorSetupResponse {
     secret: string;
     qr_code_url: string;
-}
-
-export interface RecoveryCodesResponse {
     recovery_codes: string[];
 }
+
+/**
+ * Team Role
+ */
+export type TeamRole = "MANAGER" | "MEMBER";
+
+/**
+ * Team Member (Pivot)
+ */
+export interface TeamMember {
+    id: number;
+    team_id: number;
+    agent_id: number;
+    role: TeamRole;
+    created_at: string;
+    updated_at: string;
+    // Relationships
+    agent?: Agent;
+}
+
+/**
+ * Team entity
+ */
+export interface Team {
+    id: number;
+    name: string;
+    created_at: string;
+    updated_at: string;
+    members?: TeamMember[];
+    members_count?: number;
+    managers_count?: number;
+}
+

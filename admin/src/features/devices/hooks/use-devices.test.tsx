@@ -33,14 +33,20 @@ const mockDevice: Device = {
     device_identifier: "device-123",
     device_name: "Pixel 7",
     device_model: "Pixel 7",
+    device_uuid: "uuid-123",
     os_version: "Android 14",
     app_version: "1.0.0",
     status: "active",
     agent_id: 1,
     tracked_sim_slots: null,
+    battery_level: 100,
     last_sync_at: "2023-01-01T00:00:00Z",
     created_at: "2024-01-01T00:00:00Z",
     updated_at: "2024-01-01T00:00:00Z",
+    agent: {
+        id: 1,
+        name: "Test Agent",
+    },
 };
 
 describe("useDevices", () => {

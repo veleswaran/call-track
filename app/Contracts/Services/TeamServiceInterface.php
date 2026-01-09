@@ -16,5 +16,9 @@ interface TeamServiceInterface
 
     public function assignManager(Team $team, Agent $agent): void;
 
+    public function removeMember(Team $team, Agent $agent): void;
+
+    public function updateMemberRole(Team $team, Agent $agent, string $role): void;
+
     public function getAllTeams(): Collection;
 }

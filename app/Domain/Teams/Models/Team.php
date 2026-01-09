@@ -17,6 +17,9 @@ class Team extends Model
         'name',
     ];
 
+    /**
+     * @return BelongsToMany<Agent, $this, TeamMember>
+     */
     public function members(): BelongsToMany
     {
         return $this->belongsToMany(Agent::class, 'team_members')

@@ -29,6 +29,41 @@ class TeamController extends Controller
         ]);
     }
 
+    public function show(Team $team): JsonResponse
+    {
+        $this->authorize('view', $team);
+
+        $team->load(['members']);
+
+        // Transform members to include role from pivot
+        $members = $team->members->map(function (Agent $agent) {
+            return [
+                'id' => $agent->pivot->id ?? $agent->id,
+                'team_id' => $agent->pivot->team_id ?? null,
+                'agent_id' => $agent->id,
+                'role' => $agent->pivot->role ?? 'MEMBER',
+                'created_at' => $agent->pivot->created_at ?? $agent->created_at,
+                'updated_at' => $agent->pivot->updated_at ?? $agent->updated_at,
+                'agent' => [
+                    'id' => $agent->id,
+                    'name' => $agent->name,
+                ],
+            ];
+        });
+
+        return response()->json([
+            'data' => [
+                'id' => $team->id,
+                'name' => $team->name,
+                'created_at' => $team->created_at,
+                'updated_at' => $team->updated_at,
+                'members' => $members,
+                'members_count' => $team->members()->count(),
+                'managers_count' => $team->members()->wherePivot('role', 'MANAGER')->count(),
+            ],
+        ]);
+    }
+
     public function store(Request $request): JsonResponse
     {
         $this->authorize('create', Team::class);
@@ -65,6 +100,32 @@ class TeamController extends Controller
 
         return response()->json([
             'message' => 'Agent added to team successfully.',
+        ]);
+    }
+
+    public function removeMember(Team $team, Agent $agent): JsonResponse
+    {
+        $this->authorize('update', $team);
+
+        $this->teamService->removeMember($team, $agent);
+
+        return response()->json([
+            'message' => 'Member removed from team successfully.',
+        ]);
+    }
+
+    public function updateMemberRole(Request $request, Team $team, Agent $agent): JsonResponse
+    {
+        $this->authorize('update', $team);
+
+        $validated = $request->validate([
+            'role' => 'required|in:MEMBER,MANAGER',
+        ]);
+
+        $this->teamService->updateMemberRole($team, $agent, $validated['role']);
+
+        return response()->json([
+            'message' => 'Member role updated successfully.',
         ]);
     }
 }

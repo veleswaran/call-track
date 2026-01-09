@@ -35,8 +35,23 @@ class TeamService implements TeamServiceInterface
         $this->assignTeamManagerAction->execute($team, $agent);
     }
 
+    public function removeMember(Team $team, Agent $agent): void
+    {
+        $team->members()->detach($agent->id);
+    }
+
+    public function updateMemberRole(Team $team, Agent $agent, string $role): void
+    {
+        $team->members()->updateExistingPivot($agent->id, ['role' => $role]);
+    }
+
     public function getAllTeams(): Collection
     {
-        return Team::with('members')->get();
+        return Team::withCount([
+            'members',
+            'members as managers_count' => function ($query) {
+                $query->where('team_members.role', 'MANAGER');
+            },
+        ])->get();
     }
 }
