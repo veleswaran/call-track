@@ -12,6 +12,8 @@ interface TeamServiceInterface
 {
     public function createTeam(string $name): Team;
 
+    public function addMember(\App\Domain\Teams\DTOs\AddTeamMemberDTO $dto): void;
+
     public function addAgent(Team $team, Agent $agent): void;
 
     public function assignManager(Team $team, Agent $agent): void;
@@ -21,4 +23,6 @@ interface TeamServiceInterface
     public function updateMemberRole(Team $team, Agent $agent, string $role): void;
 
     public function getAllTeams(): Collection;
+
+    public function getTeamWithDetails(int $id): Team;
 }

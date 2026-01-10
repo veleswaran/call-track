@@ -33,34 +33,10 @@ class TeamController extends Controller
     {
         $this->authorize('view', $team);
 
-        $team->load(['members']);
-
-        // Transform members to include role from pivot
-        $members = $team->members->map(function (Agent $agent) {
-            return [
-                'id' => $agent->pivot->id ?? $agent->id,
-                'team_id' => $agent->pivot->team_id ?? null,
-                'agent_id' => $agent->id,
-                'role' => $agent->pivot->role ?? 'MEMBER',
-                'created_at' => $agent->pivot->created_at ?? $agent->created_at,
-                'updated_at' => $agent->pivot->updated_at ?? $agent->updated_at,
-                'agent' => [
-                    'id' => $agent->id,
-                    'name' => $agent->name,
-                ],
-            ];
-        });
+        $teamWithDetails = $this->teamService->getTeamWithDetails($team->id);
 
         return response()->json([
-            'data' => [
-                'id' => $team->id,
-                'name' => $team->name,
-                'created_at' => $team->created_at,
-                'updated_at' => $team->updated_at,
-                'members' => $members,
-                'members_count' => $team->members()->count(),
-                'managers_count' => $team->members()->wherePivot('role', 'MANAGER')->count(),
-            ],
+            'data' => new \App\Http\Resources\TeamResource($teamWithDetails),
         ]);
     }
 
@@ -80,23 +56,13 @@ class TeamController extends Controller
         ], Response::HTTP_CREATED);
     }
 
-    public function addMember(Request $request, Team $team): JsonResponse
+    public function addMember(\App\Http\Requests\Admin\AddTeamMemberRequest $request, Team $team): JsonResponse
     {
         $this->authorize('update', $team);
 
-        $validated = $request->validate([
-            'agent_id' => 'required|exists:agents,id',
-            'role' => 'nullable|in:MEMBER,MANAGER',
-        ]);
+        $dto = $request->toDTO($team->id);
 
-        $agent = Agent::findOrFail($validated['agent_id']);
-        $role = $validated['role'] ?? 'MEMBER';
-
-        if ($role === 'MANAGER') {
-            $this->teamService->assignManager($team, $agent);
-        } else {
-            $this->teamService->addAgent($team, $agent);
-        }
+        $this->teamService->addMember($dto);
 
         return response()->json([
             'message' => 'Agent added to team successfully.',

@@ -37,11 +37,14 @@ final class BuildCallLogQueryAction
 
                         // 2. Team records where I am a manager
                         $q->orWhereIn('agent_id', function ($sub) use ($userAgent) {
-                            $sub->select('team_members.agent_id')
+                            $sub->select('agent_id')
                                 ->from('team_members')
-                                ->join('team_members as my_membership', 'team_members.team_id', '=', 'my_membership.team_id')
-                                ->where('my_membership.agent_id', $userAgent->id)
-                                ->where('my_membership.role', 'MANAGER');
+                                ->whereIn('team_id', function ($inner) use ($userAgent) {
+                                    $inner->select('team_id')
+                                        ->from('team_members')
+                                        ->where('agent_id', $userAgent->id)
+                                        ->where('role', 'MANAGER');
+                                });
                         });
                     });
                 });
