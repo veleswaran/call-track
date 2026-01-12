@@ -42,20 +42,19 @@ public class CallLogApi {
                 conn.setRequestProperty("Content-Type", "application/json");
                 conn.setRequestProperty("X-Device-Token", te.token);
                 conn.setDoOutput(true);
-                JSONObject payload = getJsonObject(records, context);
-
+                JSONObject payload = buildJson(records, context, te);
                 StringBuilder requestString = new StringBuilder();
                 requestString.append(conn.getRequestMethod())
-                        .append(" ")
-                        .append(url.toString())
-                        .append("\n");
+                    .append(" ")
+                    .append(url.toString())
+                    .append("\n");
 
                 Map<String, List<String>> headers = conn.getRequestProperties();
                 for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
                     requestString.append(entry.getKey())
-                            .append(": ")
-                            .append(String.join(",", entry.getValue()))
-                            .append("\n");
+                        .append(": ")
+                        .append(String.join(",", entry.getValue()))
+                        .append("\n");
                 }
 
                 requestString.append("\n"); // separate headers from body
@@ -72,13 +71,13 @@ public class CallLogApi {
                 return conn.getResponseCode() == 200;
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("CallLogApi -> send", "Exception occurred", e);
         }
         return false;
     }
 
     @NonNull
-    private static JSONObject getJsonObject(List<CallRecord> records, Context context) throws JSONException {
+    private static JSONObject buildJson(List<CallRecord> records, Context context, TokenEntity te) throws JSONException {
         JSONObject payload = new JSONObject();
         try {
             JSONArray jsonArray = new JSONArray();
@@ -86,9 +85,8 @@ public class CallLogApi {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             for (CallRecord record : records) {
                 Date date = new Date(record.date);
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'",Locale.getDefault());
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault());
                 String formatted = sdf.format(date);
-
                 byte[] hashBytes = digest.digest((uuid + record.date + record.type + record.simSlot + record.number).getBytes(StandardCharsets.UTF_8));
                 StringBuilder hexString = new StringBuilder();
                 for (byte b : hashBytes) {
@@ -96,22 +94,29 @@ public class CallLogApi {
                     if (hex.length() == 1) hexString.append('0');
                     hexString.append(hex);
                 }
-                JSONObject json = new JSONObject();
-                json.put("phone_number", record.number);
-                json.put("direction", record.type);
-                json.put("timestamp", formatted);
-                json.put("duration", record.duration);
-                json.put("sim_slot", record.simSlot);
-                json.put("carrier", record.carrier);
-                json.put("id", "prefix-" + record.id);
-                json.put("call_hash", hexString.toString());
+                JSONObject json = getObject(record, formatted, hexString, te);
                 jsonArray.put(json);
             }
             payload.put("logs", jsonArray);
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("CallLogApi -> buildJson", "Exception occurred", e);
         }
         return payload;
+    }
+
+    @NonNull
+    private static JSONObject getObject(CallRecord record, String formatted, StringBuilder hexString, TokenEntity te) throws JSONException {
+        JSONObject json = new JSONObject();
+        json.put("phone_number", record.number);
+        json.put("direction", record.type);
+        json.put("timestamp", formatted);
+        json.put("duration", record.duration);
+        json.put("sim_slot", record.simSlot);
+        json.put("carrier", record.carrier);
+        json.put("id", te.code + "-" + record.id);
+        json.put("battery_level", record.batteryLevel);
+        json.put("call_hash", hexString.toString());
+        return json;
     }
 
 }

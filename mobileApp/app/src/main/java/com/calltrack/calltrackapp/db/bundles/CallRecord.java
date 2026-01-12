@@ -1,17 +1,18 @@
 package com.calltrack.calltrackapp.db.bundles;
+
 import androidx.room.Entity;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
 @Entity(
-        tableName = "call_records",
-        indices = {
-                @Index(value = {"number","type","date","duration","simSlot","carrier"}, unique = true)
-        }
+    tableName = "call_records",
+    indices = {
+        @Index(value = {"callLocalId"}, unique = true)
+    }
 )
 public class CallRecord {
 
-    public CallRecord(){
+    public CallRecord() {
         category = "";
         notes = "";
     }
@@ -19,6 +20,9 @@ public class CallRecord {
     @PrimaryKey(autoGenerate = true)
     public Long id;
 
+    public Long callLocalId;
+
+    public Integer batteryLevel;
     public String number;
     public String type;
     public Long date;

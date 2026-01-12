@@ -20,4 +20,12 @@ public class ApiUtilities {
         return retrofit.create(DeviceApi.class);
     }
 
+    public static CallLogsApi getCallLogsApi() {
+        if (retrofit == null) {
+            Gson gson = new GsonBuilder().setStrictness(Strictness.LENIENT).create();
+            retrofit = new Retrofit.Builder().baseUrl(URL).addConverterFactory(ScalarsConverterFactory.create()).addConverterFactory(GsonConverterFactory.create(gson)).build();
+        }
+        return retrofit.create(CallLogsApi.class);
+    }
+
 }
