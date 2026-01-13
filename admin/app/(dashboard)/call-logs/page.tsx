@@ -10,7 +10,7 @@ import {
     TableRow,
 } from "@shared/components/ui/table";
 import { format } from "date-fns";
-import { PhoneIncoming, PhoneOutgoing, PhoneMissed } from "lucide-react";
+import { PhoneIncoming, PhoneOutgoing, PhoneMissed, HelpCircle } from "lucide-react";
 import { CallActions } from "@features/call-logs/components/call-actions";
 import { formatDuration } from "@shared/utils/time";
 import { getCallStatus } from "@shared/utils/call";
@@ -37,7 +37,7 @@ export default function CallLogsPage() {
         search: searchParams.get("search") || undefined,
         start_date: searchParams.get("start_date") || undefined,
         end_date: searchParams.get("end_date") || undefined,
-        types: searchParams.getAll("types[]") as ("incoming" | "outgoing" | "missed")[] | undefined,
+        types: searchParams.getAll("types[]") as ("incoming" | "outgoing" | "missed" | "unknown")[] | undefined,
         statuses: searchParams.getAll("statuses[]") as ("Connected" | "Missed" | "No Answer")[] | undefined,
         classifications: searchParams.getAll("classifications[]") as ("business" | "personal" | "ignored")[] | undefined,
         agents: searchParams.getAll("agents[]").map(Number).filter(n => !isNaN(n)),
@@ -131,6 +131,9 @@ export default function CallLogsPage() {
                                                 {log.call_type === "missed" && (
                                                     <PhoneMissed className="h-4 w-4 text-red-500" />
                                                 )}
+                                                {log.call_type === "unknown" && (
+                                                    <HelpCircle className="h-4 w-4 text-gray-500" />
+                                                )}
                                             </TableCell>
                                             <TableCell className="font-medium">
                                                 {/* Contact name (if any) shown above the phone number */}
@@ -178,6 +181,11 @@ export default function CallLogsPage() {
                                                     {log.notes?.map((note) => (
                                                         <div key={note.id} className="text-sm">
                                                             {note.note}
+                                                            {note.metadata && (
+                                                                <div className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                                                                    <span className="font-medium">Metadata:</span> {note.metadata}
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     ))}
                                                     {!log.contact_notes && (!log.notes || log.notes.length === 0) && "-"}

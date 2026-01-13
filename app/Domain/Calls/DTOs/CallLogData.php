@@ -13,7 +13,6 @@ readonly class CallLogData
         public int $duration,
         public string $timestamp,
         public int $simSlot = 0,
-        public ?string $classificationType = null,
-        public ?string $classificationNote = null,
+        public ?array $extra = null,
     ) {}
 }

@@ -131,6 +131,7 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
                     <SelectItem value="incoming">Incoming</SelectItem>
                     <SelectItem value="outgoing">Outgoing</SelectItem>
                     <SelectItem value="missed">Missed</SelectItem>
+                    <SelectItem value="unknown">Unknown</SelectItem>
                 </SelectContent>
             </Select>
 

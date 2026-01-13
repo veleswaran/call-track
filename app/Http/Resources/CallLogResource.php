@@ -49,6 +49,7 @@ class CallLogResource extends JsonResource
             'notes' => $this->notes->map(fn (\App\Domain\Classification\Models\CallNote $note) => [
                 'id' => $note->id,
                 'note' => $note->note,
+                'metadata' => $note->metadata,
                 'agent_id' => $note->agent_id,
                 'created_at' => $note->created_at,
             ]),
