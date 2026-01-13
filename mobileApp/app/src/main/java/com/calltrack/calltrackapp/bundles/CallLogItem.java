@@ -8,6 +8,6 @@ public class CallLogItem {
     public Integer sim_slot;
     public String carrier;
     public String id;
-    public int battery_level;
     public String call_hash;
+    public CallLogExtra extra;
 }

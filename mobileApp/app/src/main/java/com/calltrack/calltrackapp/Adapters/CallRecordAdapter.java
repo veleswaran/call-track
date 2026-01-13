@@ -38,25 +38,40 @@ public class CallRecordAdapter extends RecyclerView.Adapter<CallRecordAdapter.Vi
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(com.calltrack.calltrackapp.R.layout.item_call_record, parent, false);
+            .inflate(com.calltrack.calltrackapp.R.layout.item_call_record, parent, false);
         return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        Context context = holder.itemView.getContext();
         CallRecord record = records.get(position);
         holder.tvNumber.setText(record.number);
         holder.tvDate.setText(formatDate(record.date));
         holder.tvType.setText(record.type);
         holder.tvCategory.setText(record.category.isEmpty() ? "No category" : record.category);
-        if (position % 2 != 0) {
-            holder.itemView.setBackgroundColor(
-                    ContextCompat.getColor(holder.itemView.getContext(), R.color.row_even));
-        } else {
-            holder.itemView.setBackgroundColor(
-                    ContextCompat.getColor(holder.itemView.getContext(), R.color.row_odd));
-        }
         holder.itemView.setOnClickListener(v -> showDetailsDialog(v.getContext(), record, position));
+        TextView tvNumber = holder.tvNumber; // or findViewById(R.id.tvNumber)
+
+        switch (record.type) {
+            case "INCOMING":
+                tvNumber.setTextColor(ContextCompat.getColor(context, R.color.call_incoming));
+                tvNumber.setCompoundDrawablesWithIntrinsicBounds(android.R.drawable.sym_call_incoming, 0, 0, 0);
+                break;
+            case "OUTGOING":
+                tvNumber.setTextColor(ContextCompat.getColor(context, R.color.call_outgoing));
+                tvNumber.setCompoundDrawablesWithIntrinsicBounds(android.R.drawable.sym_call_outgoing, 0, 0, 0);
+                break;
+            case "MISSED":
+                tvNumber.setTextColor(ContextCompat.getColor(context, R.color.call_missed));
+                tvNumber.setCompoundDrawablesWithIntrinsicBounds(android.R.drawable.sym_call_missed, 0, 0, 0);
+                break;
+            default:
+                tvNumber.setTextColor(ContextCompat.getColor(context, R.color.black));
+                tvNumber.setCompoundDrawablesWithIntrinsicBounds(android.R.drawable.ic_menu_call, 0, 0, 0);
+                break;
+        }
+
     }
 
 
@@ -86,19 +101,19 @@ public class CallRecordAdapter extends RecyclerView.Adapter<CallRecordAdapter.Vi
         ((TextView) dialogView.findViewById(R.id.tvDetailDate)).setText(formatDate(record.date));
         ((TextView) dialogView.findViewById(R.id.tvDetailDuration)).setText(record.duration);
         ((TextView) dialogView.findViewById(R.id.tvDetailSimSlot)).setText(
-                record.simSlot == null ? "-" : String.valueOf(record.simSlot));
+            record.simSlot == null ? "-" : String.valueOf(record.simSlot));
         ((TextView) dialogView.findViewById(R.id.tvDetailCarrier)).setText(
-                record.carrier == null ? "-" : record.carrier);
+            record.carrier == null ? "-" : record.carrier);
         ((TextView) dialogView.findViewById(R.id.tvDetailCategory)).setText(
-                record.category == null || record.category.isEmpty() ? "Not set" : record.category);
+            record.category == null || record.category.isEmpty() ? "Not set" : record.category);
         ((TextView) dialogView.findViewById(R.id.tvDetailNotes)).setText(
-                record.notes == null || record.notes.isEmpty() ? "Not set" : record.notes);
+            record.notes == null || record.notes.isEmpty() ? "Not set" : record.notes);
         ((TextView) dialogView.findViewById(R.id.tvSynced)).setText(record.synced ? "Synced" : "Not synced");
 
         AlertDialog.Builder builder = new AlertDialog.Builder(context)
-                .setTitle("Call Details")
-                .setView(dialogView)
-                .setPositiveButton("OK", null);
+            .setTitle("Call Details")
+            .setView(dialogView)
+            .setPositiveButton("OK", null);
 
         // Add edit options as before
         if (record.notes == null || record.notes.isEmpty()) {
@@ -106,16 +121,16 @@ public class CallRecordAdapter extends RecyclerView.Adapter<CallRecordAdapter.Vi
                 EditText input = new EditText(context);
                 input.setHint("Enter notes");
                 new AlertDialog.Builder(context)
-                        .setTitle("Add Notes")
-                        .setView(input)
-                        .setPositiveButton("Save", (d, w) -> {
-                            record.notes = input.getText().toString();
-                            record.noteSynced = false;
-                            listener.onRecordUpdated(record);
-                            notifyDataSetChanged();
-                        })
-                        .setNegativeButton("Cancel", null)
-                        .show();
+                    .setTitle("Add Notes")
+                    .setView(input)
+                    .setPositiveButton("Save", (d, w) -> {
+                        record.notes = input.getText().toString();
+                        record.synced = false;
+                        listener.onRecordUpdated(record);
+                        notifyDataSetChanged();
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
             });
         }
 
@@ -123,13 +138,14 @@ public class CallRecordAdapter extends RecyclerView.Adapter<CallRecordAdapter.Vi
             builder.setNegativeButton("Set Category", (dialog, which) -> {
                 String[] options = {"BUSINESS", "PERSONAL", "IGNORED"};
                 new AlertDialog.Builder(context)
-                        .setTitle("Select Category")
-                        .setItems(options, (d, idx) -> {
-                            record.category = options[idx];
-                            listener.onRecordUpdated(record);
-                            notifyDataSetChanged();
-                        })
-                        .show();
+                    .setTitle("Select Category")
+                    .setItems(options, (d, idx) -> {
+                        record.category = options[idx];
+                        record.synced = false;
+                        listener.onRecordUpdated(record);
+                        notifyDataSetChanged();
+                    })
+                    .show();
             });
         }
 

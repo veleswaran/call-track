@@ -31,6 +31,6 @@ public class CallRecord {
     public String carrier;
     public String category;
     public String notes;
+    public String metaData;
     public boolean synced;  // flag to track if sent to server
-    public boolean noteSynced;
 }

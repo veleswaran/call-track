@@ -5,6 +5,7 @@ import android.util.Log;
 
 import com.calltrack.calltrackapp.api.ApiUtilities;
 import com.calltrack.calltrackapp.api.CallLogsApi;
+import com.calltrack.calltrackapp.bundles.CallLogExtra;
 import com.calltrack.calltrackapp.bundles.CallLogItem;
 import com.calltrack.calltrackapp.bundles.CallLogRequest;
 import com.calltrack.calltrackapp.bundles.CallLogResponse;
@@ -22,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 import androidx.annotation.NonNull;
 import androidx.work.Worker;
@@ -81,16 +83,15 @@ public class CallSyncer extends Worker {
                 items.add(cli);
             }
             CallLogRequest payload = new CallLogRequest(items);
-
+            payload.battery_level = Utility.getBatteryPercentage(context);
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
             String jsonString = gson.toJson(payload);
-            Log.d("REQUEST_PAYLOAD", jsonString);
-            Log.d("TOKEN", te.token);
+//            Log.d("REQUEST_PAYLOAD", jsonString);
             CallLogsApi service = ApiUtilities.getCallLogsApi();
             Call<CallLogResponse> call = service.syncCallLogs(te.token, payload);
             Response<CallLogResponse> response = call.execute(); // synchronous
             String responseJson = gson.toJson(response.body());
-            Log.d("RESPONSE", responseJson);
+//            Log.d("RESPONSE", responseJson);
             Log.d("CallLogApi", "Response code: " + response.code());
             return response.isSuccessful();
         } catch (Exception e) {
@@ -106,7 +107,15 @@ public class CallSyncer extends Worker {
         item.duration = record.duration;
         item.sim_slot = record.simSlot;
         item.carrier = record.carrier;
-        item.battery_level = record.batteryLevel;
+        CallLogExtra extra = new CallLogExtra();
+        extra.battery_level = record.batteryLevel;
+        extra.metadata = record.metaData;
+        extra.classification = record.category;
+        if(extra.classification == null || Objects.equals(extra.classification, "")){
+            extra.classification = "BUSINESS";
+        }
+        extra.note = record.notes;
+        item.extra = extra;
         return item;
     }
 

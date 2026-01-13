@@ -222,7 +222,6 @@ public class MainActivity extends AppCompatActivity {
             public void onResponse(@NonNull Call<RegistrationResponse> call, @NonNull Response<RegistrationResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     String token = response.body().token;
-                    Log.d("callRegistrationApi", "token: " + token);
                     executor.execute(() -> {
                         AppDB db = AppDB.getInstance(MainActivity.this);
                         db.tokenDao().deleteAll();

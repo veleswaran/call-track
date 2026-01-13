@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.os.BatteryManager;
 import android.provider.CallLog;
 import android.telephony.SubscriptionInfo;
 import android.telephony.SubscriptionManager;
@@ -14,6 +13,7 @@ import android.util.Log;
 import com.calltrack.calltrackapp.db.AppDB;
 import com.calltrack.calltrackapp.db.bundles.CallRecord;
 import com.calltrack.calltrackapp.db.bundles.TokenEntity;
+import com.calltrack.calltrackapp.utilities.Utility;
 
 import java.util.List;
 
@@ -46,17 +46,18 @@ public class SaveWorker extends Worker {
         String[] projection = {CallLog.Calls.NUMBER, CallLog.Calls.TYPE, CallLog.Calls.DATE, CallLog.Calls.DURATION, "subscription_id", CallLog.Calls._ID};
         try (Cursor cursor = context.getContentResolver().query(CallLog.Calls.CONTENT_URI, projection, selection, selectionArgs, CallLog.Calls.DATE + " DESC")) {
             if (cursor == null) return;
-            int batteryLevel = getBatteryPercentage(context);
+            int batteryLevel = Utility.getBatteryPercentage(context);
             while (cursor.moveToNext()) {
                 CallRecord record = new CallRecord();
                 record.synced = false;
-                record.noteSynced = true;
                 record.batteryLevel = batteryLevel;
                 record.callLocalId = getLongSafe(cursor, CallLog.Calls._ID);
                 record.number = getStringSafe(cursor, CallLog.Calls.NUMBER);
                 record.date = getLongSafe(cursor, CallLog.Calls.DATE);
                 record.duration = getStringSafe(cursor, CallLog.Calls.DURATION);
-                record.type = mapCallType(getIntSafe(cursor, CallLog.Calls.TYPE));
+                int type = getIntSafe(cursor, CallLog.Calls.TYPE);
+                record.type = mapCallType(type);
+                record.metaData = String.valueOf(type);
                 int subId = getIntSafe(cursor, "subscription_id");
                 fillSubscriptionInfo(context, record, subId);
                 persistRecord(context, record);
@@ -66,13 +67,6 @@ public class SaveWorker extends Worker {
             Log.e("CallMonitor -> saveLatestCall", "Exception occurred", e);
         }
     }
-
-
-    public int getBatteryPercentage(Context context) {
-        BatteryManager bm = (BatteryManager) context.getSystemService(Context.BATTERY_SERVICE);
-        return bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
-    }
-
 
     private String getStringSafe(Cursor cursor, String column) {
         int index = cursor.getColumnIndex(column);
@@ -123,9 +117,9 @@ public class SaveWorker extends Worker {
         TokenEntity te = db.tokenDao().getOne();
         if (te == null || te.simSlots.contains(record.simSlot)) {
             db.callRecordDao().insert(record);
-            Log.d("CallMonitor", "Call record persisted: " + record.type + " " + record.number);
+//            Log.d("CallMonitor", "Call record persisted: " + record.type + " " + record.number);
         } else {
-            Log.d("CallMonitor", "Skipped persisting record due to SIM slot mismatch");
+//            Log.d("CallMonitor", "Skipped persisting record due to SIM slot mismatch");
         }
     }
 }
