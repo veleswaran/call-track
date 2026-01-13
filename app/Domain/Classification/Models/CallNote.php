@@ -23,6 +23,7 @@ class CallNote extends Model
         'user_id',
         'agent_id',
         'note',
+        'metadata',
     ];
 
     public function callLog(): BelongsTo

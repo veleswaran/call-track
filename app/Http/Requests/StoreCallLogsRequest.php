@@ -21,13 +21,14 @@ class StoreCallLogsRequest extends FormRequest
             'logs' => ['present', 'array', 'max:1000'],
             'logs.*.call_hash' => ['required', 'string'],
             'logs.*.phone_number' => ['required', 'string'],
-            'logs.*.direction' => ['required', 'in:INCOMING,OUTGOING,MISSED'],
+            'logs.*.direction' => ['required', 'in:INCOMING,OUTGOING,MISSED,UNKNOWN'],
             'logs.*.duration' => ['required', 'integer', 'min:0'],
             'logs.*.timestamp' => ['required', 'date'],
             'logs.*.sim_slot' => ['nullable', 'integer'],
-            'logs.*.classification' => ['nullable', 'array'],
-            'logs.*.classification.type' => ['required_with:logs.*.classification', 'in:BUSINESS,PERSONAL,IGNORED'],
-            'logs.*.classification.note' => ['nullable', 'string', 'max:1000'],
+            'logs.*.extra' => ['nullable', 'array'],
+            'logs.*.extra.classification' => ['required_with:logs.*.extra', 'in:BUSINESS,PERSONAL,IGNORED'],
+            'logs.*.extra.note' => ['nullable', 'string', 'max:1000'],
+            'logs.*.extra.metadata' => ['nullable', 'string', 'max:5000'],
         ];
     }
 }

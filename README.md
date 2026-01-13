@@ -176,13 +176,14 @@ curl --request POST \
     {
       "call_hash": "abc123",
       "phone_number": "+919952507884",
-      "direction": "OUTGOING",
-      "duration": 500,
+      "direction": "UNKNOWN",
+      "duration": 0,
       "timestamp": "2026-01-09T18:36:22Z",
       "sim_slot": 0,
-      "classification": {
-        "type": "PERSONAL",
-        "note": "Personal call to family"
+      "extra": {
+        "classification": "IGNORED",
+        "note": "Spam call",
+        "metadata": "Blocked by spam filter"
       }
     }
   ]
