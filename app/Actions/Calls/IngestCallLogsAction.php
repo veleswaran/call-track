@@ -99,8 +99,8 @@ class IngestCallLogsAction
                         'call_log_id' => $callLog->id,
                         'user_id' => null,
                         'agent_id' => $classInfo['agent_id'],
-                        'note' => $classInfo['note'] ?? '',
-                        'metadata' => $classInfo['metadata'],
+                        'note' => $classInfo['note'] ?? null,
+                        'metadata' => $classInfo['metadata'] ?? null,
                         'created_at' => $now,
                         'updated_at' => $now,
                     ];
