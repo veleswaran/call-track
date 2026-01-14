@@ -41,7 +41,7 @@ export function ReportCharts({ data }: ReportChartsProps) {
     const totalCalls = data.status_distribution.reduce((acc, curr) => acc + curr.value, 0);
 
     return (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-7">
 
             {/* Calls Per Day - Full Width */}
             <Card className="col-span-full">
@@ -71,7 +71,7 @@ export function ReportCharts({ data }: ReportChartsProps) {
                                 cursor={{ fill: 'transparent' }}
                                 contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                             />
-                            <Legend verticalAlign="top" height={36} />
+                            <Legend verticalAlign="top" height={48} wrapperStyle={{ fontSize: '12px', paddingBottom: '8px' }} />
                             <Bar dataKey="connected" name="Connected" stackId="a" fill="#22c55e" radius={[0, 0, 4, 4]} barSize={40} />
                             <Bar dataKey="missed" name="Missed" stackId="a" fill="#ef4444" radius={[0, 0, 0, 0]} barSize={40} />
                             <Bar dataKey="no_answer" name="No Answer" stackId="a" fill="#eab308" radius={[4, 4, 0, 0]} barSize={40} />
@@ -81,13 +81,13 @@ export function ReportCharts({ data }: ReportChartsProps) {
             </Card>
 
             {/* Status Distribution */}
-            <Card className="col-span-3">
+            <Card className="col-span-full md:col-span-1 lg:col-span-3">
                 <CardHeader>
                     <CardTitle>Status Distribution</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="flex items-center justify-center">
-                        <ResponsiveContainer width="100%" height={250}>
+                        <ResponsiveContainer width="100%" height={280}>
                             <PieChart>
                                 <Pie
                                     data={data.status_distribution}
@@ -107,8 +107,8 @@ export function ReportCharts({ data }: ReportChartsProps) {
                                 </Pie>
                                 {/* CENTER NUMBER */}
                                 <text
-                                    x="39%"
-                                    y="45%"
+                                    x="50%"
+                                    y="40%"
                                     textAnchor="middle"
                                     dominantBaseline="central"
                                     className="text-xl font-semibold fill-gray-900"
@@ -116,9 +116,8 @@ export function ReportCharts({ data }: ReportChartsProps) {
                                     {totalCalls}
                                 </text>
                                 <text
-                                    x="39%"
+                                    x="50%"
                                     y="50%"
-                                    dy={20}
                                     textAnchor="middle"
                                     dominantBaseline="central"
                                     className="text-xs fill-gray-500 uppercase"
@@ -126,7 +125,7 @@ export function ReportCharts({ data }: ReportChartsProps) {
                                     Calls
                                 </text>
                                 <Tooltip />
-                                <Legend verticalAlign="middle" align="right" layout="vertical" iconType="circle" />
+                                <Legend verticalAlign="bottom" align="center" layout="horizontal" iconType="circle" wrapperStyle={{ paddingTop: '16px' }} />
                             </PieChart>
                         </ResponsiveContainer>
                     </div>
@@ -134,7 +133,7 @@ export function ReportCharts({ data }: ReportChartsProps) {
             </Card>
 
             {/* Peak Call Hours */}
-            <Card className="col-span-4">
+            <Card className="col-span-full md:col-span-1 lg:col-span-4">
                 <CardHeader>
                     <CardTitle>Peak Call Hours</CardTitle>
                 </CardHeader>
@@ -182,13 +181,13 @@ export function ReportCharts({ data }: ReportChartsProps) {
             {/* Skipping Follow-Up pending implementation as it requires persistence of follow-up state */}
 
             {/* Caller Type Breakdown */}
-            <Card className="col-span-3">
+            <Card className="col-span-full md:col-span-1 lg:col-span-3">
                 <CardHeader>
                     <CardTitle>Caller Type Breakdown</CardTitle>
                     <CardDescription>New vs Returning Callers</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <ResponsiveContainer width="100%" height={250}>
+                    <ResponsiveContainer width="100%" height={280}>
                         <PieChart>
                             <Pie
                                 data={data.caller_types}
@@ -207,8 +206,8 @@ export function ReportCharts({ data }: ReportChartsProps) {
                                 ))}
                             </Pie>
                             <text
-                                x="35%"
-                                y="45%"
+                                x="50%"
+                                y="40%"
                                 textAnchor="middle"
                                 dominantBaseline="central"
                                 className="text-xl font-semibold fill-gray-900"
@@ -216,9 +215,8 @@ export function ReportCharts({ data }: ReportChartsProps) {
                                 {data.caller_types.reduce((sum, item) => sum + item.value, 0)}
                             </text>
                             <text
-                                x="35%"
+                                x="50%"
                                 y="50%"
-                                dy={20}
                                 textAnchor="middle"
                                 dominantBaseline="central"
                                 className="text-xs fill-gray-500 uppercase"
@@ -226,20 +224,20 @@ export function ReportCharts({ data }: ReportChartsProps) {
                                 Callers
                             </text>
                             <Tooltip />
-                            <Legend verticalAlign="middle" align="right" layout="vertical" />
+                            <Legend verticalAlign="bottom" align="center" layout="horizontal" wrapperStyle={{ paddingTop: '16px' }} />
                         </PieChart>
                     </ResponsiveContainer>
                 </CardContent>
             </Card>
 
             {/* Call Direction Distribution */}
-            <Card className="col-span-3 lg:col-span-4">
+            <Card className="col-span-full md:col-span-1 lg:col-span-4">
                 <CardHeader>
                     <CardTitle>Call Direction</CardTitle>
                     <CardDescription>Incoming vs Outgoing</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <ResponsiveContainer width="100%" height={250}>
+                    <ResponsiveContainer width="100%" height={280}>
                         <PieChart>
                             <Pie
                                 data={data.call_direction_distribution}
@@ -258,8 +256,8 @@ export function ReportCharts({ data }: ReportChartsProps) {
                                 ))}
                             </Pie>
                             <text
-                                x="43%"
-                                y="44%"
+                                x="50%"
+                                y="40%"
                                 textAnchor="middle"
                                 dominantBaseline="central"
                                 className="text-xl font-semibold fill-gray-900"
@@ -269,11 +267,9 @@ export function ReportCharts({ data }: ReportChartsProps) {
                                     0
                                 )}
                             </text>
-
                             <text
-                                x="43%"
+                                x="50%"
                                 y="50%"
-                                dy={20}
                                 textAnchor="middle"
                                 dominantBaseline="central"
                                 className="text-xs fill-gray-500 uppercase"
@@ -281,7 +277,7 @@ export function ReportCharts({ data }: ReportChartsProps) {
                                 Calls
                             </text>
                             <Tooltip />
-                            <Legend verticalAlign="middle" align="right" layout="vertical" />
+                            <Legend verticalAlign="bottom" align="center" layout="horizontal" wrapperStyle={{ paddingTop: '16px' }} />
                         </PieChart>
                     </ResponsiveContainer>
                 </CardContent>
