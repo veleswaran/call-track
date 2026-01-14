@@ -1,29 +1,13 @@
 package com.calltrack.calltrackapp.monitors;
 
-import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.provider.CallLog;
-import android.telephony.SubscriptionInfo;
-import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
-import android.database.Cursor;
 
-import com.calltrack.calltrackapp.constants.DBConst;
-import com.calltrack.calltrackapp.db.AppDB;
-import com.calltrack.calltrackapp.db.bundles.CallRecord;
-import com.calltrack.calltrackapp.db.bundles.TokenEntity;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import androidx.core.app.ActivityCompat;
-import androidx.room.Room;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 
@@ -43,6 +27,8 @@ public class CallMonitor extends BroadcastReceiver {
                 Log.d("CallReceiver", "Call ended or missed");
                 OneTimeWorkRequest workRequest = new OneTimeWorkRequest.Builder(SaveWorker.class).setInitialDelay(2, TimeUnit.SECONDS).build();
                 WorkManager.getInstance(context).enqueue(workRequest);
+                SaveCore sc = new SaveCore(context);
+                sc.ProcessCalls();
             }
         }
     }
