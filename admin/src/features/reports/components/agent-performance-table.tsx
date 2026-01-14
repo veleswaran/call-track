@@ -174,98 +174,100 @@ export function AgentPerformanceTable({ data, filters }: AgentPerformanceTablePr
     };
 
     return (
-        <div className="rounded-md border">
+        <div className="rounded-md border overflow-hidden">
             <TooltipProvider>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead className="w-[80px]">Avatar</TableHead>
-                            <TableHead>Agent</TableHead>
-                            <TableHead>EMP Code</TableHead>
-                            <SortableHeader label="Total Calls" sortKey="total_calls" align="right" className="text-right" onSort={handleSort} />
-                            <SortableHeader label="Connected" sortKey="connected" align="right" className="text-right" onSort={handleSort} />
-                            <SortableHeader label="Missed" sortKey="missed" align="right" className="text-right" onSort={handleSort} />
-                            <SortableHeader label="Total Duration" sortKey="total_duration" onSort={handleSort} />
-                            <SortableHeader label="Avg Duration" sortKey="avg_duration" onSort={handleSort} />
-                            <TableHead>
-                                <div className="flex items-center gap-1">
-                                    Handling Rate
-                                    <Tooltip>
-                                        <TooltipTrigger>
-                                            <Info className="h-3 w-3 text-muted-foreground" />
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                            <p>(Connected / Total) * 100%</p>
-                                        </TooltipContent>
-                                    </Tooltip>
-                                </div>
-                            </TableHead>
-                            <TableHead>
-                                <div className="flex items-center gap-1">
-                                    Performance
-                                    <Tooltip>
-                                        <TooltipTrigger>
-                                            <Info className="h-3 w-3 text-muted-foreground" />
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                            <p>Excellent: ≥ 80%</p>
-                                            <p>Average: 40-79%</p>
-                                            <p>Poor: &lt; 40%</p>
-                                        </TooltipContent>
-                                    </Tooltip>
-                                </div>
-                            </TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {sortedData.map((row) => (
-                            <TableRow key={row.id}>
-                                <TableCell>
-                                    <div className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold ${row.id % 2 === 0 ? 'bg-blue-100 text-blue-600' : 'bg-purple-100 text-purple-600'
-                                        }`}>
-                                        {row.agent.substring(0, 2).toUpperCase()}
-                                    </div>
-                                </TableCell>
-                                <TableCell className="font-medium">{row.agent}</TableCell>
-                                <TableCell>{row.employee_code}</TableCell>
-                                <TableCell className="text-right">{row.total_calls}</TableCell>
-                                <TableCell className="text-right text-green-600 font-bold">{row.connected}</TableCell>
-                                <TableCell className="text-right text-red-600 font-bold">{row.missed}</TableCell>
-                                <TableCell>{row.total_duration}</TableCell>
-                                <TableCell>{row.avg_duration}</TableCell>
-                                <TableCell>
-                                    <div className="flex items-center gap-2">
-                                        <span className="font-bold text-sm">{row.handling_rate}%</span>
-                                        <div className="h-2 w-16 bg-gray-100 rounded-full overflow-hidden">
-                                            <div className={`h-full ${row.handling_rate > 80 ? 'bg-green-500' : (row.handling_rate > 50 ? 'bg-blue-500' : 'bg-red-500')}`} style={{ width: `${row.handling_rate}%` }} />
-                                        </div>
-                                    </div>
-                                </TableCell>
-                                <TableCell>
-                                    <Badge variant="outline" className={`border-0 ${getPerformanceColor(row.performance)}`}>
-                                        {row.performance}
-                                    </Badge>
-                                </TableCell>
-                                <TableCell className="text-right">
-                                    <Link
-                                        href={getCallLogsUrl(row.id)}
-                                        className="text-sm font-medium text-primary hover:underline"
-                                    >
-                                        View Calls
-                                    </Link>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                        {data.length === 0 && (
+                <div className="overflow-x-auto">
+                    <Table>
+                        <TableHeader>
                             <TableRow>
-                                <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
-                                    No agent performance data available for this period.
-                                </TableCell>
+                                <TableHead className="w-[80px]">Avatar</TableHead>
+                                <TableHead>Agent</TableHead>
+                                <TableHead>EMP Code</TableHead>
+                                <SortableHeader label="Total Calls" sortKey="total_calls" align="right" className="text-right" onSort={handleSort} />
+                                <SortableHeader label="Connected" sortKey="connected" align="right" className="text-right" onSort={handleSort} />
+                                <SortableHeader label="Missed" sortKey="missed" align="right" className="text-right" onSort={handleSort} />
+                                <SortableHeader label="Total Duration" sortKey="total_duration" onSort={handleSort} />
+                                <SortableHeader label="Avg Duration" sortKey="avg_duration" onSort={handleSort} />
+                                <TableHead>
+                                    <div className="flex items-center gap-1">
+                                        Handling Rate
+                                        <Tooltip>
+                                            <TooltipTrigger>
+                                                <Info className="h-3 w-3 text-muted-foreground" />
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p>(Connected / Total) * 100%</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </div>
+                                </TableHead>
+                                <TableHead>
+                                    <div className="flex items-center gap-1">
+                                        Performance
+                                        <Tooltip>
+                                            <TooltipTrigger>
+                                                <Info className="h-3 w-3 text-muted-foreground" />
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p>Excellent: ≥ 80%</p>
+                                                <p>Average: 40-79%</p>
+                                                <p>Poor: &lt; 40%</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </div>
+                                </TableHead>
+                                <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
+                        </TableHeader>
+                        <TableBody>
+                            {sortedData.map((row) => (
+                                <TableRow key={row.id}>
+                                    <TableCell>
+                                        <div className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold ${row.id % 2 === 0 ? 'bg-blue-100 text-blue-600' : 'bg-purple-100 text-purple-600'
+                                            }`}>
+                                            {row.agent.substring(0, 2).toUpperCase()}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="font-medium">{row.agent}</TableCell>
+                                    <TableCell>{row.employee_code}</TableCell>
+                                    <TableCell className="text-right">{row.total_calls}</TableCell>
+                                    <TableCell className="text-right text-green-600 font-bold">{row.connected}</TableCell>
+                                    <TableCell className="text-right text-red-600 font-bold">{row.missed}</TableCell>
+                                    <TableCell>{row.total_duration}</TableCell>
+                                    <TableCell>{row.avg_duration}</TableCell>
+                                    <TableCell>
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-bold text-sm">{row.handling_rate}%</span>
+                                            <div className="h-2 w-16 bg-gray-100 rounded-full overflow-hidden">
+                                                <div className={`h-full ${row.handling_rate > 80 ? 'bg-green-500' : (row.handling_rate > 50 ? 'bg-blue-500' : 'bg-red-500')}`} style={{ width: `${row.handling_rate}%` }} />
+                                            </div>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge variant="outline" className={`border-0 ${getPerformanceColor(row.performance)}`}>
+                                            {row.performance}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <Link
+                                            href={getCallLogsUrl(row.id)}
+                                            className="text-sm font-medium text-primary hover:underline"
+                                        >
+                                            View Calls
+                                        </Link>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                            {data.length === 0 && (
+                                <TableRow>
+                                    <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
+                                        No agent performance data available for this period.
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
             </TooltipProvider>
         </div>
     )
