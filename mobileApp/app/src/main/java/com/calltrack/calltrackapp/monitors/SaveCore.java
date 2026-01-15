@@ -52,7 +52,7 @@ public class SaveCore {
                 record.metaData = String.valueOf(type);
                 int subId = getIntSafe(cursor, "subscription_id");
                 fillSubscriptionInfo(context, record, subId);
-                persistRecord(context, record);
+                persistRecord(context.getApplicationContext(), record);
                 LatestProcessedId = record.callLocalId;
             }
             prefs.edit().putLong(LAST_PROCESSED_KEY, LatestProcessedId).apply();

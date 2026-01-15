@@ -40,6 +40,7 @@ public class CallSyncer extends Worker {
     @NonNull
     @Override
     public Result doWork() {
+        Log.d("CallSyncer", "Action called");
         Context context = getApplicationContext();
         AppDB db = AppDB.getInstance(context);
         long twoWeeksAgo = System.currentTimeMillis() - (20L * 24 * 60 * 60 * 1000);

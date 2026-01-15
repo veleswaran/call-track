@@ -23,7 +23,7 @@ import androidx.recyclerview.widget.RecyclerView;
 public class CallRecordAdapter extends RecyclerView.Adapter<CallRecordAdapter.ViewHolder> {
 
     private List<CallRecord> records;
-    private OnRecordUpdatedListener listener;
+    private final OnRecordUpdatedListener listener;
 
     public interface OnRecordUpdatedListener {
         void onRecordUpdated(CallRecord record);
@@ -37,8 +37,7 @@ public class CallRecordAdapter extends RecyclerView.Adapter<CallRecordAdapter.Vi
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-            .inflate(com.calltrack.calltrackapp.R.layout.item_call_record, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_call_record, parent, false);
         return new ViewHolder(view);
     }
 
@@ -49,109 +48,116 @@ public class CallRecordAdapter extends RecyclerView.Adapter<CallRecordAdapter.Vi
         holder.tvNumber.setText(record.number);
         holder.tvDate.setText(formatDate(record.date));
         holder.tvType.setText(record.type);
-        holder.tvCategory.setText(record.category.isEmpty() ? "No category" : record.category);
-        holder.itemView.setOnClickListener(v -> showDetailsDialog(v.getContext(), record, position));
-        TextView tvNumber = holder.tvNumber; // or findViewById(R.id.tvNumber)
-
-        switch (record.type) {
-            case "INCOMING":
-                tvNumber.setTextColor(ContextCompat.getColor(context, R.color.call_incoming));
-                tvNumber.setCompoundDrawablesWithIntrinsicBounds(android.R.drawable.sym_call_incoming, 0, 0, 0);
-                break;
-            case "OUTGOING":
-                tvNumber.setTextColor(ContextCompat.getColor(context, R.color.call_outgoing));
-                tvNumber.setCompoundDrawablesWithIntrinsicBounds(android.R.drawable.sym_call_outgoing, 0, 0, 0);
-                break;
-            case "MISSED":
-                tvNumber.setTextColor(ContextCompat.getColor(context, R.color.call_missed));
-                tvNumber.setCompoundDrawablesWithIntrinsicBounds(android.R.drawable.sym_call_missed, 0, 0, 0);
-                break;
-            default:
-                tvNumber.setTextColor(ContextCompat.getColor(context, R.color.black));
-                tvNumber.setCompoundDrawablesWithIntrinsicBounds(android.R.drawable.ic_menu_call, 0, 0, 0);
-                break;
-        }
-
+        holder.tvCategory.setText(isEmpty(record.category) ? "No category" : record.category);
+        applyCallTypeStyle(context, holder.tvNumber, record.type);
+        holder.itemView.setOnClickListener(v -> showDetailsDialog(context, record, position));
     }
-
 
     @Override
     public int getItemCount() {
-        return records.size();
+        return records != null ? records.size() : 0;
     }
 
     private String formatDate(Long millis) {
-        if (millis == null) return "";
+        if (millis == null || millis == 0) return "";
         Date date = new Date(millis);
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
         return sdf.format(date);
     }
 
-    public void updateData(List<CallRecord> newRecords) {
-        this.records = newRecords;
-        notifyDataSetChanged();
+//    public void updateData(List<CallRecord> newRecords) {
+//        this.records = newRecords;
+//        notifyDataSetChanged();
+//    }
+
+    private void applyCallTypeStyle(Context context, TextView tvNumber, String type) {
+        int colorRes;
+        int iconRes;
+        switch (type) {
+            case "INCOMING":
+                colorRes = R.color.call_incoming;
+                iconRes = android.R.drawable.sym_call_incoming;
+                break;
+            case "OUTGOING":
+                colorRes = R.color.call_outgoing;
+                iconRes = android.R.drawable.sym_call_outgoing;
+                break;
+            case "MISSED":
+                colorRes = R.color.call_missed;
+                iconRes = android.R.drawable.sym_call_missed;
+                break;
+            default:
+                colorRes = R.color.black;
+                iconRes = android.R.drawable.ic_menu_call;
+                break;
+        }
+        tvNumber.setTextColor(ContextCompat.getColor(context, colorRes));
+        tvNumber.setCompoundDrawablesWithIntrinsicBounds(iconRes, 0, 0, 0);
     }
 
     private void showDetailsDialog(Context context, CallRecord record, int position) {
-        LayoutInflater inflater = LayoutInflater.from(context);
-        View dialogView = inflater.inflate(R.layout.dialog_call_details, null);
-
-        ((TextView) dialogView.findViewById(R.id.tvDetailNumber)).setText(record.number);
-        ((TextView) dialogView.findViewById(R.id.tvDetailType)).setText(record.type);
-        ((TextView) dialogView.findViewById(R.id.tvDetailDate)).setText(formatDate(record.date));
-        ((TextView) dialogView.findViewById(R.id.tvDetailDuration)).setText(record.duration);
-        ((TextView) dialogView.findViewById(R.id.tvDetailSimSlot)).setText(
-            record.simSlot == null ? "-" : String.valueOf(record.simSlot));
-        ((TextView) dialogView.findViewById(R.id.tvDetailCarrier)).setText(
-            record.carrier == null ? "-" : record.carrier);
-        ((TextView) dialogView.findViewById(R.id.tvDetailCategory)).setText(
-            record.category == null || record.category.isEmpty() ? "Not set" : record.category);
-        ((TextView) dialogView.findViewById(R.id.tvDetailNotes)).setText(
-            record.notes == null || record.notes.isEmpty() ? "Not set" : record.notes);
-        ((TextView) dialogView.findViewById(R.id.tvSynced)).setText(record.synced ? "Synced" : "Not synced");
-
+        View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_call_details, null);
+        setTextOrDefault(dialogView, R.id.tvDetailNumber, record.number, "-");
+        setTextOrDefault(dialogView, R.id.tvDetailType, record.type, "-");
+        setTextOrDefault(dialogView, R.id.tvDetailDate, formatDate(record.date), "-");
+        setTextOrDefault(dialogView, R.id.tvDetailDuration, record.duration, "-");
+        setTextOrDefault(dialogView, R.id.tvDetailSimSlot,
+            record.simSlot == null ? "-" : String.valueOf(record.simSlot), "-");
+        setTextOrDefault(dialogView, R.id.tvDetailCarrier, record.carrier, "-");
+        setTextOrDefault(dialogView, R.id.tvDetailCategory,
+            isEmpty(record.category) ? "Not set" : record.category, "Not set");
+        setTextOrDefault(dialogView, R.id.tvDetailNotes,
+            isEmpty(record.notes) ? "Not set" : record.notes, "Not set");
+        setTextOrDefault(dialogView, R.id.tvSynced, record.synced ? "Synced" : "Not synced", "Not synced");
         AlertDialog.Builder builder = new AlertDialog.Builder(context)
             .setTitle("Call Details")
             .setView(dialogView)
             .setPositiveButton("OK", null);
-
-        // Add edit options as before
-        if (record.notes == null || record.notes.isEmpty()) {
-            builder.setNeutralButton("Edit Notes", (dialog, which) -> {
-                EditText input = new EditText(context);
-                input.setHint("Enter notes");
-                new AlertDialog.Builder(context)
-                    .setTitle("Add Notes")
-                    .setView(input)
-                    .setPositiveButton("Save", (d, w) -> {
-                        record.notes = input.getText().toString();
-                        record.synced = false;
-                        listener.onRecordUpdated(record);
-                        notifyDataSetChanged();
-                    })
-                    .setNegativeButton("Cancel", null)
-                    .show();
-            });
+        if (isEmpty(record.notes)) {
+            builder.setNeutralButton("Edit Notes", (dialog, which) -> showEditNotesDialog(context, record, position));
         }
-
-        if (record.category == null || record.category.isEmpty()) {
-            builder.setNegativeButton("Set Category", (dialog, which) -> {
-                String[] options = {"BUSINESS", "PERSONAL", "IGNORED"};
-                new AlertDialog.Builder(context)
-                    .setTitle("Select Category")
-                    .setItems(options, (d, idx) -> {
-                        record.category = options[idx];
-                        record.synced = false;
-                        listener.onRecordUpdated(record);
-                        notifyDataSetChanged();
-                    })
-                    .show();
-            });
+        if (isEmpty(record.category)) {
+            builder.setNegativeButton("Set Category", (dialog, which) -> showCategoryDialog(context, record, position));
         }
-
         builder.show();
     }
 
+    private void showEditNotesDialog(Context context, CallRecord record, int position) {
+        EditText input = new EditText(context);
+        input.setHint("Enter notes");
+        new AlertDialog.Builder(context)
+            .setTitle("Add Notes")
+            .setView(input)
+            .setPositiveButton("Save", (d, w) -> {
+                record.notes = input.getText().toString();
+                record.synced = false;
+                listener.onRecordUpdated(record);
+                notifyItemChanged(position);
+            })
+            .setNegativeButton("Cancel", null)
+            .show();
+    }
+
+    private void showCategoryDialog(Context context, CallRecord record, int position) {
+        String[] options = {"BUSINESS", "PERSONAL", "IGNORED"};
+        new AlertDialog.Builder(context)
+            .setTitle("Select Category")
+            .setItems(options, (d, idx) -> {
+                record.category = options[idx];
+                record.synced = false;
+                listener.onRecordUpdated(record);
+                notifyItemChanged(position);
+            })
+            .show();
+    }
+
+    private void setTextOrDefault(View parent, int viewId, String value, String defaultValue) {
+        ((TextView) parent.findViewById(viewId)).setText(isEmpty(value) ? defaultValue : value);
+    }
+
+    private boolean isEmpty(String s) {
+        return s == null || s.trim().isEmpty();
+    }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvNumber, tvDate, tvCategory, tvType;
@@ -164,5 +170,4 @@ public class CallRecordAdapter extends RecyclerView.Adapter<CallRecordAdapter.Vi
             tvType = itemView.findViewById(R.id.tvType);
         }
     }
-
 }

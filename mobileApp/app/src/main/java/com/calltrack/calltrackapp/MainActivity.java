@@ -3,20 +3,18 @@ package com.calltrack.calltrackapp;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.telephony.SubscriptionInfo;
 import android.telephony.SubscriptionManager;
-import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.calltrack.calltrackapp.Adapters.CallRecordAdapter;
@@ -24,16 +22,14 @@ import com.calltrack.calltrackapp.api.ApiUtilities;
 import com.calltrack.calltrackapp.api.DeviceApi;
 import com.calltrack.calltrackapp.bundles.RegistrationRequest;
 import com.calltrack.calltrackapp.bundles.RegistrationResponse;
-import com.calltrack.calltrackapp.constants.DBConst;
 import com.calltrack.calltrackapp.db.AppDB;
-import com.calltrack.calltrackapp.db.bundles.CallRecord;
 import com.calltrack.calltrackapp.db.bundles.TokenEntity;
+import com.calltrack.calltrackapp.monitors.CallMonitorService;
 import com.calltrack.calltrackapp.syncer.CallSyncer;
 import com.calltrack.calltrackapp.utilities.Utility;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -47,7 +43,6 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.room.Room;
 import androidx.work.ExistingWorkPolicy;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
@@ -66,43 +61,33 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d("onCreate", "MainActivity");
-        // Check and request permissions
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED ||
-            ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED) {
-
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_PHONE_STATE, Manifest.permission.READ_CALL_LOG},
-                REQUEST_CODE);
+        String[] permissions = getPermissions();
+        boolean granted = true;
+        for (String permission : permissions) {
+            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                granted = false;
+                break;
+            }
+        }
+        if (!granted) {
+            ActivityCompat.requestPermissions(this, permissions, REQUEST_CODE);
         } else {
-            setContentView(R.layout.activity_main);
-            EdgeToEdge.enable(this);
-            ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-                Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-                v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-                return insets;
-            });
-            recyclerView = findViewById(R.id.recyclerView);
-            recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-            AppDB db = AppDB.getInstance(this);
-            db.callRecordDao().getAll().observe(this, records -> {
-                if (adapter == null) {
-                    adapter = new CallRecordAdapter(records, rec -> {
-                        executor.execute(() -> {
-                            db.callRecordDao().update(rec);
-                        });
-                    });
-                    recyclerView.setLayoutManager(new LinearLayoutManager(this));
-                    recyclerView.setAdapter(adapter);
-                } else {
-                    adapter.updateData(records);
-                }
-            });
-            WorkManager workManager = WorkManager.getInstance(this);
-            OneTimeWorkRequest workRequest = new OneTimeWorkRequest.Builder(CallSyncer.class).build();
-            workManager.enqueueUniqueWork("startupWorker", ExistingWorkPolicy.REPLACE, workRequest);
-
+            showIntent();
         }
 
+    }
+
+    private static String[] getPermissions() {
+        String[] permissions;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) { // API 34
+            permissions = new String[]{Manifest.permission.READ_PHONE_STATE, Manifest.permission.READ_CALL_LOG,
+                Manifest.permission.FOREGROUND_SERVICE, Manifest.permission.FOREGROUND_SERVICE_PHONE_CALL
+            };
+        } else {
+            permissions = new String[]{Manifest.permission.READ_PHONE_STATE, Manifest.permission.READ_CALL_LOG
+            };
+        }
+        return permissions;
     }
 
     @Override
@@ -117,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
             if (allGranted) {
-                setContentView(R.layout.activity_main);
+                showIntent();
             } else {
                 Toast.makeText(this, "Required permissions not granted. Closing app.", Toast.LENGTH_LONG).show();
                 finishAffinity();
@@ -126,19 +111,50 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void showIntent() {
+        setContentView(R.layout.activity_main);
+        EdgeToEdge.enable(this);
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
+        recyclerView = findViewById(R.id.recyclerView);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        AppDB db = AppDB.getInstance(this);
+        db.callRecordDao().getAll().observe(this, records -> {
+            if (adapter == null) {
+                adapter = new CallRecordAdapter(records, rec -> {
+                    executor.execute(() -> {
+                        db.callRecordDao().update(rec);
+                    });
+                });
+                recyclerView.setLayoutManager(new LinearLayoutManager(this));
+                recyclerView.setAdapter(adapter);
+            }
+        });
+        WorkManager workManager = WorkManager.getInstance(this);
+        OneTimeWorkRequest workRequest = new OneTimeWorkRequest.Builder(CallSyncer.class).build();
+        workManager.enqueueUniqueWork("startupWorker", ExistingWorkPolicy.REPLACE, workRequest);
+        if (!CallMonitorService.isRunning) {
+            Intent serviceIntent = new Intent(this, CallMonitorService.class);
+            startForegroundService(serviceIntent);
+        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_menu, menu);
-
         AppDB db = AppDB.getInstance(this);
         db.tokenDao().getToken().observe(this, token -> {
             if (token != null) {
                 menu.findItem(R.id.action_register).setVisible(false);
                 menu.findItem(R.id.action_deregister).setVisible(true);
+                menu.findItem(R.id.action_sync).setVisible(true);
             } else {
                 menu.findItem(R.id.action_register).setVisible(true);
                 menu.findItem(R.id.action_deregister).setVisible(false);
+                menu.findItem(R.id.action_sync).setVisible(false);
             }
         });
         return true;
@@ -154,8 +170,34 @@ public class MainActivity extends AppCompatActivity {
         } else if (id == R.id.action_deregister) {
             confirmDeregister();
             return true;
+        } else if (id == R.id.action_sync) {
+            triggerManualSync();
+            return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void triggerManualSync() {
+        Toast.makeText(this, "Starting manual sync...", Toast.LENGTH_SHORT).show();
+        OneTimeWorkRequest saveWork = new OneTimeWorkRequest.Builder(com.calltrack.calltrackapp.monitors.SaveWorker.class)
+            .setExpedited(androidx.work.OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+            .build();
+        OneTimeWorkRequest syncWork = new OneTimeWorkRequest.Builder(CallSyncer.class)
+            .setExpedited(androidx.work.OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+            .build();
+        WorkManager.getInstance(this).beginWith(saveWork).then(syncWork).enqueue();
+        WorkManager.getInstance(this).getWorkInfoByIdLiveData(syncWork.getId())
+            .observe(this, workInfo -> {
+                if (workInfo != null) {
+                    if (workInfo.getState() == androidx.work.WorkInfo.State.SUCCEEDED) {
+                        Toast.makeText(MainActivity.this, "Sync Successful!", Toast.LENGTH_LONG).show();
+                    } else if (workInfo.getState() == androidx.work.WorkInfo.State.FAILED) {
+                        Toast.makeText(MainActivity.this, "Sync Failed. Check Internet.", Toast.LENGTH_LONG).show();
+                    } else if (workInfo.getState() == androidx.work.WorkInfo.State.RUNNING) {
+                        Toast.makeText(MainActivity.this, "Syncing...", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
     }
 
 

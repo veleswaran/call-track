@@ -6,15 +6,22 @@ import android.content.Intent;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 
 public class CallMonitor extends BroadcastReceiver {
+    private final Executor executor = Executors.newSingleThreadExecutor();
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
+            Intent serviceIntent = new Intent(context, CallMonitorService.class);
+            context.startForegroundService(serviceIntent);
+        }
         String action = intent.getAction();
         if (TelephonyManager.ACTION_PHONE_STATE_CHANGED.equals(action)) {
             String state = intent.getStringExtra(TelephonyManager.EXTRA_STATE);
@@ -27,68 +34,11 @@ public class CallMonitor extends BroadcastReceiver {
                 Log.d("CallReceiver", "Call ended or missed");
                 OneTimeWorkRequest workRequest = new OneTimeWorkRequest.Builder(SaveWorker.class).setInitialDelay(2, TimeUnit.SECONDS).build();
                 WorkManager.getInstance(context).enqueue(workRequest);
-                SaveCore sc = new SaveCore(context);
-                sc.ProcessCalls();
+                executor.execute(() -> {
+                    SaveCore sc = new SaveCore(context);
+                    sc.ProcessCalls();
+                });
             }
         }
     }
-
 }
-
-// For future enhancement
-//public class CallMonitor extends TelephonyCallback
-//    implements TelephonyCallback.CallStateListener {
-//
-//    private Context context;
-//
-//    public CallMonitor(Context context) {
-//        this.context = context;
-//        TelephonyManager telephonyManager =
-//            (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-//        telephonyManager.registerTelephonyCallback(
-//            context.getMainExecutor(), this);
-//    }
-//
-//    @Override
-//    public void onCallStateChanged(int state) {
-//        switch (state) {
-//            case TelephonyManager.CALL_STATE_RINGING:
-//                Log.d("CallReceiver", "Incoming call ringing");
-//                break;
-//            case TelephonyManager.CALL_STATE_OFFHOOK:
-//                Log.d("CallReceiver", "Call answered or outgoing");
-//                break;
-//            case TelephonyManager.CALL_STATE_IDLE:
-//                Log.d("CallReceiver", "Call ended or missed");
-//                OneTimeWorkRequest workRequest =
-//                    new OneTimeWorkRequest.Builder(SaveWorker.class)
-//                        .setInitialDelay(2, TimeUnit.SECONDS)
-//                        .build();
-//                WorkManager.getInstance(context).enqueue(workRequest);
-//                break;
-//        }
-//    }
-//}
-//
-//<intent-filter>
-//    <action android:name="android.intent.action.DIAL" />
-//    <action android:name="android.intent.action.CALL" />
-//    <action android:name="android.intent.action.CALL_PRIVILEGED" />
-//    <category android:name="android.intent.category.DEFAULT" />
-//    <category android:name="android.intent.category.BROWSABLE" />
-//    <data android:scheme="tel" />
-//</intent-filter>
-//
-//TelecomManager telecomManager =
-//    (TelecomManager) context.getSystemService(Context.TELECOM_SERVICE);
-//
-//if (!context.getPackageName().equals(telecomManager.getDefaultDialerPackage())) {
-//Intent intent = new Intent(TelecomManager.ACTION_CHANGE_DEFAULT_DIALER);
-//    intent.putExtra(TelecomManager.EXTRA_CHANGE_DEFAULT_DIALER_PACKAGE_NAME,
-//                    context.getPackageName());
-//    context.startActivity(intent);
-//}
-
-
-
-
