@@ -31,10 +31,16 @@ public class CallMonitorService extends Service {
             .setContentTitle("Call Tracking Active")
             .setContentText("Monitoring phone calls…")
             .setSmallIcon(android.R.drawable.sym_call_incoming)
+            .setOngoing(true)
             .build();
         startForeground(1, notification);
         callStateMonitor = new CallStateMonitor(this);
         callStateMonitor.register();
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        return START_STICKY; // Restart if killed
     }
 
     @Override
