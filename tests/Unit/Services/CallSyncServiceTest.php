@@ -4,6 +4,7 @@ namespace Tests\Unit\Services;
 
 use App\Actions\Calls\IngestCallLogsAction;
 use App\Actions\Devices\UpdateDeviceBatteryLevelAction;
+use App\Actions\Devices\UpdateDeviceHeartbeatAction;
 use App\Domain\Calls\DTOs\SyncCallLogsDTO;
 use App\Domain\Devices\Models\Device;
 use App\Services\Calls\CallSyncService;
@@ -16,7 +17,8 @@ class CallSyncServiceTest extends TestCase
     {
         $ingestAction = Mockery::mock(IngestCallLogsAction::class);
         $batteryAction = Mockery::mock(UpdateDeviceBatteryLevelAction::class);
-        $service = new CallSyncService($ingestAction, $batteryAction);
+        $heartbeatAction = Mockery::mock(UpdateDeviceHeartbeatAction::class);
+        $service = new CallSyncService($ingestAction, $batteryAction, $heartbeatAction);
 
         $device = new Device;
         $device->id = 1;
@@ -25,6 +27,11 @@ class CallSyncServiceTest extends TestCase
             device: $device,
             logs: []
         );
+
+        // Heartbeat should be called on every sync
+        $heartbeatAction->shouldReceive('execute')
+            ->once()
+            ->with($device);
 
         $ingestAction->shouldReceive('execute')
             ->once()
