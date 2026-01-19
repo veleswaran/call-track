@@ -56,27 +56,27 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
 
     return (
         <div className="flex flex-col gap-4 p-4 border rounded-lg bg-card shadow-sm">
-            <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+            <div className="flex flex-col gap-4 items-stretch">
 
                 {/* Date Range Picker */}
-                <div className={cn("grid gap-2")}>
+                <div className={cn("grid gap-2 w-full")}>
                     <Popover>
                         <PopoverTrigger asChild>
                             <Button
                                 id="date"
                                 variant={"outline"}
                                 className={cn(
-                                    "w-[260px] justify-start text-left font-normal",
+                                    "w-full sm:w-[260px] justify-start text-left font-normal",
                                     !date && "text-muted-foreground"
                                 )}
                             >
-                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
                                 {date?.from ? (
                                     date.to ? (
-                                        <>
+                                        <span className="truncate">
                                             {format(date.from, "LLL dd, y")} -{" "}
                                             {format(date.to, "LLL dd, y")}
-                                        </>
+                                        </span>
                                     ) : (
                                         format(date.from, "LLL dd, y")
                                     )
@@ -99,10 +99,10 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
                 </div>
 
                 {/* Filters Row */}
-                <div className="flex flex-1 gap-2 items-center w-full md:w-auto justify-end">
+                <div className="flex flex-wrap gap-2 items-center w-full">
 
                     <Select value={status} onValueChange={setStatus}>
-                        <SelectTrigger className="w-[140px]">
+                        <SelectTrigger className="flex-1 min-w-[120px] max-w-[160px]">
                             <SelectValue placeholder="All Statuses" />
                         </SelectTrigger>
                         <SelectContent>
@@ -114,7 +114,7 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
                     </Select>
 
                     <Select value={type} onValueChange={setType}>
-                        <SelectTrigger className="w-[140px]">
+                        <SelectTrigger className="flex-1 min-w-[120px] max-w-[160px]">
                             <SelectValue placeholder="All Classes" />
                         </SelectTrigger>
                         <SelectContent>

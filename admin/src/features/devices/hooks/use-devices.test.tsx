@@ -46,7 +46,7 @@ const mockDevice: Device = {
     agent: {
         id: 1,
         name: "Test Agent",
-    },
+    }
 };
 
 describe("useDevices", () => {

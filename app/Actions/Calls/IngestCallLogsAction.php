@@ -52,8 +52,9 @@ class IngestCallLogsAction
 
             // Track classification info for this log
             $classificationMap[$log->callHash] = [
-                'type' => $log->classificationType ?? 'BUSINESS',
-                'note' => $log->classificationNote,
+                'type' => $log->extra['classification'] ?? 'BUSINESS',
+                'note' => $log->extra['note'] ?? null,
+                'metadata' => $log->extra['metadata'] ?? null,
                 'agent_id' => $dto->device->agent_id,
             ];
         }
@@ -81,7 +82,7 @@ class IngestCallLogsAction
             $notes = [];
 
             foreach ($logsByHash as $hash => $callLog) {
-                $classInfo = $classificationMap[$hash] ?? ['type' => 'BUSINESS', 'note' => null, 'agent_id' => null];
+                $classInfo = $classificationMap[$hash] ?? ['type' => 'BUSINESS', 'note' => null, 'metadata' => null, 'agent_id' => null];
 
                 $classifications[] = [
                     'call_log_id' => $callLog->id,
@@ -92,13 +93,14 @@ class IngestCallLogsAction
                     'updated_at' => $now,
                 ];
 
-                // If note provided, add to notes table
-                if (! empty($classInfo['note'])) {
+                // If note or metadata provided, add to notes table
+                if (! empty($classInfo['note']) || ! empty($classInfo['metadata'])) {
                     $notes[] = [
                         'call_log_id' => $callLog->id,
                         'user_id' => null,
                         'agent_id' => $classInfo['agent_id'],
-                        'note' => $classInfo['note'],
+                        'note' => $classInfo['note'] ?? null,
+                        'metadata' => $classInfo['metadata'] ?? null,
                         'created_at' => $now,
                         'updated_at' => $now,
                     ];
@@ -121,7 +123,7 @@ class IngestCallLogsAction
                 CallNote::upsert(
                     $notes,
                     ['call_log_id'], // unique key
-                    ['note', 'agent_id', 'updated_at'] // columns to update
+                    ['note', 'metadata', 'agent_id', 'updated_at'] // columns to update
                 );
             }
         }

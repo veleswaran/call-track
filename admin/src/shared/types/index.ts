@@ -24,7 +24,7 @@ export interface CallLog {
     phone_number: string;
     contact_name?: string | null;
     contact_notes?: string | null;
-    call_type: "incoming" | "outgoing" | "missed";
+    call_type: "incoming" | "outgoing" | "missed" | "unknown";
     duration: number;
     timestamp: string;
     classification: CallClassification | null;
@@ -35,6 +35,7 @@ export interface CallLog {
 export interface CallNote {
     id: number;
     note: string;
+    metadata?: string | null;
     agent_id: number | null;
     created_at: string;
 }

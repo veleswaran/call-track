@@ -42,7 +42,6 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
         onChange({
             page: 1,
             per_page: filters.per_page,
-            search: filters.search,
         });
     };
 
@@ -55,7 +54,7 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
     };
 
     // Helper for single-select dropdowns that map to array filters
-    const updateArrayFilter = (key: 'types' | 'classifications', value: string) => {
+    const updateArrayFilter = (key: 'types' | 'classifications' | 'statuses', value: string) => {
         onChange({
             ...filters,
             page: 1,
@@ -132,6 +131,7 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
                     <SelectItem value="incoming">Incoming</SelectItem>
                     <SelectItem value="outgoing">Outgoing</SelectItem>
                     <SelectItem value="missed">Missed</SelectItem>
+                    <SelectItem value="unknown">Unknown</SelectItem>
                 </SelectContent>
             </Select>
 
@@ -148,7 +148,6 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
                         const response = await teamsApi.getTeams({
                             page: 1,
                             per_page: 20,
-                            search: search
                         });
                         return response.data.map((t) => ({
                             label: t.name,
@@ -163,7 +162,7 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
             />
 
             <Select
-                value={filters.status?.[0] ?? "all"}
+                value={filters.statuses?.[0] ?? "all"}
                 onValueChange={(val) => updateArrayFilter("statuses", val)}
             >
                 <SelectTrigger className="w-[140px]">

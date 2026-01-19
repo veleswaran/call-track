@@ -24,7 +24,7 @@ export interface CallLogFilters {
 
     // Array filters support
     agents?: number[];    // Replaces single agent_id
-    types?: ("incoming" | "outgoing" | "missed")[]; // Replaces single call_type
+    types?: ("incoming" | "outgoing" | "missed" | "unknown")[]; // Replaces single call_type
     statuses?: ("Connected" | "Missed" | "No Answer")[];
     classifications?: ("business" | "personal" | "ignored")[];
 
@@ -34,7 +34,7 @@ export interface CallLogFilters {
 
     // Legacy single value support (optional, keep if needed)
     agent_id?: number;
-    call_type?: "incoming" | "outgoing" | "missed";
+    call_type?: "incoming" | "outgoing" | "missed" | "unknown";
     classification?: "business" | "personal" | "ignored";
 
     // Team Filter
