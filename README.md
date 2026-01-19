@@ -67,7 +67,13 @@ Note: Access to docs is gated by `Gate::define('viewApiDocs', ...)`. In this rep
 | `POST` | `/api/v1/admin/devices/{id}/assign-agent` | Assign agent to device | Admin (Sanctum) |
 | `POST` | `/api/v1/admin/devices/{id}/unassign-agent` | Unassign agent from device | Admin (Sanctum) |
 | `API` | `/api/v1/admin/users` | Admin User Management (resource) | Admin (Sanctum) |
-| `POST` | `/api/v1/auth/two-factor/*` | 2FA Management (enable, confirm, etc.) | Admin (Sanctum) |
+
+## 📚 Documentation
+
+- **[Architecture Quick Start](docs/ARCHITECTURE_QUICK_START.md)**: High-level overview for new developers.
+- **[Why this Architecture?](docs/WHY_THIS_ARCHITECTURE.md)**: Comparison with "Standard" Laravel.
+- **[Development Flow](docs/DEVELOPMENT_FLOW.md)**: Step-by-step guide for new features.
+- [API Documentation](docs/api/README.md)
 
 ## 📦 Setup Instructions
 
