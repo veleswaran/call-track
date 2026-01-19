@@ -9,4 +9,10 @@
     <color name="white">#FFFFFFFF</color>
     <color name="row_even">#FFFFFF</color>
     <color name="row_odd">#F5F5F5</color>
+
+    <color name="call_incoming">#00897B</color> <!-- teal -->
+    <color name="call_outgoing">#1976D2</color> <!-- blue -->
+    <color name="call_missed">#D32F2F</color>  <!-- red -->
+    <color name="call_default">#000000</color> <!-- black -->
+
 </resources>

@@ -3,20 +3,18 @@ package com.calltrack.calltrackapp;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.telephony.SubscriptionInfo;
 import android.telephony.SubscriptionManager;
-import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.calltrack.calltrackapp.Adapters.CallRecordAdapter;
@@ -24,16 +22,15 @@ import com.calltrack.calltrackapp.api.ApiUtilities;
 import com.calltrack.calltrackapp.api.DeviceApi;
 import com.calltrack.calltrackapp.bundles.RegistrationRequest;
 import com.calltrack.calltrackapp.bundles.RegistrationResponse;
-import com.calltrack.calltrackapp.constants.DBConst;
 import com.calltrack.calltrackapp.db.AppDB;
-import com.calltrack.calltrackapp.db.bundles.CallRecord;
 import com.calltrack.calltrackapp.db.bundles.TokenEntity;
+import com.calltrack.calltrackapp.monitors.CallMonitorService;
 import com.calltrack.calltrackapp.syncer.CallSyncer;
 import com.calltrack.calltrackapp.utilities.Utility;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import androidx.activity.EdgeToEdge;
@@ -46,7 +43,6 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.room.Room;
 import androidx.work.ExistingWorkPolicy;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
@@ -59,47 +55,39 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private CallRecordAdapter adapter;
 
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d("onCreate", "MainActivity");
-        // Check and request permissions
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED) {
-
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_PHONE_STATE, Manifest.permission.READ_CALL_LOG},
-                    REQUEST_CODE);
+        String[] permissions = getPermissions();
+        boolean granted = true;
+        for (String permission : permissions) {
+            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                granted = false;
+                break;
+            }
+        }
+        if (!granted) {
+            ActivityCompat.requestPermissions(this, permissions, REQUEST_CODE);
         } else {
-            setContentView(R.layout.activity_main);
-            EdgeToEdge.enable(this);
-            ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-                Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-                v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-                return insets;
-            });
-            recyclerView = findViewById(R.id.recyclerView);
-            recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-            AppDB db = AppDB.getInstance(this);
-            db.callRecordDao().getAll().observe(this, records -> {
-                if (adapter == null) {
-                    adapter = new CallRecordAdapter(records, rec -> {
-                        Executors.newSingleThreadExecutor().execute(() -> {
-                            db.callRecordDao().update(rec);
-                        });
-                    });
-                    recyclerView.setLayoutManager(new LinearLayoutManager(this));
-                    recyclerView.setAdapter(adapter);
-                } else {
-                    adapter.updateData(records);
-                }
-            });
-//            WorkManager workManager = WorkManager.getInstance(this);
-//            OneTimeWorkRequest workRequest = new OneTimeWorkRequest.Builder(CallSyncer.class).build();
-//            workManager.enqueueUniqueWork("startupWorker", ExistingWorkPolicy.REPLACE, workRequest);
-
+            showIntent();
         }
 
+    }
+
+    private static String[] getPermissions() {
+        String[] permissions;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) { // API 34
+            permissions = new String[]{Manifest.permission.READ_PHONE_STATE, Manifest.permission.READ_CALL_LOG,
+                Manifest.permission.FOREGROUND_SERVICE, Manifest.permission.FOREGROUND_SERVICE_PHONE_CALL
+            };
+        } else {
+            permissions = new String[]{Manifest.permission.READ_PHONE_STATE, Manifest.permission.READ_CALL_LOG
+            };
+        }
+        return permissions;
     }
 
     @Override
@@ -114,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
             if (allGranted) {
-                setContentView(R.layout.activity_main);
+                showIntent();
             } else {
                 Toast.makeText(this, "Required permissions not granted. Closing app.", Toast.LENGTH_LONG).show();
                 finishAffinity();
@@ -123,19 +111,50 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void showIntent() {
+        setContentView(R.layout.activity_main);
+        EdgeToEdge.enable(this);
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
+        recyclerView = findViewById(R.id.recyclerView);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        AppDB db = AppDB.getInstance(this);
+        db.callRecordDao().getAll().observe(this, records -> {
+            if (adapter == null) {
+                adapter = new CallRecordAdapter(records, rec -> {
+                    executor.execute(() -> {
+                        db.callRecordDao().update(rec);
+                    });
+                });
+                recyclerView.setLayoutManager(new LinearLayoutManager(this));
+                recyclerView.setAdapter(adapter);
+            }
+        });
+        WorkManager workManager = WorkManager.getInstance(this);
+        OneTimeWorkRequest workRequest = new OneTimeWorkRequest.Builder(CallSyncer.class).build();
+        workManager.enqueueUniqueWork("startupWorker", ExistingWorkPolicy.REPLACE, workRequest);
+        if (!CallMonitorService.isRunning) {
+            Intent serviceIntent = new Intent(this, CallMonitorService.class);
+            startForegroundService(serviceIntent);
+        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_menu, menu);
-
         AppDB db = AppDB.getInstance(this);
         db.tokenDao().getToken().observe(this, token -> {
             if (token != null) {
                 menu.findItem(R.id.action_register).setVisible(false);
                 menu.findItem(R.id.action_deregister).setVisible(true);
+                menu.findItem(R.id.action_sync).setVisible(true);
             } else {
                 menu.findItem(R.id.action_register).setVisible(true);
                 menu.findItem(R.id.action_deregister).setVisible(false);
+                menu.findItem(R.id.action_sync).setVisible(false);
             }
         });
         return true;
@@ -151,18 +170,41 @@ public class MainActivity extends AppCompatActivity {
         } else if (id == R.id.action_deregister) {
             confirmDeregister();
             return true;
+        } else if (id == R.id.action_sync) {
+            triggerManualSync();
+            return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void triggerManualSync() {
+        Toast.makeText(this, "Starting manual sync...", Toast.LENGTH_SHORT).show();
+        OneTimeWorkRequest saveWork = new OneTimeWorkRequest.Builder(com.calltrack.calltrackapp.monitors.SaveWorker.class)
+            .setExpedited(androidx.work.OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+            .build();
+        OneTimeWorkRequest syncWork = new OneTimeWorkRequest.Builder(CallSyncer.class)
+            .setExpedited(androidx.work.OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+            .build();
+        WorkManager.getInstance(this).beginWith(saveWork).then(syncWork).enqueue();
+        WorkManager.getInstance(this).getWorkInfoByIdLiveData(syncWork.getId())
+            .observe(this, workInfo -> {
+                if (workInfo != null) {
+                    if (workInfo.getState() == androidx.work.WorkInfo.State.SUCCEEDED) {
+                        Toast.makeText(MainActivity.this, "Sync Successful!", Toast.LENGTH_LONG).show();
+                    } else if (workInfo.getState() == androidx.work.WorkInfo.State.FAILED) {
+                        Toast.makeText(MainActivity.this, "Sync Failed. Check Internet.", Toast.LENGTH_LONG).show();
+                    } else if (workInfo.getState() == androidx.work.WorkInfo.State.RUNNING) {
+                        Toast.makeText(MainActivity.this, "Syncing...", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
     }
 
 
     private void showRegistrationDialog() {
         LayoutInflater inflater = LayoutInflater.from(this);
         View dialogView = inflater.inflate(R.layout.dialog_register, null);
-
         EditText input = dialogView.findViewById(R.id.input_code);
-
-        // Get SIM slot values
         SubscriptionManager sm = (SubscriptionManager) getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
             return;
@@ -178,49 +220,54 @@ public class MainActivity extends AppCompatActivity {
         }
         boolean[] checkedItems = new boolean[simOptions.length];
         List<Integer> selectedSlots = new ArrayList<>();
+        AlertDialog dialog = new AlertDialog.Builder(this).setTitle("Register").setView(dialogView)
+            .setMultiChoiceItems(simOptions, checkedItems, (d, which, isChecked) -> {
+                if (isChecked) {
+                    selectedSlots.add(simSlots.get(which));
+                } else {
+                    selectedSlots.remove(Integer.valueOf(simSlots.get(which)));
+                }
+            })
+            .setPositiveButton("Submit", null) // set null for now
+            .setNegativeButton("Cancel", null)
+            .create();
+        dialog.show();
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+            String code = input.getText().toString();
+            if (code.isEmpty()) {
+                Toast.makeText(this, "Code cannot be empty", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (selectedSlots.isEmpty()) {
+                Toast.makeText(this, "Please select at least one SIM slot", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            callRegistrationApi(code, selectedSlots);
+            dialog.dismiss();
+        });
 
-        new AlertDialog.Builder(this)
-                .setTitle("Register")
-                .setView(dialogView)
-                .setMultiChoiceItems(simOptions, checkedItems, (dialog, which, isChecked) -> {
-                    if (isChecked) {
-                        selectedSlots.add(simSlots.get(which));
-                    } else {
-                        selectedSlots.remove(Integer.valueOf(simSlots.get(which)));
-                    }
-                })
-                .setPositiveButton("Submit", (dialog, which) -> {
-                    String code = input.getText().toString();
-                    callRegistrationApi(code, selectedSlots);
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
     }
 
 
     private void callRegistrationApi(String code, List<Integer> selectedSlots) {
-        TelephonyManager telephonyManager = (TelephonyManager) MainActivity.this.getSystemService(TELEPHONY_SERVICE);
-        int simSlots = telephonyManager.getPhoneCount();
-        String uuid = UUID.randomUUID().toString();
-        String name = Build.DEVICE;
+        String uuid = Utility.getOrCreateUUID(this);
+        String name = Build.BRAND + " " + Build.DEVICE;
         String model = Build.MODEL;
         String os = Build.VERSION.RELEASE;
         String appVersion = "1.0";
         RegistrationRequest request = new RegistrationRequest(
-                code, uuid, name, model, os, appVersion, selectedSlots
+            code, uuid, name, model, os, appVersion, selectedSlots
         );
         DeviceApi api = ApiUtilities.getDeviceApi();
-
         api.register(request).enqueue(new Callback<RegistrationResponse>() {
             @Override
             public void onResponse(@NonNull Call<RegistrationResponse> call, @NonNull Response<RegistrationResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    Log.d("callRegistrationApi", "Body: " + response.raw().body().toString());
                     String token = response.body().token;
-                    Executors.newSingleThreadExecutor().execute(() -> {
+                    executor.execute(() -> {
                         AppDB db = AppDB.getInstance(MainActivity.this);
                         db.tokenDao().deleteAll();
-                        db.tokenDao().insert(new TokenEntity(token, selectedSlots));
+                        db.tokenDao().insert(new TokenEntity(token, selectedSlots, code));
                     });
                     runOnUiThread(() -> {
                         Toast.makeText(MainActivity.this, "Registration successful", Toast.LENGTH_SHORT).show();
@@ -241,20 +288,19 @@ public class MainActivity extends AppCompatActivity {
 
     private void confirmDeregister() {
         new AlertDialog.Builder(this)
-                .setTitle("Confirm Deregistration")
-                .setMessage("Are you sure you want to deregister? This will delete all tokens.")
-                .setPositiveButton("Yes", (dialog, which) -> {
-                    deregister();
-                })
-                .setNegativeButton("No", (dialog, which) -> {
-                    dialog.dismiss();
-                })
-                .show();
+            .setTitle("Confirm Deregistration")
+            .setMessage("Are you sure you want to deregister? This will delete all tokens.")
+            .setPositiveButton("Yes", (dialog, which) -> {
+                deregister();
+            })
+            .setNegativeButton("No", (dialog, which) -> {
+                dialog.dismiss();
+            })
+            .show();
     }
 
-
     private void deregister() {
-        Executors.newSingleThreadExecutor().execute(() -> {
+        executor.execute(() -> {
             AppDB db = AppDB.getInstance(this);
             db.tokenDao().deleteAll();
             runOnUiThread(() -> {
@@ -264,5 +310,9 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        executor.shutdown();
+    }
 }

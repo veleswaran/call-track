@@ -9,5 +9,10 @@
         android:id="@+id/action_deregister"
         android:title="Deregister"
         android:visible="false"
-        app:showAsAction="always" />
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_sync"
+        android:title="Sync Now"
+        android:visible="false"
+        app:showAsAction="never" />
 </menu>

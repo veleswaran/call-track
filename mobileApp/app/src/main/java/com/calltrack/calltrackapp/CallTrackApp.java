@@ -17,6 +17,6 @@ public class CallTrackApp extends Application {
     public void onCreate() {
         super.onCreate();
         PeriodicWorkRequest workRequest = new PeriodicWorkRequest.Builder(CallSyncer.class, 5, TimeUnit.MINUTES).build();
-        WorkManager.getInstance(this).enqueueUniquePeriodicWork("CallSyncer", ExistingPeriodicWorkPolicy.KEEP, workRequest);
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork("CallSyncer", ExistingPeriodicWorkPolicy.UPDATE, workRequest);
     }
 }
