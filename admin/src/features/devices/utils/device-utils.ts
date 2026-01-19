@@ -3,6 +3,8 @@
  */
 
 const STALE_THRESHOLD_HOURS = 1;
+const HEARTBEAT_ACTIVE_MINUTES = 30;
+const HEARTBEAT_WARNING_MINUTES = 60;
 
 /**
  * Check if a device's heartbeat is stale (>1 hour old or never synced)
@@ -33,9 +35,9 @@ export function getHeartbeatStatus(lastSyncAt: string | null): HeartbeatStatus {
     const now = new Date();
     const diffMinutes = (now.getTime() - lastSync.getTime()) / (1000 * 60);
 
-    if (diffMinutes <= 30) {
+    if (diffMinutes <= HEARTBEAT_ACTIVE_MINUTES) {
         return "active"; // Within last 30 minutes
-    } else if (diffMinutes <= 60) {
+    } else if (diffMinutes <= HEARTBEAT_WARNING_MINUTES) {
         return "warning"; // 30-60 minutes
     } else {
         return "stale"; // Over 1 hour
