@@ -5,9 +5,13 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\Teams;
 
 use App\Contracts\Services\TeamServiceInterface;
-use App\Domain\Agents\Models\Agent;
+use App\Domain\Teams\DTOs\RemoveTeamMemberDTO;
 use App\Domain\Teams\Models\Team;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\AddTeamMemberRequest;
+use App\Http\Requests\Admin\StoreTeamRequest;
+use App\Http\Requests\Admin\UpdateMemberRoleRequest;
+use App\Http\Resources\TeamResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -25,42 +29,39 @@ class TeamController extends Controller
         $teams = $this->teamService->getAllTeams();
 
         return response()->json([
-            'data' => $teams,
+            'data' => TeamResource::collection($teams),
         ]);
     }
 
-    public function show(Team $team): JsonResponse
+    public function show(string $team): JsonResponse
     {
-        $this->authorize('view', $team);
+        $teamModel = $this->teamService->getTeamWithDetails((int) $team);
 
-        $teamWithDetails = $this->teamService->getTeamWithDetails($team->id);
+        $this->authorize('view', $teamModel);
 
         return response()->json([
-            'data' => new \App\Http\Resources\TeamResource($teamWithDetails),
+            'data' => new TeamResource($teamModel),
         ]);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(StoreTeamRequest $request): JsonResponse
     {
         $this->authorize('create', Team::class);
 
-        $validated = $request->validate([
-            'name' => 'required|string|unique:teams,name|max:255',
-        ]);
-
-        $team = $this->teamService->createTeam($validated['name']);
+        $team = $this->teamService->createTeam($request->validated()['name']);
 
         return response()->json([
-            'data' => $team,
+            'data' => new TeamResource($team),
             'message' => 'Team created successfully.',
         ], Response::HTTP_CREATED);
     }
 
-    public function addMember(\App\Http\Requests\Admin\AddTeamMemberRequest $request, Team $team): JsonResponse
+    public function addMember(AddTeamMemberRequest $request, string $team): JsonResponse
     {
-        $this->authorize('update', $team);
+        $teamModel = $this->teamService->findTeam((int) $team);
+        $this->authorize('update', $teamModel);
 
-        $dto = $request->toDTO($team->id);
+        $dto = $request->toDTO((int) $team);
 
         $this->teamService->addMember($dto);
 
@@ -69,26 +70,28 @@ class TeamController extends Controller
         ]);
     }
 
-    public function removeMember(Team $team, Agent $agent): JsonResponse
+    public function removeMember(string $team, string $agent): JsonResponse
     {
-        $this->authorize('update', $team);
+        $teamModel = $this->teamService->findTeam((int) $team);
+        $this->authorize('update', $teamModel);
 
-        $this->teamService->removeMember($team, $agent);
+        $this->teamService->removeMember(
+            new RemoveTeamMemberDTO((int) $team, (int) $agent)
+        );
 
         return response()->json([
             'message' => 'Member removed from team successfully.',
         ]);
     }
 
-    public function updateMemberRole(Request $request, Team $team, Agent $agent): JsonResponse
+    public function updateMemberRole(UpdateMemberRoleRequest $request, string $team, string $agent): JsonResponse
     {
-        $this->authorize('update', $team);
+        $teamModel = $this->teamService->findTeam((int) $team);
+        $this->authorize('update', $teamModel);
 
-        $validated = $request->validate([
-            'role' => 'required|in:MEMBER,MANAGER',
-        ]);
-
-        $this->teamService->updateMemberRole($team, $agent, $validated['role']);
+        $this->teamService->updateMemberRole(
+            $request->toDTO((int) $team, (int) $agent)
+        );
 
         return response()->json([
             'message' => 'Member role updated successfully.',

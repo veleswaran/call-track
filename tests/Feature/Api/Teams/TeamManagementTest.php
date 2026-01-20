@@ -87,4 +87,47 @@ class TeamManagementTest extends TestCase
 
         $response->assertForbidden();
     }
+
+    public function test_admin_can_remove_member_from_team()
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+
+        $team = Team::create(['name' => 'Support Team']);
+        $agent = Agent::factory()->create();
+
+        // Add member first
+        $team->members()->attach($agent->id, ['role' => 'MEMBER']);
+
+        $response = $this->actingAs($admin)->deleteJson("/api/v1/admin/teams/{$team->id}/members/{$agent->id}");
+
+        $response->assertOk();
+        $this->assertDatabaseMissing('team_members', [
+            'team_id' => $team->id,
+            'agent_id' => $agent->id,
+        ]);
+    }
+
+    public function test_admin_can_update_member_role()
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+
+        $team = Team::create(['name' => 'Marketing Team']);
+        $agent = Agent::factory()->create();
+
+        // Add member as MEMBER
+        $team->members()->attach($agent->id, ['role' => 'MEMBER']);
+
+        $response = $this->actingAs($admin)->patchJson("/api/v1/admin/teams/{$team->id}/members/{$agent->id}", [
+            'role' => 'MANAGER',
+        ]);
+
+        $response->assertOk();
+        $this->assertDatabaseHas('team_members', [
+            'team_id' => $team->id,
+            'agent_id' => $agent->id,
+            'role' => 'MANAGER',
+        ]);
+    }
 }

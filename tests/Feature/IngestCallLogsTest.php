@@ -116,6 +116,30 @@ class IngestCallLogsTest extends TestCase
         ]);
     }
 
+    public function test_it_updates_device_heartbeat_during_sync()
+    {
+        \Illuminate\Support\Carbon::setTestNow('2026-01-19 10:00:00');
+
+        $plainToken = \Illuminate\Support\Str::random(60);
+        $tokenRecord = DeviceToken::factory()->create([
+            'token_hash' => hash('sha256', $plainToken),
+        ]);
+
+        // Sync with empty logs should still update heartbeat
+        $payload = ['logs' => []];
+
+        $response = $this->withHeader('X-Device-Token', $plainToken)
+            ->postJson('/api/v1/call-logs/sync', $payload);
+
+        $response->assertOk();
+
+        $device = $tokenRecord->device->fresh();
+        $this->assertNotNull($device->last_heartbeat_at);
+        $this->assertEquals('2026-01-19 10:00:00', $device->last_heartbeat_at->format('Y-m-d H:i:s'));
+
+        \Illuminate\Support\Carbon::setTestNow(); // Reset
+    }
+
     public function test_it_applies_inline_classification_during_sync()
     {
         Queue::fake();

@@ -141,7 +141,7 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
                 placeholder="Team..."
                 value={filters.team_id?.toString()}
                 onChange={(val) => updateNumericFilter("team_id", val)}
-                loadOptions={async (search) => {
+                loadOptions={async () => {
                     try {
                         // Dynamically import to avoid circular dependencies if any, though likely fine
                         const { teamsApi } = await import("@features/teams/api/teams-api");

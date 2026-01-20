@@ -9,9 +9,13 @@ use App\Domain\Agents\Models\Agent;
 use App\Domain\Teams\Actions\AddAgentToTeamAction;
 use App\Domain\Teams\Actions\AssignTeamManagerAction;
 use App\Domain\Teams\Actions\CreateTeamAction;
+use App\Domain\Teams\Actions\GetTeamWithDetailsAction;
 use App\Domain\Teams\Actions\ListTeamsAction;
 use App\Domain\Teams\Actions\RemoveMemberFromTeamAction;
 use App\Domain\Teams\Actions\UpdateMemberRoleAction;
+use App\Domain\Teams\DTOs\AddTeamMemberDTO;
+use App\Domain\Teams\DTOs\RemoveTeamMemberDTO;
+use App\Domain\Teams\DTOs\UpdateTeamMemberRoleDTO;
 use App\Domain\Teams\Models\Team;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -23,7 +27,9 @@ class TeamService implements TeamServiceInterface
         protected AssignTeamManagerAction $assignTeamManagerAction,
         protected RemoveMemberFromTeamAction $removeMemberFromTeamAction,
         protected UpdateMemberRoleAction $updateMemberRoleAction,
-        protected ListTeamsAction $listTeamsAction
+
+        protected ListTeamsAction $listTeamsAction,
+        protected GetTeamWithDetailsAction $getTeamWithDetailsAction
     ) {}
 
     public function createTeam(string $name): Team
@@ -31,7 +37,7 @@ class TeamService implements TeamServiceInterface
         return $this->createTeamAction->execute($name);
     }
 
-    public function addMember(\App\Domain\Teams\DTOs\AddTeamMemberDTO $dto): void
+    public function addMember(AddTeamMemberDTO $dto): void
     {
         $team = Team::findOrFail($dto->teamId);
         $agent = Agent::findOrFail($dto->agentId);
@@ -53,14 +59,20 @@ class TeamService implements TeamServiceInterface
         $this->assignTeamManagerAction->execute($team, $agent);
     }
 
-    public function removeMember(Team $team, Agent $agent): void
+    public function removeMember(RemoveTeamMemberDTO $dto): void
     {
+        $team = Team::findOrFail($dto->teamId);
+        $agent = Agent::findOrFail($dto->agentId);
+
         $this->removeMemberFromTeamAction->execute($team, $agent);
     }
 
-    public function updateMemberRole(Team $team, Agent $agent, string $role): void
+    public function updateMemberRole(UpdateTeamMemberRoleDTO $dto): void
     {
-        $this->updateMemberRoleAction->execute($team, $agent, $role);
+        $team = Team::findOrFail($dto->teamId);
+        $agent = Agent::findOrFail($dto->agentId);
+
+        $this->updateMemberRoleAction->execute($team, $agent, $dto->role);
     }
 
     public function getAllTeams(): Collection
@@ -70,13 +82,11 @@ class TeamService implements TeamServiceInterface
 
     public function getTeamWithDetails(int $id): Team
     {
-        return Team::with(['members'])
-            ->withCount([
-                'members',
-                'members as managers_count' => function ($query) {
-                    $query->where('team_members.role', 'MANAGER');
-                },
-            ])
-            ->findOrFail($id);
+        return $this->getTeamWithDetailsAction->execute($id);
+    }
+
+    public function findTeam(int $id): Team
+    {
+        return Team::findOrFail($id);
     }
 }

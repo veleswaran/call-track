@@ -3,7 +3,7 @@
 namespace Tests\Unit\Services;
 
 use App\Actions\Calls\IngestCallLogsAction;
-use App\Actions\Devices\UpdateDeviceBatteryLevelAction;
+use App\Actions\Devices\UpdateDeviceSyncStateAction;
 use App\Domain\Calls\DTOs\SyncCallLogsDTO;
 use App\Domain\Devices\Models\Device;
 use App\Services\Calls\CallSyncService;
@@ -15,16 +15,22 @@ class CallSyncServiceTest extends TestCase
     public function test_it_delegates_ingestion_to_action()
     {
         $ingestAction = Mockery::mock(IngestCallLogsAction::class);
-        $batteryAction = Mockery::mock(UpdateDeviceBatteryLevelAction::class);
-        $service = new CallSyncService($ingestAction, $batteryAction);
+        $syncStateAction = Mockery::mock(UpdateDeviceSyncStateAction::class);
+        $service = new CallSyncService($ingestAction, $syncStateAction);
 
         $device = new Device;
         $device->id = 1;
 
         $dto = new SyncCallLogsDTO(
             device: $device,
-            logs: []
+            logs: [],
+            batteryLevel: 85,
         );
+
+        // Sync state action should be called with device and battery level
+        $syncStateAction->shouldReceive('execute')
+            ->once()
+            ->with($device, 85);
 
         $ingestAction->shouldReceive('execute')
             ->once()

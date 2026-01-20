@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Calls;
 
 use App\Actions\Calls\IngestCallLogsAction;
-use App\Actions\Devices\UpdateDeviceBatteryLevelAction;
+use App\Actions\Devices\UpdateDeviceSyncStateAction;
 use App\Contracts\Services\CallSyncServiceInterface;
 use App\Domain\Calls\DTOs\SyncCallLogsDTO;
 use Illuminate\Support\Facades\Log;
@@ -14,7 +14,7 @@ class CallSyncService implements CallSyncServiceInterface
 {
     public function __construct(
         protected IngestCallLogsAction $ingestAction,
-        protected UpdateDeviceBatteryLevelAction $updateBatteryAction,
+        protected UpdateDeviceSyncStateAction $updateSyncStateAction,
     ) {}
 
     public function sync(SyncCallLogsDTO $dto): array
@@ -24,9 +24,8 @@ class CallSyncService implements CallSyncServiceInterface
             'battery_level' => $dto->batteryLevel,
         ]);
 
-        if ($dto->batteryLevel !== null) {
-            $this->updateBatteryAction->execute($dto->device, $dto->batteryLevel);
-        }
+        // Update heartbeat and battery in a single query
+        $this->updateSyncStateAction->execute($dto->device, $dto->batteryLevel);
 
         return $this->ingestAction->execute($dto);
     }
