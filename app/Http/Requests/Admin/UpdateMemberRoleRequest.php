@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Admin;
 
+use App\Domain\Teams\DTOs\UpdateTeamMemberRoleDTO;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateMemberRoleRequest extends FormRequest
@@ -20,9 +21,9 @@ class UpdateMemberRoleRequest extends FormRequest
         ];
     }
 
-    public function toDTO(int $teamId, int $agentId): \App\Domain\Teams\DTOs\UpdateTeamMemberRoleDTO
+    public function toDTO(int $teamId, int $agentId): UpdateTeamMemberRoleDTO
     {
-        return new \App\Domain\Teams\DTOs\UpdateTeamMemberRoleDTO(
+        return new UpdateTeamMemberRoleDTO(
             teamId: $teamId,
             agentId: $agentId,
             role: $this->validated('role'),

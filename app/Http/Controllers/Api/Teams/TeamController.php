@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\Teams;
 
 use App\Contracts\Services\TeamServiceInterface;
-use App\Domain\Teams\DTOs\RemoveTeamMemberDTO;
 use App\Domain\Teams\Models\Team;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\AddTeamMemberRequest;
@@ -61,9 +60,9 @@ class TeamController extends Controller
         $teamModel = $this->teamService->findTeam((int) $team);
         $this->authorize('update', $teamModel);
 
-        $dto = $request->toDTO((int) $team);
+        $dto = $request->toDTO($teamModel->id);
 
-        $this->teamService->addMember($dto);
+        $this->teamService->addMember($teamModel, $dto);
 
         return response()->json([
             'message' => 'Agent added to team successfully.',
@@ -75,9 +74,7 @@ class TeamController extends Controller
         $teamModel = $this->teamService->findTeam((int) $team);
         $this->authorize('update', $teamModel);
 
-        $this->teamService->removeMember(
-            new RemoveTeamMemberDTO((int) $team, (int) $agent)
-        );
+        $this->teamService->removeMember($teamModel, (int) $agent);
 
         return response()->json([
             'message' => 'Member removed from team successfully.',
@@ -90,7 +87,8 @@ class TeamController extends Controller
         $this->authorize('update', $teamModel);
 
         $this->teamService->updateMemberRole(
-            $request->toDTO((int) $team, (int) $agent)
+            $teamModel,
+            $request->toDTO($teamModel->id, (int) $agent)
         );
 
         return response()->json([
