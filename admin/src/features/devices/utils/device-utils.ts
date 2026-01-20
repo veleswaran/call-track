@@ -2,9 +2,9 @@
  * Device utility functions for heartbeat status checking
  */
 
-const STALE_THRESHOLD_HOURS = 1;
-const HEARTBEAT_ACTIVE_MINUTES = 30;
-const HEARTBEAT_WARNING_MINUTES = 60;
+const STALE_THRESHOLD_HOURS = 8;
+const HEARTBEAT_ACTIVE_MINUTES = 60;
+const HEARTBEAT_WARNING_MINUTES = 180;
 
 /**
  * Check if a device's heartbeat is stale (>1 hour old or never synced)
@@ -36,11 +36,11 @@ export function getHeartbeatStatus(lastSyncAt: string | null): HeartbeatStatus {
     const diffMinutes = (now.getTime() - lastSync.getTime()) / (1000 * 60);
 
     if (diffMinutes <= HEARTBEAT_ACTIVE_MINUTES) {
-        return "active"; // Within last 30 minutes
+        return "active"; // Within last 60 minutes
     } else if (diffMinutes <= HEARTBEAT_WARNING_MINUTES) {
-        return "warning"; // 30-60 minutes
+        return "warning"; // 60-180 minutes
     } else {
-        return "stale"; // Over 1 hour
+        return "stale"; // Over 8 hours
     }
 }
 
