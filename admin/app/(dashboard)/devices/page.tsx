@@ -11,6 +11,7 @@ import {
 } from "@shared/components/ui/table";
 import { Smartphone } from "lucide-react";
 import { DeviceHeartbeatBadge } from "@features/devices/components/device-heartbeat-badge";
+import { DeviceStatusBadge } from "@features/devices/components/device-status-badge";
 import { isDeviceStale } from "@features/devices/utils/device-utils";
 import { DeviceRegistrationCodeDialog } from "@features/devices/components/device-registration-code-dialog";
 import { useRevokeDeviceTokens } from "@features/devices/hooks/use-devices";
@@ -120,12 +121,7 @@ export default function DevicesPage() {
                                                     : device.tracked_sim_slots.join(", ")}
                                         </TableCell>
                                         <TableCell>
-                                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${device.status === "active"
-                                                ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                                                : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                                                }`}>
-                                                {device.status === "active" ? "Active" : "Inactive"}
-                                            </span>
+                                            <DeviceStatusBadge status={device.status} />
                                         </TableCell>
                                         <TableCell>
                                             <DeviceHeartbeatBadge lastSyncAt={device.last_sync_at} />

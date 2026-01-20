@@ -21,22 +21,22 @@ describe("device-utils", () => {
             expect(isDeviceStale(null)).toBe(true);
         });
 
-        it("returns true when lastSyncAt is over 1 hour ago", () => {
+        it("returns true when lastSyncAt is over 8 hours ago", () => {
+            // 10 hours ago
+            const tenHoursAgo = "2026-01-19T02:00:00Z";
+            expect(isDeviceStale(tenHoursAgo)).toBe(true);
+        });
+
+        it("returns false when lastSyncAt is within 8 hours", () => {
             // 2 hours ago
             const twoHoursAgo = "2026-01-19T10:00:00Z";
-            expect(isDeviceStale(twoHoursAgo)).toBe(true);
+            expect(isDeviceStale(twoHoursAgo)).toBe(false);
         });
 
-        it("returns false when lastSyncAt is within 1 hour", () => {
-            // 30 minutes ago
-            const thirtyMinutesAgo = "2026-01-19T11:30:00Z";
-            expect(isDeviceStale(thirtyMinutesAgo)).toBe(false);
-        });
-
-        it("returns false when lastSyncAt is exactly 1 hour ago", () => {
-            // Edge case: exactly 1 hour
-            const oneHourAgo = "2026-01-19T11:00:00Z";
-            expect(isDeviceStale(oneHourAgo)).toBe(false);
+        it("returns false when lastSyncAt is exactly 8 hours ago", () => {
+            // Edge case: exactly 8 hours
+            const eightHoursAgo = "2026-01-19T04:00:00Z";
+            expect(isDeviceStale(eightHoursAgo)).toBe(false);
         });
     });
 
@@ -45,19 +45,21 @@ describe("device-utils", () => {
             expect(getHeartbeatStatus(null)).toBe("stale");
         });
 
-        it('returns "active" when lastSyncAt is within 30 minutes', () => {
-            const tenMinutesAgo = "2026-01-19T11:50:00Z";
-            expect(getHeartbeatStatus(tenMinutesAgo)).toBe("active");
+        it('returns "active" when lastSyncAt is within 60 minutes', () => {
+            const thirtyMinutesAgo = "2026-01-19T11:30:00Z";
+            expect(getHeartbeatStatus(thirtyMinutesAgo)).toBe("active");
         });
 
-        it('returns "warning" when lastSyncAt is 30-60 minutes ago', () => {
-            const fortyFiveMinutesAgo = "2026-01-19T11:15:00Z";
-            expect(getHeartbeatStatus(fortyFiveMinutesAgo)).toBe("warning");
+        it('returns "warning" when lastSyncAt is 60-180 minutes ago', () => {
+            // 90 minutes ago
+            const ninetyMinutesAgo = "2026-01-19T10:30:00Z";
+            expect(getHeartbeatStatus(ninetyMinutesAgo)).toBe("warning");
         });
 
-        it('returns "stale" when lastSyncAt is over 60 minutes ago', () => {
-            const twoHoursAgo = "2026-01-19T10:00:00Z";
-            expect(getHeartbeatStatus(twoHoursAgo)).toBe("stale");
+        it('returns "stale" when lastSyncAt is over 180 minutes ago', () => {
+            // 4 hours ago (240 minutes)
+            const fourHoursAgo = "2026-01-19T08:00:00Z";
+            expect(getHeartbeatStatus(fourHoursAgo)).toBe("stale");
         });
     });
 
