@@ -20,7 +20,7 @@ import { format } from "date-fns";
 import { CalendarIcon, X } from "lucide-react";
 import type { CallLogFilters as FilterTypes } from "../hooks/use-call-logs";
 import { api } from "@shared/api/api";
-import type { PaginatedResponse, Device, Agent } from "@shared/types";
+import type { PaginatedResponse, Device } from "@shared/types";
 
 interface CallLogFiltersProps {
     filters: FilterTypes;
@@ -32,7 +32,6 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
         filters.start_date ||
         filters.end_date ||
         filters.device_id ||
-        (filters.agents && filters.agents.length > 0) ||
         (filters.types && filters.types.length > 0) ||
         (filters.statuses && filters.statuses.length > 0) ||
         (filters.classifications && filters.classifications.length > 0) ||
@@ -78,21 +77,6 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
         }
     };
 
-    const loadAgents = async (search: string) => {
-        try {
-            const response = await api.get<PaginatedResponse<Agent>>(
-                `/api/v1/admin/agents?page=1&per_page=20&search=${encodeURIComponent(search)}`
-            );
-            return response.data.map((a) => ({
-                label: a.name,
-                value: a.id.toString(),
-            }));
-        } catch (e) {
-            console.error(e);
-            return [];
-        }
-    };
-
     return (
         <div className="flex flex-wrap items-center gap-2">
             <AsyncSelect
@@ -101,21 +85,6 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
                 value={filters.device_id?.toString()}
                 onChange={(val) => updateNumericFilter("device_id", val)}
                 loadOptions={loadDevices}
-                className="w-[160px]"
-            />
-
-            <AsyncSelect
-                label="Agent"
-                placeholder="Agent..."
-                value={filters.agents?.[0]?.toString()}
-                onChange={(val) => {
-                    onChange({
-                        ...filters,
-                        page: 1,
-                        agents: val ? [parseInt(val)] : undefined
-                    });
-                }}
-                loadOptions={loadAgents}
                 className="w-[160px]"
             />
 

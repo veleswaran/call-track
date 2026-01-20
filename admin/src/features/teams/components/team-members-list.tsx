@@ -110,7 +110,7 @@ export function TeamMembersList({ teamId }: TeamMembersListProps) {
                             </TableRow>
                         ) : (
                             members.map((member) => (
-                                <TableRow key={member.id}>
+                                <TableRow key={member.agent_id}>
                                     <TableCell>{member.agent?.name || "Unknown Agent"}</TableCell>
                                     <TableCell>
                                         <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium ${member.role === "MANAGER"
