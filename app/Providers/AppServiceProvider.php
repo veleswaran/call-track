@@ -80,6 +80,11 @@ class AppServiceProvider extends ServiceProvider
             \App\Contracts\Services\ReportServiceInterface::class,
             \App\Services\ReportService::class
         );
+
+        $this->app->bind(
+            \App\Contracts\Services\DeviceEventServiceInterface::class,
+            \App\Services\Devices\DeviceEventService::class
+        );
     }
 
     /**
