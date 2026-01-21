@@ -18,12 +18,18 @@ interface UseDeviceEventsParams {
     [key: string]: unknown;
 }
 
+interface UseDeviceEventsOptions {
+    enabled?: boolean;
+}
+
 /**
- * Fetch paginated device events for a specific device
+ * Fetch paginated device events for a specific device.
+ * Pass enabled: false to defer fetching until needed (e.g., dialog open).
  */
 export function useDeviceEvents(
     deviceId: number,
-    params?: UseDeviceEventsParams
+    params?: UseDeviceEventsParams,
+    options?: UseDeviceEventsOptions
 ) {
     return useQuery({
         queryKey: deviceEventKeys.list(deviceId, params),
@@ -31,6 +37,6 @@ export function useDeviceEvents(
             api.get<PaginatedResponse<DeviceEvent>>(
                 `/api/v1/admin/devices/${deviceId}/events?page=${params?.page ?? 1}&per_page=${params?.per_page ?? 20}`
             ),
-        enabled: !!deviceId,
+        enabled: !!deviceId && (options?.enabled ?? true),
     });
 }

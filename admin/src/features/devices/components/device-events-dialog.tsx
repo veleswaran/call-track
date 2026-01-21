@@ -23,9 +23,11 @@ export function DeviceEventsDialog({
     deviceName,
 }: DeviceEventsDialogProps) {
     const [open, setOpen] = useState(false);
-    const { data, isLoading } = useDeviceEvents(deviceId, {
-        per_page: 50,
-    });
+    const { data, isLoading } = useDeviceEvents(
+        deviceId,
+        { per_page: 50 },
+        { enabled: open }
+    );
 
     const events = data?.data ?? [];
 
