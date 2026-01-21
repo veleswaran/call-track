@@ -178,3 +178,27 @@ export interface TwoFactorSetupResponse {
 export interface RecoveryCodesResponse {
     recovery_codes: string[];
 }
+
+/**
+ * Device lifecycle event
+ */
+export interface DeviceEvent {
+    id: number;
+    device_id: number;
+    event_type: string;
+    payload: Record<string, unknown> | null;
+    occurred_at: string;
+    created_at: string;
+}
+
+export type DeviceEventType =
+    | "APP_STOPPED"
+    | "APP_DEREGISTERED"
+    | "APP_UNINSTALLED"
+    | "PERMISSION_DENIED"
+    | "PERMISSION_GRANTED"
+    | "BATTERY_OPTIMIZATION_ENABLED"
+    | "FOREGROUND_SERVICE_BLOCKED"
+    | "DEVICE_REBOOTED"
+    | "TOKEN_EXPIRED"
+    | "CALL_LOG_ACCESS_FAILED";

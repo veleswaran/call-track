@@ -12,6 +12,7 @@ import {
 import { Smartphone } from "lucide-react";
 import { DeviceHeartbeatBadge } from "@features/devices/components/device-heartbeat-badge";
 import { DeviceStatusBadge } from "@features/devices/components/device-status-badge";
+import { DeviceEventsDialog } from "@features/devices/components/device-events-dialog";
 import { isDeviceStale } from "@features/devices/utils/device-utils";
 import { DeviceRegistrationCodeDialog } from "@features/devices/components/device-registration-code-dialog";
 import { useRevokeDeviceTokens } from "@features/devices/hooks/use-devices";
@@ -127,16 +128,22 @@ export default function DevicesPage() {
                                             <DeviceHeartbeatBadge lastSyncAt={device.last_sync_at} />
                                         </TableCell>
                                         <TableCell>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => handleRevoke(device.id, device.device_name ?? 'Unknown Device')}
-                                                disabled={revokeDeviceTokens.isPending}
-                                                className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10"
-                                            >
-                                                <LogOut className="h-4 w-4 mr-2" />
-                                                Revoke
-                                            </Button>
+                                            <div className="flex items-center gap-1">
+                                                <DeviceEventsDialog
+                                                    deviceId={device.id}
+                                                    deviceName={device.device_name}
+                                                />
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => handleRevoke(device.id, device.device_name ?? 'Unknown Device')}
+                                                    disabled={revokeDeviceTokens.isPending}
+                                                    className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10"
+                                                    title="Revoke Tokens"
+                                                >
+                                                    <LogOut className="h-4 w-4" />
+                                                </Button>
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 );
