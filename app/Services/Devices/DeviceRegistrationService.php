@@ -20,6 +20,7 @@ class DeviceRegistrationService implements DeviceRegistrationServiceInterface
 
         return [
             'device_id' => $result['device']->id,
+            'device' => $result['device'],
             'token' => $result['token'],
         ];
     }

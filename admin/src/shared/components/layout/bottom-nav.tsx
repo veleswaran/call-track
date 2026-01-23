@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Phone, Smartphone, Users } from "lucide-react";
+import { LayoutDashboard, Phone, Smartphone, Users, BarChart } from "lucide-react";
 import { cn } from "@shared/utils";
 
 /**
@@ -11,6 +11,7 @@ import { cn } from "@shared/utils";
  */
 const navItems = [
     { name: "Dashboard", href: "/", icon: LayoutDashboard },
+    { name: "Reports", href: "/reports", icon: BarChart },
     { name: "Calls", href: "/call-logs", icon: Phone },
     { name: "Devices", href: "/devices", icon: Smartphone },
     { name: "Agents", href: "/agents", icon: Users },

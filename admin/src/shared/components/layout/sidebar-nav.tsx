@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@shared/utils";
 import {
     LayoutDashboard,
+    BarChart,
     Phone,
     Smartphone,
     Users,
@@ -28,6 +29,7 @@ export interface NavItem {
  */
 export const defaultNavigation: NavItem[] = [
     { name: "Dashboard", href: "/", icon: LayoutDashboard },
+    { name: "Reports", href: "/reports", icon: BarChart },
     { name: "Call Logs", href: "/call-logs", icon: Phone },
     { name: "Devices", href: "/devices", icon: Smartphone },
     { name: "Users", href: "/users", icon: Users },

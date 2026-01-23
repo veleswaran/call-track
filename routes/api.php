@@ -15,8 +15,8 @@ Route::prefix('v1')->group(function () {
 
     Route::middleware([DeviceAuthMiddleware::class])->group(function () {
         Route::post('/call-logs/sync', [\App\Http\Controllers\Api\CallLogController::class, 'store']);
-        Route::post('/call-logs/classify', [\App\Http\Controllers\Api\DeviceCallClassificationController::class, 'classifyBatch']);
         Route::post('/call-logs/{callHash}/classify', [\App\Http\Controllers\Api\DeviceCallClassificationController::class, 'classify']);
+        Route::post('/device/events', [\App\Http\Controllers\Api\Device\DeviceEventController::class, 'store']);
     });
 
     // Admin Routes
@@ -24,6 +24,12 @@ Route::prefix('v1')->group(function () {
         // Dashboard
         Route::get('/dashboard', [\App\Http\Controllers\Api\Admin\DashboardController::class, 'index']);
         Route::get('/dashboard/charts', [\App\Http\Controllers\Api\Admin\DashboardController::class, 'charts']);
+
+        Route::prefix('reports')->group(function () {
+            Route::get('/metrics', [\App\Http\Controllers\Api\Admin\ReportController::class, 'metrics']);
+            Route::get('/charts', [\App\Http\Controllers\Api\Admin\ReportController::class, 'charts']);
+            Route::get('/performance', [\App\Http\Controllers\Api\Admin\ReportController::class, 'performance']);
+        });
 
         // Device Codes
         Route::post('/devices/codes', [\App\Http\Controllers\Api\Admin\DeviceCodeController::class, 'store']);
@@ -39,6 +45,7 @@ Route::prefix('v1')->group(function () {
 
         // Devices
         Route::get('/devices', [\App\Http\Controllers\Api\Admin\DeviceController::class, 'index']);
+        Route::get('/devices/{device}/events', [\App\Http\Controllers\Api\Admin\DeviceEventController::class, 'index']);
         Route::post('/devices/{device}/revoke-tokens', \App\Http\Controllers\Api\Admin\RevokeDeviceTokensController::class);
 
         // Call Logs

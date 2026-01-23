@@ -10,7 +10,7 @@ import {
     TableRow,
 } from "@shared/components/ui/table";
 import { format } from "date-fns";
-import { PhoneIncoming, PhoneOutgoing, PhoneMissed } from "lucide-react";
+import { PhoneIncoming, PhoneOutgoing, PhoneMissed, HelpCircle } from "lucide-react";
 import { CallActions } from "@features/call-logs/components/call-actions";
 import { formatDuration } from "@shared/utils/time";
 import { getCallStatus } from "@shared/utils/call";
@@ -22,11 +22,35 @@ import { CallLogPagination } from "@features/call-logs/components/call-log-pagin
 /**
  * Call Logs page - displays paginated call log list using API hook
  */
+import { useSearchParams } from "next/navigation";
+
+/**
+ * Call Logs page - displays paginated call log list using API hook
+ */
 export default function CallLogsPage() {
-    const [filters, setFilters] = useState<FilterTypes>({
-        page: 1,
-        per_page: 25,
-    });
+    const searchParams = useSearchParams();
+
+    // Parse initial filters from URL
+    const initialFilters: FilterTypes = {
+        page: Number(searchParams.get("page")) || 1,
+        per_page: Number(searchParams.get("per_page")) || 25,
+        search: searchParams.get("search") || undefined,
+        start_date: searchParams.get("start_date") || undefined,
+        end_date: searchParams.get("end_date") || undefined,
+        types: searchParams.getAll("types[]") as ("incoming" | "outgoing" | "missed" | "unknown")[] | undefined,
+        statuses: searchParams.getAll("statuses[]") as ("Connected" | "Missed" | "No Answer")[] | undefined,
+        classifications: searchParams.getAll("classifications[]") as ("business" | "personal" | "ignored")[] | undefined,
+        agents: searchParams.getAll("agents[]").map(Number).filter(n => !isNaN(n)),
+    };
+
+    // If arrays are empty from getAll, they should be undefined to avoid sending empty params to API if that's how hooks work
+    // However, getAll returns [] if not found. Let's clean them up.
+    if (initialFilters.types?.length === 0) delete initialFilters.types;
+    if (initialFilters.statuses?.length === 0) delete initialFilters.statuses;
+    if (initialFilters.classifications?.length === 0) delete initialFilters.classifications;
+    if (initialFilters.agents?.length === 0) delete initialFilters.agents;
+
+    const [filters, setFilters] = useState<FilterTypes>(initialFilters);
 
     const { data, isLoading, isError } = useCallLogs(filters);
 
@@ -107,6 +131,9 @@ export default function CallLogsPage() {
                                                 {log.call_type === "missed" && (
                                                     <PhoneMissed className="h-4 w-4 text-red-500" />
                                                 )}
+                                                {log.call_type === "unknown" && (
+                                                    <HelpCircle className="h-4 w-4 text-gray-500" />
+                                                )}
                                             </TableCell>
                                             <TableCell className="font-medium">
                                                 {/* Contact name (if any) shown above the phone number */}
@@ -154,6 +181,11 @@ export default function CallLogsPage() {
                                                     {log.notes?.map((note) => (
                                                         <div key={note.id} className="text-sm">
                                                             {note.note}
+                                                            {note.metadata && (
+                                                                <div className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                                                                    <span className="font-medium">Metadata:</span> {note.metadata}
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     ))}
                                                     {!log.contact_notes && (!log.notes || log.notes.length === 0) && "-"}

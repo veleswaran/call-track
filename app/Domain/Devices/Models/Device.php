@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property \Illuminate\Support\Carbon $updated_at
  * @property bool|null $active_tokens_exists
  * @property array|null $tracked_sim_slots
+ * @property \Illuminate\Support\Carbon|null $last_heartbeat_at
  */
 class Device extends Model
 {
@@ -45,6 +46,8 @@ class Device extends Model
         'user_id',
         'agent_id',
         'tracked_sim_slots',
+        'battery_level',
+        'last_heartbeat_at',
     ];
 
     /**
@@ -56,6 +59,7 @@ class Device extends Model
     {
         return [
             'tracked_sim_slots' => 'array',
+            'last_heartbeat_at' => 'datetime',
         ];
     }
 

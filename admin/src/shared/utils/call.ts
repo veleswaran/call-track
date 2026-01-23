@@ -1,4 +1,4 @@
-export type CallType = "incoming" | "outgoing" | "missed";
+export type CallType = "incoming" | "outgoing" | "missed" | "unknown";
 export type CallStatus = "Connected" | "No Answer" | "Missed";
 
 /**

@@ -35,6 +35,7 @@ class DeviceRegistrationController extends Controller
         return response()->json([
             'message' => 'Device registered successfully',
             'device_id' => $result['device_id'],
+            'device_uuid' => $result['device']->device_uuid,
             'token' => $result['token'],
         ], 201);
     }

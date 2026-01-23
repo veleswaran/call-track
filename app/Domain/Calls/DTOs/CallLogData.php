@@ -13,5 +13,6 @@ readonly class CallLogData
         public int $duration,
         public string $timestamp,
         public int $simSlot = 0,
+        public ?array $extra = null,
     ) {}
 }

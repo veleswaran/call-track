@@ -18,7 +18,13 @@ class ResolveOrCreateDeviceAction
      */
     public function execute(RegisterDeviceData $data, ?int $agentId = null): array
     {
-        $device = Device::where('device_uuid', $data->deviceUuid)->first();
+        $deviceUuid = $data->deviceUuid;
+
+        if ($deviceUuid === null) {
+            $deviceUuid = \Illuminate\Support\Str::uuid()->toString();
+        }
+
+        $device = Device::where('device_uuid', $deviceUuid)->first();
 
         if ($device !== null) {
             // Update device metadata (name, model, versions may change)
@@ -39,7 +45,7 @@ class ResolveOrCreateDeviceAction
 
         // Create new device
         $device = Device::create([
-            'device_uuid' => $data->deviceUuid,
+            'device_uuid' => $deviceUuid,
             'name' => $data->name,
             'model' => $data->model,
             'os_version' => $data->osVersion,

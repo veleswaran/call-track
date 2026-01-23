@@ -63,7 +63,7 @@ class RegisterDeviceTest extends TestCase
         $response = $this->postJson('/api/v1/devices/register', []);
 
         $response->assertUnprocessable();
-        $response->assertJsonValidationErrors(['code', 'device_name', 'device_uuid']);
+        $response->assertJsonValidationErrors(['code', 'device_name']);
     }
 
     public function test_it_handles_re_registration_safely()
@@ -147,6 +147,42 @@ class RegisterDeviceTest extends TestCase
         $this->assertDatabaseHas('devices', [
             'name' => 'Permanent Device',
             'agent_id' => $agent->id,
+        ]);
+    }
+
+    public function test_it_registers_device_without_uuid_generating_one_server_side()
+    {
+        $agent = \App\Domain\Agents\Models\Agent::factory()->create();
+        $code = \App\Domain\Devices\Models\DeviceRegistrationCode::create([
+            'code' => 'NOUUIDCODE',
+            'agent_id' => $agent->id,
+            'expires_at' => now()->addHour(),
+        ]);
+
+        $payload = [
+            'code' => 'NOUUIDCODE',
+            // 'device_uuid' => ... omitted
+            'device_name' => 'Privacy Device',
+            'device_model' => 'Pixel 8 Pro',
+        ];
+
+        $response = $this->postJson('/api/v1/devices/register', $payload);
+
+        $response->assertCreated()
+            ->assertJsonStructure([
+                'message',
+                'device_id',
+                'device_uuid', // Assert uuid is returned
+                'token',
+            ]);
+
+        $this->assertNotNull($response->json('device_uuid'));
+        $this->assertTrue(\Illuminate\Support\Str::isUuid($response->json('device_uuid')));
+
+        $this->assertDatabaseHas('devices', [
+            'name' => 'Privacy Device',
+            'agent_id' => $agent->id,
+            'device_uuid' => $response->json('device_uuid'), // Match generated UUID
         ]);
     }
 }

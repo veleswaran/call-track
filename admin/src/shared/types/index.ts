@@ -24,7 +24,7 @@ export interface CallLog {
     phone_number: string;
     contact_name?: string | null;
     contact_notes?: string | null;
-    call_type: "incoming" | "outgoing" | "missed";
+    call_type: "incoming" | "outgoing" | "missed" | "unknown";
     duration: number;
     timestamp: string;
     classification: CallClassification | null;
@@ -35,6 +35,7 @@ export interface CallLog {
 export interface CallNote {
     id: number;
     note: string;
+    metadata?: string | null;
     agent_id: number | null;
     created_at: string;
 }
@@ -61,12 +62,15 @@ export interface CallClassification {
 export interface Device {
     id: number;
     device_identifier: string;
+    device_uuid: string | null;
     device_name: string | null;
     device_model: string | null;
     os_version: string | null;
     app_version: string | null;
-    status: "active" | "suspended";
+    status: "active" | "inactive";
     agent_id: number | null;
+    agent: { id: number; name: string } | null;
+    battery_level: number | null;
     tracked_sim_slots: number[] | null;
     last_sync_at: string | null;
     created_at: string;
@@ -152,6 +156,7 @@ export interface DashboardMetrics {
     personal_calls: number;
     ignored_calls: number;
     unclassified_calls: number;
+    missed_calls: number;
     total_duration_seconds: number;
     average_call_duration_seconds: number;
     total_devices: number;
@@ -160,6 +165,7 @@ export interface DashboardMetrics {
     // Week-over-week comparison percentages
     total_calls_change_percent: number | null;
     active_devices_change_percent: number | null;
+    missed_calls_change_percent: number | null;
     average_call_duration_change_percent: number | null;
     total_duration_change_percent: number | null;
 }
@@ -172,3 +178,27 @@ export interface TwoFactorSetupResponse {
 export interface RecoveryCodesResponse {
     recovery_codes: string[];
 }
+
+/**
+ * Device lifecycle event
+ */
+export interface DeviceEvent {
+    id: number;
+    device_id: number;
+    event_type: string;
+    payload: Record<string, unknown> | null;
+    occurred_at: string;
+    created_at: string;
+}
+
+export type DeviceEventType =
+    | "APP_STOPPED"
+    | "APP_DEREGISTERED"
+    | "APP_UNINSTALLED"
+    | "PERMISSION_DENIED"
+    | "PERMISSION_GRANTED"
+    | "BATTERY_OPTIMIZATION_ENABLED"
+    | "FOREGROUND_SERVICE_BLOCKED"
+    | "DEVICE_REBOOTED"
+    | "TOKEN_EXPIRED"
+    | "CALL_LOG_ACCESS_FAILED";

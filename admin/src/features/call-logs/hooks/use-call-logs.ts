@@ -17,13 +17,25 @@ export const callLogKeys = {
 export interface CallLogFilters {
     page?: number;
     per_page?: number;
-    device_id?: number;
-    agent_id?: number;
-    classification?: "business" | "personal" | "ignored";
-    call_type?: "incoming" | "outgoing" | "missed";
-    date_from?: string;
-    date_to?: string;
     search?: string;
+
+    // Filters
+    device_id?: number;
+
+    // Array filters support
+    agents?: number[];    // Replaces single agent_id
+    types?: ("incoming" | "outgoing" | "missed" | "unknown")[]; // Replaces single call_type
+    statuses?: ("Connected" | "Missed" | "No Answer")[];
+    classifications?: ("business" | "personal" | "ignored")[];
+
+    // Date range
+    start_date?: string;  // backend parameter names
+    end_date?: string;
+
+    // Legacy single value support (optional, keep if needed)
+    agent_id?: number;
+    call_type?: "incoming" | "outgoing" | "missed" | "unknown";
+    classification?: "business" | "personal" | "ignored";
 }
 
 /**
@@ -35,7 +47,11 @@ export function useCallLogs(filters?: CallLogFilters) {
     if (filters) {
         Object.entries(filters).forEach(([key, value]) => {
             if (value !== undefined && value !== null) {
-                params.append(key, String(value));
+                if (Array.isArray(value)) {
+                    value.forEach(v => params.append(`${key}[]`, String(v)));
+                } else {
+                    params.append(key, String(value));
+                }
             }
         });
     }

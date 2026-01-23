@@ -41,6 +41,9 @@ const mockDevice: Device = {
     last_sync_at: "2023-01-01T00:00:00Z",
     created_at: "2024-01-01T00:00:00Z",
     updated_at: "2024-01-01T00:00:00Z",
+    device_uuid: "uuid-123",
+    agent: null,
+    battery_level: 100,
 };
 
 describe("useDevices", () => {

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Calls;
 
 use App\Actions\Calls\IngestCallLogsAction;
+use App\Actions\Devices\UpdateDeviceSyncStateAction;
 use App\Contracts\Services\CallSyncServiceInterface;
 use App\Domain\Calls\DTOs\SyncCallLogsDTO;
 use Illuminate\Support\Facades\Log;
@@ -12,19 +13,20 @@ use Illuminate\Support\Facades\Log;
 class CallSyncService implements CallSyncServiceInterface
 {
     public function __construct(
-        protected IngestCallLogsAction $ingestAction
+        protected IngestCallLogsAction $ingestAction,
+        protected UpdateDeviceSyncStateAction $updateSyncStateAction,
     ) {}
 
-    public function sync(SyncCallLogsDTO $dto): void
+    public function sync(SyncCallLogsDTO $dto): array
     {
-        // "services use contracts... services orchestrate"
-        // Here we just delegate to Action.
-        // We could also log here.
-
         Log::info("Syncing calls for device: {$dto->device->id}", [
             'count' => count($dto->logs),
+            'battery_level' => $dto->batteryLevel,
         ]);
 
-        $this->ingestAction->execute($dto);
+        // Update heartbeat and battery in a single query
+        $this->updateSyncStateAction->execute($dto->device, $dto->batteryLevel);
+
+        return $this->ingestAction->execute($dto);
     }
 }
