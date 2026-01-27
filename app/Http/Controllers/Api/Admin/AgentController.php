@@ -16,15 +16,21 @@ use Illuminate\Http\Request;
 class AgentController extends Controller
 {
     public function __construct(
-        protected AgentManagementServiceInterface $service
-    ) {}
+        protected AgentManagementServiceInterface $service,
+        private readonly \App\Domain\Auth\Actions\GetAgentAccessScopeAction $getAgentAccessScopeAction,
+    ) {
+    }
 
     public function index(Request $request): JsonResponse
     {
+        /** @var \App\Domain\Users\Models\User $user */
+        $user = $request->user();
+        $allowedAgentIds = $this->getAgentAccessScopeAction->execute($user);
+
         $search = $request->input('search');
         $perPage = (int) $request->input('per_page', 20);
 
-        return response()->json($this->service->getAgentsList($perPage, $search));
+        return response()->json($this->service->getAgentsList($allowedAgentIds, $perPage, $search));
     }
 
     public function store(StoreAgentRequest $request): JsonResponse

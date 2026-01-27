@@ -20,7 +20,8 @@ class AgentManagementService implements AgentManagementServiceInterface
         protected UpdateAgentAction $updateAgentAction,
         protected AssignAgentToDeviceAction $assignAction,
         protected UnassignAgentFromDeviceAction $unassignAction,
-    ) {}
+    ) {
+    }
 
     public function createAgent(AgentData $data): Agent
     {
@@ -44,9 +45,12 @@ class AgentManagementService implements AgentManagementServiceInterface
         return $this->unassignAction->execute($device);
     }
 
-    public function getAgentsList(int $perPage = 20, ?string $search = null): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    public function getAgentsList(?array $allowedAgentIds = null, int $perPage = 20, ?string $search = null): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
         return Agent::withCount('devices')
+            ->when($allowedAgentIds !== null, function ($query) use ($allowedAgentIds) {
+                $query->whereIn('id', $allowedAgentIds);
+            })
             ->when($search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")

@@ -76,10 +76,25 @@ final class GetReportMetricsAction
 
     private function applyFilters(\Illuminate\Database\Eloquent\Builder $query, ReportFilterDTO $filters): void
     {
-        if (! empty($filters->agentIds)) {
-            // Join devices to filter by agent/user
+        // Apply RBAC scope first - this is the security constraint
+        if ($filters->allowedAgentIds !== null) {
+            if (empty($filters->allowedAgentIds)) {
+                // No access
+                $query->whereRaw('1 = 0');
+                return;
+            }
+            // Join devices table for agent_id filter
             $query->join('devices', 'call_logs.device_id', '=', 'devices.id')
-                ->whereIn('devices.agent_id', $filters->agentIds);
+                ->whereIn('devices.agent_id', $filters->allowedAgentIds);
+        }
+
+        // Apply user-selected agent filter (must be within allowed scope)
+        if (!empty($filters->agentIds)) {
+            // If we already joined devices for RBAC, we don't need to re-join
+            if ($filters->allowedAgentIds === null) {
+                $query->join('devices', 'call_logs.device_id', '=', 'devices.id');
+            }
+            $query->whereIn('devices.agent_id', $filters->agentIds);
         }
 
         if (! empty($filters->types)) {

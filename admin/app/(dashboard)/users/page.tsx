@@ -52,7 +52,7 @@ export default function UsersPage() {
                                 <TableCell>{user.email}</TableCell>
                                 <TableCell>
                                     <div className="flex gap-1">
-                                        {user.roles?.map((role) => (
+                                        {user.roles?.map((role:any) => (
                                             <Badge key={role} variant="secondary" className="text-xs">
                                                 {role}
                                             </Badge>

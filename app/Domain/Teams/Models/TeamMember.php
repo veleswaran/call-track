@@ -16,9 +16,15 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
  */
 class TeamMember extends Pivot
 {
+    use \Illuminate\Database\Eloquent\Factories\HasFactory;
     protected $table = 'team_members';
 
     public $incrementing = true;
+
+    protected static function newFactory()
+    {
+        return \Database\Factories\TeamMemberFactory::new();
+    }
 
     protected $casts = [
         'role' => 'string',

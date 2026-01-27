@@ -5,6 +5,7 @@ import { useAgents } from "@features/agents/hooks/use-agents";
 import { AddAgentDialog } from "@features/agents/components/AddAgentDialog";
 import { EditAgentDialog } from "@features/agents/components/EditAgentDialog";
 import { AssignDeviceDialog } from "@features/agents/components/AssignDeviceDialog";
+import { LinkUserDialog } from "@features/agents/components/LinkUserDialog";
 import {
     Table,
     TableBody,
@@ -14,7 +15,7 @@ import {
     TableRow,
 } from "@shared/components/ui/table";
 import { Button } from "@shared/components/ui/button";
-import { User, Pencil, Smartphone } from "lucide-react";
+import { User, Pencil, Smartphone, Link as LinkIcon } from "lucide-react";
 import type { Agent } from "@shared/types";
 
 /**
@@ -24,6 +25,8 @@ export default function AgentsPage() {
     const { data, isLoading, isError } = useAgents({ page: 1, per_page: 20 });
     const [editingAgent, setEditingAgent] = useState<Agent | null>(null);
     const [assigningAgent, setAssigningAgent] = useState<Agent | null>(null);
+    const [linkingAgent, setLinkingAgent] = useState<Agent | null>(null);
+
 
     const agents = data?.data ?? [];
 
@@ -102,6 +105,14 @@ export default function AgentsPage() {
                                             <Button
                                                 size="sm"
                                                 variant="ghost"
+                                                onClick={() => setLinkingAgent(agent)}
+                                                title="Link User"
+                                            >
+                                                <LinkIcon className="h-4 w-4" />
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant="ghost"
                                                 onClick={() => setAssigningAgent(agent)}
                                                 title="Manage Devices"
                                             >
@@ -139,6 +150,15 @@ export default function AgentsPage() {
                     agent={assigningAgent}
                     open={!!assigningAgent}
                     onOpenChange={(open) => !open && setAssigningAgent(null)}
+                />
+            )}
+
+            {/* Link User Dialog */}
+            {linkingAgent && (
+                <LinkUserDialog
+                    agent={linkingAgent}
+                    open={!!linkingAgent}
+                    onOpenChange={(open) => !open && setLinkingAgent(null)}
                 />
             )}
         </div>

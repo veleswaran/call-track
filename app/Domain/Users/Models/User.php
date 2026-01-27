@@ -23,6 +23,14 @@ class User extends Authenticatable
         return $this->hasOne(\App\Domain\Agents\Models\Agent::class);
     }
 
+    public function isAgent(): bool
+    {
+        // Check if the agent relation exists (if loaded, use it; otherwise check DB existence?
+        // Actually, easiest is to check if agent is not null.
+        // Assuming developer will eager load 'agent' when needed, or lazy load occurs.
+        return $this->agent !== null;
+    }
+
     protected static function newFactory()
     {
         return \Database\Factories\UserFactory::new();

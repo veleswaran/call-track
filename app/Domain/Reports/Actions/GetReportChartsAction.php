@@ -26,11 +26,25 @@ final class GetReportChartsAction
             ->leftJoin('call_classifications', 'call_logs.id', '=', 'call_classifications.call_log_id')
             ->whereBetween('call_logs.timestamp', [$filters->startDate, $filters->endDate]);
 
-        if (! empty($filters->agentIds)) {
+        // Apply RBAC scope first
+        $devicesJoined = false;
+        if ($filters->allowedAgentIds !== null) {
+            if (empty($filters->allowedAgentIds)) {
+                $query->whereRaw('1 = 0');
+                return $query;
+            }
             $query->join('devices', 'call_logs.device_id', '=', 'devices.id')
-                ->whereIn('devices.agent_id', $filters->agentIds);
+                ->whereIn('devices.agent_id', $filters->allowedAgentIds);
+            $devicesJoined = true;
         }
-        if (! empty($filters->types)) {
+
+        if (! empty($filters->agentIds)) {
+            if (!$devicesJoined) {
+                $query->join('devices', 'call_logs.device_id', '=', 'devices.id');
+            }
+            $query->whereIn('devices.agent_id', $filters->agentIds);
+        }
+        if (!empty($filters->types)) {
             $query->whereIn('call_classifications.type', $filters->types);
         }
         // Helper to apply status filters if needed, but charts usually show ALL statuses unless specifically filtered.

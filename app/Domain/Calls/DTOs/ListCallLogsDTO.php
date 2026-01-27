@@ -26,7 +26,10 @@ final readonly class ListCallLogsDTO
         public ?string $search = null,
         public ?\App\Domain\Users\Models\User $user = null,
         public ?int $teamId = null,
-    ) {}
+        /** @var int[]|null Null = full access, array = restricted to these agent IDs */
+        public ?array $allowedAgentIds = null,
+    ) {
+    }
 
     public static function fromRequest(IndexCallLogsRequest $request): self
     {

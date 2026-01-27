@@ -4,12 +4,11 @@ import { AppShell } from "@shared/components/layout/app-shell";
 import { AuthGuard } from "@shared/components/auth/auth-guard";
 import { authService } from "@shared/api/auth-service";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/src/features/auth/hooks/use-auth";
 
-export default function DashboardLayout({
-    children,
-}: {
-    children: React.ReactNode;
-}) {
+export default function DashboardLayout({ children,}: {    children: React.ReactNode;}) {
+    const {user} = useAuth();
+    console.log(user);
     const router = useRouter();
 
     const handleLogout = async () => {
@@ -24,7 +23,7 @@ export default function DashboardLayout({
 
     return (
         <AuthGuard>
-            <AppShell onLogout={handleLogout}>{children}</AppShell>
+            <AppShell onLogout={handleLogout} user={user ?? undefined}>{children}</AppShell>
         </AuthGuard>
     );
 }

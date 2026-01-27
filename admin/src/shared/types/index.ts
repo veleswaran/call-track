@@ -6,13 +6,21 @@ export interface User {
     name: string;
     email: string;
     email_verified_at: string | null;
-    roles?: string[];
+    roles?: Role[];
     two_factor_enabled?: boolean;
     two_factor_confirmed_at?: string | null;
+    is_agent?: boolean;
     created_at: string;
     updated_at: string;
 }
 
+
+export interface Role {
+    id: number;
+    name: string;
+    created_at: string;
+    updated_at: string;
+}
 /**
  * Call log entry from the API
  */
@@ -85,6 +93,8 @@ export interface Agent {
     name: string;
     employee_code: string | null;
     status: "active" | "inactive";
+    user_id?: number | null;
+    user?: User | null;
     devices_count?: number;
     created_at: string;
     updated_at: string;

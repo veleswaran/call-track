@@ -25,6 +25,7 @@ class Agent extends Model
         'name',
         'employee_code',
         'status',
+        'user_id',
     ];
 
     protected static function newFactory()

@@ -20,31 +20,13 @@ final class BuildCallLogQueryAction
             ->with(['classification', 'device.agent'])
             ->orderByDesc('timestamp');
 
-        // Access Control Scope
-        if ($dto->user && ! $dto->user->hasRole(['super-admin', 'admin'])) {
-            /** @var \App\Domain\Agents\Models\Agent|null $userAgent */
-            $userAgent = $dto->user->agent;
-
-            if (! $userAgent) {
-                // If user has no agent (and not admin), they shouldn't see anything or handle error.
-                // For safety, return empty.
+        // Access Control Scope - uses pre-calculated allowedAgentIds from Controller
+        if ($dto->allowedAgentIds !== null) {
+            if (empty($dto->allowedAgentIds)) {
                 $query->whereRaw('1 = 0');
             } else {
-                $query->whereHas('device', function ($deviceQuery) use ($userAgent) {
-                    $deviceQuery->where(function ($q) use ($userAgent) {
-                        // 1. Own records
-                        $q->where('agent_id', $userAgent->id);
-
-                        // 2. Team records where I am a manager
-                        $q->orWhereIn('agent_id', function ($sub) use ($userAgent) {
-                            // Using a self-join on team_members for better performance
-                            $sub->select('tm.agent_id')
-                                ->from('team_members as tm')
-                                ->join('team_members as manager', 'tm.team_id', '=', 'manager.team_id')
-                                ->where('manager.agent_id', $userAgent->id)
-                                ->where('manager.role', 'MANAGER');
-                        });
-                    });
+                $query->whereHas('device', function ($deviceQuery) use ($dto) {
+                    $deviceQuery->whereIn('agent_id', $dto->allowedAgentIds);
                 });
             }
         }

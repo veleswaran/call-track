@@ -17,30 +17,30 @@ final class GetDashboardChartsAction
 
     /**
      * Execute the action to get chart data
+     * @param int[]|null $allowedAgentIds Null = full access, array = restricted agent IDs
      */
-    public function execute(): DashboardChartsDTO
+    public function execute(?array $allowedAgentIds = null): DashboardChartsDTO
     {
         $tz = 'Asia/Kolkata';
 
         return DashboardChartsDTO::from(
-            volumeTrends: $this->getVolumeTrends($tz),
-            outcomeDistribution: $this->getOutcomeDistribution($tz),
+            volumeTrends: $this->getVolumeTrends($tz, $allowedAgentIds),
+            outcomeDistribution: $this->getOutcomeDistribution($tz, $allowedAgentIds),
         );
     }
 
     /**
      * Get call volume trends grouped by day for current and previous week
-     *
      * @return array<int, array{day: string, current: int, previous: int}>
      */
-    private function getVolumeTrends(string $tz): array
+    private function getVolumeTrends(string $tz, ?array $allowedAgentIds): array
     {
         $currentWeekStart = Carbon::now($tz)->startOfWeek();
         $previousWeekStart = Carbon::now($tz)->subWeek()->startOfWeek();
 
         // Get current week data grouped by day of week
-        $currentWeek = $this->getWeeklyData($currentWeekStart);
-        $previousWeek = $this->getWeeklyData($previousWeekStart);
+        $currentWeek = $this->getWeeklyData($currentWeekStart, $allowedAgentIds);
+        $previousWeek = $this->getWeeklyData($previousWeekStart, $allowedAgentIds);
 
         $trends = [];
         foreach (self::DAYS as $index => $day) {
@@ -60,17 +60,24 @@ final class GetDashboardChartsAction
      *
      * @return array<int, int>
      */
-    private function getWeeklyData(Carbon $weekStart): array
+    private function getWeeklyData(Carbon $weekStart, ?array $allowedAgentIds): array
     {
         $weekEnd = $weekStart->copy()->endOfWeek();
 
-        $results = DB::table('call_logs')
-            ->whereBetween('timestamp', [$weekStart, $weekEnd])
+        $query = DB::table('call_logs')
+            ->join('devices', 'call_logs.device_id', '=', 'devices.id')
+            ->whereBetween('call_logs.timestamp', [$weekStart, $weekEnd]);
+
+        if ($allowedAgentIds !== null) {
+            $query->whereIn('devices.agent_id', $allowedAgentIds);
+        }
+
+        $results = $query
             ->select([
-                DB::raw('EXTRACT(DOW FROM timestamp) as day_of_week'),
+                DB::raw('EXTRACT(DOW FROM call_logs.timestamp) as day_of_week'),
                 DB::raw('COUNT(*) as count'),
             ])
-            ->groupBy(DB::raw('EXTRACT(DOW FROM timestamp)'))
+            ->groupBy(DB::raw('EXTRACT(DOW FROM call_logs.timestamp)'))
             ->get();
 
         $data = [];
@@ -89,24 +96,31 @@ final class GetDashboardChartsAction
      *
      * @return array<int, array{name: string, value: int}>
      */
-    private function getOutcomeDistribution(string $tz): array
+    private function getOutcomeDistribution(string $tz, ?array $allowedAgentIds): array
     {
         $weekStart = Carbon::now($tz)->startOfWeek();
         $weekEnd = Carbon::now($tz)->endOfWeek();
 
-        $results = DB::table('call_logs')
-            ->whereBetween('timestamp', [$weekStart, $weekEnd])
+        $query = DB::table('call_logs')
+            ->join('devices', 'call_logs.device_id', '=', 'devices.id')
+            ->whereBetween('call_logs.timestamp', [$weekStart, $weekEnd]);
+
+        if ($allowedAgentIds !== null) {
+            $query->whereIn('devices.agent_id', $allowedAgentIds);
+        }
+
+        $results = $query
             ->select([
                 DB::raw("CASE
-                    WHEN direction = 'MISSED' THEN 'Missed'
-                    WHEN direction = 'OUTGOING' AND duration = 0 THEN 'No Answer'
+                    WHEN call_logs.direction = 'MISSED' THEN 'Missed'
+                    WHEN call_logs.direction = 'OUTGOING' AND call_logs.duration = 0 THEN 'No Answer'
                     ELSE 'Connected'
                 END as outcome"),
                 DB::raw('COUNT(*) as count'),
             ])
             ->groupBy(DB::raw("CASE
-                    WHEN direction = 'MISSED' THEN 'Missed'
-                    WHEN direction = 'OUTGOING' AND duration = 0 THEN 'No Answer'
+                    WHEN call_logs.direction = 'MISSED' THEN 'Missed'
+                    WHEN call_logs.direction = 'OUTGOING' AND call_logs.duration = 0 THEN 'No Answer'
                     ELSE 'Connected'
                 END"))
             ->get();
@@ -124,7 +138,7 @@ final class GetDashboardChartsAction
         $existingNames = array_column($distribution, 'name');
 
         foreach ($categories as $category) {
-            if (! in_array($category, $existingNames)) {
+            if (!in_array($category, $existingNames)) {
                 $distribution[] = ['name' => $category, 'value' => 0];
             }
         }

@@ -14,6 +14,7 @@ import {
     ChevronLeft,
     type LucideIcon,
 } from "lucide-react";
+import { useAuth } from "@/src/features/auth/hooks/use-auth";
 
 /**
  * Navigation item configuration
@@ -22,6 +23,7 @@ export interface NavItem {
     name: string;
     href: string;
     icon: LucideIcon;
+    role?: string | string[];
 }
 
 /**
@@ -32,10 +34,10 @@ export const defaultNavigation: NavItem[] = [
     { name: "Reports", href: "/reports", icon: BarChart },
     { name: "Call Logs", href: "/call-logs", icon: Phone },
     { name: "Devices", href: "/devices", icon: Smartphone },
-    { name: "Users", href: "/users", icon: Users },
-    { name: "Teams", href: "/teams", icon: Users },
-    { name: "Agents", href: "/agents", icon: Users },
-    { name: "Contacts", href: "/contacts", icon: Contact },
+    { name: "Users", href: "/users", icon: Users, role: "admin" },
+    { name: "Teams", href: "/teams", icon: Users, role: "admin" },
+    { name: "Agents", href: "/agents", icon: Users, role: "admin" },
+    { name: "Contacts", href: "/contacts", icon: Contact, role: "admin" },
 ];
 
 export interface SidebarNavProps {
@@ -54,6 +56,10 @@ export function SidebarNav({
     navigation = defaultNavigation,
 }: SidebarNavProps) {
     const pathname = usePathname();
+    const { user } = useAuth();
+
+    const userRoles: string[] =
+        user?.roles?.map((r: any) => r.name?.toLowerCase()) || [];
 
     return (
         <aside
@@ -88,7 +94,21 @@ export function SidebarNav({
             {/* Navigation */}
             <nav className="flex-1 p-4 space-y-1" role="navigation">
                 {navigation.map((item) => {
-                    const isActive = pathname === item.href;
+                    const isActive =
+                        pathname === item.href ||
+                        pathname.startsWith(item.href + "/");
+
+                    // Role permission check
+                    const isAllowed = !item.role
+                        ? true
+                        : Array.isArray(item.role)
+                        ? item.role.some((role) =>
+                              userRoles.includes(role.toLowerCase())
+                          )
+                        : userRoles.includes(item.role.toLowerCase());
+
+                    if (!isAllowed) return null;
+
                     return (
                         <Link
                             key={item.name}
@@ -101,7 +121,7 @@ export function SidebarNav({
                             )}
                             aria-current={isActive ? "page" : undefined}
                         >
-                            <item.icon className="h-5 w-5 shrink-0" aria-hidden="true" />
+                            <item.icon className="h-5 w-5 shrink-0" />
                             {open && <span>{item.name}</span>}
                         </Link>
                     );

@@ -15,10 +15,10 @@ interface DashboardServiceContract
     /**
      * Get aggregated dashboard metrics
      */
-    public function getMetrics(): DashboardMetricsDTO;
+    public function getMetrics(?array $allowedAgentIds = null): DashboardMetricsDTO;
 
     /**
      * Get dashboard chart data
      */
-    public function getCharts(): DashboardChartsDTO;
+    public function getCharts(?array $allowedAgentIds = null): DashboardChartsDTO;
 }
