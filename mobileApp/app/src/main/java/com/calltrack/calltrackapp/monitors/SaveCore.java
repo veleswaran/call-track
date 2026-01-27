@@ -39,7 +39,6 @@ public class SaveCore {
             try (Cursor cursor = context.getContentResolver().query(CallLog.Calls.CONTENT_URI, projection, selection, selectionArgs, CallLog.Calls._ID + " ASC")) {
                 if (cursor == null) return;
                 int batteryLevel = Utility.getBatteryPercentage(context);
-                Long latestProcessedId = -1L;
                 while (cursor.moveToNext()) {
                     CallRecord record = new CallRecord();
                     record.synced = false;
@@ -54,9 +53,9 @@ public class SaveCore {
                     int subId = getIntSafe(cursor, "subscription_id");
                     fillSubscriptionInfo(context, record, subId);
                     persistRecord(context.getApplicationContext(), record);
-                    latestProcessedId = record.callLocalId;
+                    lastProcessedId = record.callLocalId;
                 }
-                localSettings.setLastProcessedCallId(latestProcessedId);
+                localSettings.setLastProcessedCallId(lastProcessedId);
             } catch (Exception e) {
                 Log.e("CallMonitor -> saveLatestCall", "Exception occurred", e);
             }

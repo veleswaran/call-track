@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.provider.CallLog;
+import android.util.Log;
 
 public class LocalSettings {
 
@@ -28,10 +29,10 @@ public class LocalSettings {
 
     public void resetToCurrentCallId() {
         long lastProcessedId = getLastProcessedCallId();
-        if (lastProcessedId == -1) {
+        if (lastProcessedId <= 0) {
             String[] projection = {CallLog.Calls._ID};
             try (Cursor cursor = context.getContentResolver().query(
-                CallLog.Calls.CONTENT_URI, projection, null, null, CallLog.Calls._ID + " DESC LIMIT 1")) {
+                CallLog.Calls.CONTENT_URI, projection, null, null, CallLog.Calls._ID + " DESC")) {
                 if (cursor != null && cursor.moveToFirst()) {
                     lastProcessedId = cursor.getLong(cursor.getColumnIndexOrThrow(CallLog.Calls._ID));
                     setLastProcessedCallId(lastProcessedId);
