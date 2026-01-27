@@ -18,8 +18,7 @@ class LinkUserToAgentController extends Controller
 {
     public function __construct(
         private readonly LinkUserToAgentAction $linkAction,
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request, Agent $agent): JsonResponse
     {

@@ -29,35 +29,39 @@ describe("Header", () => {
     });
 
     it("should toggle user menu on click", async () => {
-        const user = userEvent.setup();
-        render(<Header onMenuClick={() => { }} userName="Test User" />);
+        const userEventSetup = userEvent.setup();
+        const mockUser: any = {
+            id: 1,
+            name: "Test User",
+            email: "test@example.com",
+            roles: [{ name: "Admin" }]
+        };
+        render(<Header onMenuClick={() => { }} user={mockUser} />);
 
         // Menu should be closed initially
         expect(screen.queryByTestId("user-menu-dropdown")).not.toBeInTheDocument();
 
         // Click to open
-        await user.click(screen.getByTestId("user-menu-button"));
+        await userEventSetup.click(screen.getByTestId("user-menu-button"));
         expect(screen.getByTestId("user-menu-dropdown")).toBeInTheDocument();
 
         // Click to close
-        await user.click(screen.getByTestId("user-menu-button"));
+        await userEventSetup.click(screen.getByTestId("user-menu-button"));
         expect(screen.queryByTestId("user-menu-dropdown")).not.toBeInTheDocument();
     });
 
     it("should display custom userName in dropdown", async () => {
-        const user = userEvent.setup();
-        render(<Header onMenuClick={() => { }} userName="John Doe" />);
+        const userEventSetup = userEvent.setup();
+        const mockUser: any = {
+            id: 1,
+            name: "John Doe",
+            email: "john@example.com",
+            roles: [{ name: "Admin" }]
+        };
+        render(<Header onMenuClick={() => { }} user={mockUser} />);
 
-        await user.click(screen.getByTestId("user-menu-button"));
-        expect(screen.getByText("John Doe")).toBeInTheDocument();
-    });
-
-    it("should display default userName when not provided", async () => {
-        const user = userEvent.setup();
-        render(<Header onMenuClick={() => { }} />);
-
-        await user.click(screen.getByTestId("user-menu-button"));
-        expect(screen.getByText("Admin")).toBeInTheDocument();
+        await userEventSetup.click(screen.getByTestId("user-menu-button"));
+        expect(screen.getByText(/John Doe/)).toBeInTheDocument();
     });
 
     it("should render logout button when onLogout is provided", async () => {

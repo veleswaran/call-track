@@ -17,8 +17,7 @@ final class DashboardController extends Controller
     public function __construct(
         private readonly DashboardServiceContract $dashboardService,
         private readonly \App\Domain\Auth\Actions\GetAgentAccessScopeAction $getAgentAccessScopeAction,
-    ) {
-    }
+    ) {}
 
     /**
      * Get dashboard metrics

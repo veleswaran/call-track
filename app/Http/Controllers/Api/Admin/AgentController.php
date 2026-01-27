@@ -18,8 +18,7 @@ class AgentController extends Controller
     public function __construct(
         protected AgentManagementServiceInterface $service,
         private readonly \App\Domain\Auth\Actions\GetAgentAccessScopeAction $getAgentAccessScopeAction,
-    ) {
-    }
+    ) {}
 
     public function index(Request $request): JsonResponse
     {

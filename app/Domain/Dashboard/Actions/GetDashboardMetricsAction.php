@@ -18,7 +18,8 @@ final class GetDashboardMetricsAction
     /**
      * Execute the action to get aggregated dashboard metrics for current week
      * with comparison to previous week
-     * @param int[]|null $allowedAgentIds Null = full access, array = restricted agent IDs
+     *
+     * @param  int[]|null  $allowedAgentIds  Null = full access, array = restricted agent IDs
      */
     public function execute(?array $allowedAgentIds = null): DashboardMetricsDTO
     {

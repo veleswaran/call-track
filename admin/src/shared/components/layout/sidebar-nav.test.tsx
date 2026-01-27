@@ -8,6 +8,15 @@ vi.mock("next/navigation", () => ({
     usePathname: vi.fn(() => "/"),
 }));
 
+// Mock auth hook
+vi.mock("@/src/features/auth/hooks/use-auth", () => ({
+    useAuth: vi.fn(() => ({
+        user: {
+            roles: [{ name: "admin" }]
+        },
+    })),
+}));
+
 describe("SidebarNav", () => {
     it("should render sidebar when open", () => {
         render(<SidebarNav open={true} onToggle={() => { }} />);

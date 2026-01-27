@@ -21,7 +21,7 @@ class GetAgentAccessScopeActionTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->action = new GetAgentAccessScopeAction();
+        $this->action = new GetAgentAccessScopeAction;
     }
 
     public function test_admin_has_full_access(): void

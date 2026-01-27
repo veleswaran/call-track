@@ -28,8 +28,7 @@ final readonly class ListCallLogsDTO
         public ?int $teamId = null,
         /** @var int[]|null Null = full access, array = restricted to these agent IDs */
         public ?array $allowedAgentIds = null,
-    ) {
-    }
+    ) {}
 
     public static function fromRequest(IndexCallLogsRequest $request): self
     {

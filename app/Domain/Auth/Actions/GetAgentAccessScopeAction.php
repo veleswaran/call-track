@@ -27,7 +27,7 @@ final class GetAgentAccessScopeAction
         }
 
         // If user is not linked to an agent, they shouldn't see anything agent-scoped
-        if (!$user->isAgent()) {
+        if (! $user->isAgent()) {
             return [];
         }
 

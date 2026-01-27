@@ -81,6 +81,7 @@ final class GetReportMetricsAction
             if (empty($filters->allowedAgentIds)) {
                 // No access
                 $query->whereRaw('1 = 0');
+
                 return;
             }
             // Join devices table for agent_id filter
@@ -89,7 +90,7 @@ final class GetReportMetricsAction
         }
 
         // Apply user-selected agent filter (must be within allowed scope)
-        if (!empty($filters->agentIds)) {
+        if (! empty($filters->agentIds)) {
             // If we already joined devices for RBAC, we don't need to re-join
             if ($filters->allowedAgentIds === null) {
                 $query->join('devices', 'call_logs.device_id', '=', 'devices.id');

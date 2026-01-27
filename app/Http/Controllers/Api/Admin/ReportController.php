@@ -17,8 +17,7 @@ final class ReportController extends Controller
     public function __construct(
         private readonly ReportServiceInterface $reportService,
         private readonly \App\Domain\Auth\Actions\GetAgentAccessScopeAction $getAgentAccessScopeAction,
-    ) {
-    }
+    ) {}
 
     public function metrics(GetReportDataRequest $request): ReportMetricCollection
     {

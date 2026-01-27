@@ -20,8 +20,7 @@ class AgentManagementService implements AgentManagementServiceInterface
         protected UpdateAgentAction $updateAgentAction,
         protected AssignAgentToDeviceAction $assignAction,
         protected UnassignAgentFromDeviceAction $unassignAction,
-    ) {
-    }
+    ) {}
 
     public function createAgent(AgentData $data): Agent
     {

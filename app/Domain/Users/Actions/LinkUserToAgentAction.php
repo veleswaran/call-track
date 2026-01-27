@@ -23,12 +23,12 @@ final class LinkUserToAgentAction
             if ($user->agent->id === $agent->id) {
                 return;
             }
-            throw new InvalidArgumentException("User is already linked to another agent.");
+            throw new InvalidArgumentException('User is already linked to another agent.');
         }
 
         // Check if Agent is already linked to another user
         if ($agent->user_id !== null && $agent->user_id !== $user->id) {
-            throw new InvalidArgumentException("Agent is already linked to another user context.");
+            throw new InvalidArgumentException('Agent is already linked to another user context.');
         }
 
         DB::transaction(function () use ($user, $agent) {

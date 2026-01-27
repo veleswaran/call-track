@@ -17,7 +17,8 @@ final class GetDashboardChartsAction
 
     /**
      * Execute the action to get chart data
-     * @param int[]|null $allowedAgentIds Null = full access, array = restricted agent IDs
+     *
+     * @param  int[]|null  $allowedAgentIds  Null = full access, array = restricted agent IDs
      */
     public function execute(?array $allowedAgentIds = null): DashboardChartsDTO
     {
@@ -31,6 +32,7 @@ final class GetDashboardChartsAction
 
     /**
      * Get call volume trends grouped by day for current and previous week
+     *
      * @return array<int, array{day: string, current: int, previous: int}>
      */
     private function getVolumeTrends(string $tz, ?array $allowedAgentIds): array
@@ -138,7 +140,7 @@ final class GetDashboardChartsAction
         $existingNames = array_column($distribution, 'name');
 
         foreach ($categories as $category) {
-            if (!in_array($category, $existingNames)) {
+            if (! in_array($category, $existingNames)) {
                 $distribution[] = ['name' => $category, 'value' => 0];
             }
         }

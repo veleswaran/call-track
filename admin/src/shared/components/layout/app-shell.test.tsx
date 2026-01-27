@@ -13,6 +13,16 @@ vi.mock("@shared/hooks/use-mobile", () => ({
     useMobile: vi.fn(() => false),
 }));
 
+// Mock auth hook
+vi.mock("@/src/features/auth/hooks/use-auth", () => ({
+    useAuth: vi.fn(() => ({
+        user: {
+            name: "Test User",
+            roles: [{ name: "admin" }]
+        },
+    })),
+}));
+
 import { useMobile } from "@shared/hooks/use-mobile";
 
 describe("AppShell", () => {
@@ -94,12 +104,17 @@ describe("AppShell", () => {
             expect(sidebar).toHaveClass("w-16");
         });
 
-        it("should pass userName to header", async () => {
-            const user = userEvent.setup();
-            render(<AppShell userName="Test User">Content</AppShell>);
+        it("should pass user to header", async () => {
+            const userEventSetup = userEvent.setup();
+            const mockUser: any = {
+                id: 1,
+                name: "Test User",
+                roles: [{ name: "admin" }]
+            };
+            render(<AppShell user={mockUser}>Content</AppShell>);
 
-            await user.click(screen.getByTestId("user-menu-button"));
-            expect(screen.getByText("Test User")).toBeInTheDocument();
+            await userEventSetup.click(screen.getByTestId("user-menu-button"));
+            expect(screen.getByText(/Test User/)).toBeInTheDocument();
         });
 
         it("should pass onLogout to header on desktop", async () => {

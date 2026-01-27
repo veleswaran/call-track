@@ -16,8 +16,7 @@ class CallLogController extends Controller
     public function __construct(
         private readonly CallLogQueryServiceContract $service,
         private readonly \App\Domain\Auth\Actions\GetAgentAccessScopeAction $getAgentAccessScopeAction,
-    ) {
-    }
+    ) {}
 
     /**
      * List all call logs
