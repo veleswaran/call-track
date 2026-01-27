@@ -75,7 +75,7 @@ export interface Device {
     device_model: string | null;
     os_version: string | null;
     app_version: string | null;
-    status: "active" | "suspended";
+    status: "active" | "inactive";
     agent_id: number | null;
     agent: { id: number; name: string } | null;
     battery_level: number | null;
@@ -218,3 +218,26 @@ export interface Team {
     managers_count?: number;
 }
 
+/**
+ * Device lifecycle event
+ */
+export interface DeviceEvent {
+    id: number;
+    device_id: number;
+    event_type: string;
+    payload: Record<string, unknown> | null;
+    occurred_at: string;
+    created_at: string;
+}
+
+export type DeviceEventType =
+    | "APP_STOPPED"
+    | "APP_DEREGISTERED"
+    | "APP_UNINSTALLED"
+    | "PERMISSION_DENIED"
+    | "PERMISSION_GRANTED"
+    | "BATTERY_OPTIMIZATION_ENABLED"
+    | "FOREGROUND_SERVICE_BLOCKED"
+    | "DEVICE_REBOOTED"
+    | "TOKEN_EXPIRED"
+    | "CALL_LOG_ACCESS_FAILED";

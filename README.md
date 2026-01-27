@@ -55,6 +55,7 @@ Note: Access to docs is gated by `Gate::define('viewApiDocs', ...)`. In this rep
 | `POST` | `/api/v1/devices/register` | Register a new device | None |
 | `POST` | `/api/v1/call-logs/sync` | Ingest batched call logs (with inline classification) | Device Token |
 | `POST` | `/api/v1/call-logs/{hash}/classify` | Classify/Note a call from device | Device Token |
+| `POST` | `/api/v1/device/events` | Submit device lifecycle events | Device Token |
 | `GET` | `/api/v1/admin/dashboard` | Analytics Dashboard | Admin (Sanctum) |
 | `GET` | `/api/v1/admin/call-logs` | List paginated call logs | Admin (Sanctum) |
 | `POST` | `/api/v1/admin/calls/{id}/classify` | Classify a call log | Admin (Sanctum) |
@@ -64,6 +65,7 @@ Note: Access to docs is gated by `Gate::define('viewApiDocs', ...)`. In this rep
 | `POST` | `/api/v1/admin/agents` | Create a sales agent | Admin (Sanctum) |
 | `PUT` | `/api/v1/admin/agents/{id}` | Update agent details | Admin (Sanctum) |
 | `POST` | `/api/v1/admin/devices/codes` | Generate registration code | Admin (Sanctum) |
+| `GET` | `/api/v1/admin/devices/{id}/events` | List device events | Admin (Sanctum) |
 | `POST` | `/api/v1/admin/devices/{id}/assign-agent` | Assign agent to device | Admin (Sanctum) |
 | `POST` | `/api/v1/admin/devices/{id}/unassign-agent` | Unassign agent from device | Admin (Sanctum) |
 | `API` | `/api/v1/admin/users` | Admin User Management (resource) | Admin (Sanctum) |
@@ -222,6 +224,35 @@ curl --request POST \
     "type": "BUSINESS",
     "note": "Client inquiry about pricing"
   }'
+```
+
+### Device: Submit Events
+
+Track device lifecycle events (app stopped, permissions, reboots, etc.):
+
+```bash
+curl --request POST \
+  --url 'http://127.0.0.1:8000/api/v1/device/events' \
+  --header 'Accept: application/json' \
+  --header 'Content-Type: application/json' \
+  --header 'X-Device-Token: YOUR_DEVICE_TOKEN' \
+  --data '{
+    "event_type": "APP_STOPPED",
+    "payload": {"reason": "user_action"},
+    "occurred_at": "2026-01-21T10:30:00Z"
+  }'
+```
+
+**Supported Event Types:**
+`APP_STOPPED`, `APP_DEREGISTERED`, `APP_UNINSTALLED`, `PERMISSION_DENIED`, `PERMISSION_GRANTED`, `BATTERY_OPTIMIZATION_ENABLED`, `FOREGROUND_SERVICE_BLOCKED`, `DEVICE_REBOOTED`, `TOKEN_EXPIRED`, `CALL_LOG_ACCESS_FAILED`
+
+### Admin: List Device Events
+
+```bash
+curl --request GET \
+  --url 'http://127.0.0.1:8000/api/v1/admin/devices/1/events?per_page=20' \
+  --header 'Accept: application/json' \
+  --header 'Authorization: Bearer YOUR_SANCTUM_TOKEN'
 ```
 
 ### Admin: List call logs

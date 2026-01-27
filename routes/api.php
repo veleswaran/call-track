@@ -16,6 +16,7 @@ Route::prefix('v1')->group(function () {
     Route::middleware([DeviceAuthMiddleware::class])->group(function () {
         Route::post('/call-logs/sync', [\App\Http\Controllers\Api\CallLogController::class, 'store']);
         Route::post('/call-logs/{callHash}/classify', [\App\Http\Controllers\Api\DeviceCallClassificationController::class, 'classify']);
+        Route::post('/device/events', [\App\Http\Controllers\Api\Device\DeviceEventController::class, 'store']);
     });
 
     // Admin Routes
@@ -45,6 +46,7 @@ Route::prefix('v1')->group(function () {
 
         // Devices
         Route::get('/devices', [\App\Http\Controllers\Api\Admin\DeviceController::class, 'index']);
+        Route::get('/devices/{device}/events', [\App\Http\Controllers\Api\Admin\DeviceEventController::class, 'index']);
         Route::post('/devices/{device}/revoke-tokens', \App\Http\Controllers\Api\Admin\RevokeDeviceTokensController::class);
 
         // Call Logs

@@ -84,6 +84,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             \App\Contracts\Services\TeamServiceInterface::class,
             \App\Services\Teams\TeamService::class
+            \App\Contracts\Services\DeviceEventServiceInterface::class,
+            \App\Services\Devices\DeviceEventService::class
         );
     }
 
