@@ -16,17 +16,16 @@ final class LinkUserToAgentAction
 {
     public function execute(User $user, Agent $agent): void
     {
-        // Check if user is already linked to ANY agent
-        if ($user->agent()->exists()) {
-            // If trying to link to same agent, maybe idempotent OK? But let's be strict as per plan "Validates user is not already linked".
-            // Actually, if it's the SAME agent, it's fine.
-            if ($user->agent->id === $agent->id) {
+        /** @var Agent|null $currentAgent */
+        $currentAgent = $user->agent;
+
+        if ($currentAgent !== null) {
+            if ($currentAgent->id === $agent->id) {
                 return;
             }
             throw new InvalidArgumentException('User is already linked to another agent.');
         }
 
-        // Check if Agent is already linked to another user
         if ($agent->user_id !== null && $agent->user_id !== $user->id) {
             throw new InvalidArgumentException('Agent is already linked to another user context.');
         }

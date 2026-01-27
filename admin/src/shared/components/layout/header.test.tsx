@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Header } from "./header";
+import { User } from "../../types";
 
 describe("Header", () => {
     it("should render header with menu toggle", () => {
@@ -30,11 +31,14 @@ describe("Header", () => {
 
     it("should toggle user menu on click", async () => {
         const userEventSetup = userEvent.setup();
-        const mockUser: any = {
+        const mockUser: User = {
             id: 1,
-            name: "Test User",
+            name: "John Doe",
             email: "test@example.com",
-            roles: [{ name: "Admin" }]
+            roles: [{ id: 1, name: "admin", created_at: "2026-01-27T16:54:01+05:30", updated_at: "2026-01-27T16:54:01+05:30" }],
+            created_at: "2026-01-27T16:54:01+05:30",
+            updated_at: "2026-01-27T16:54:01+05:30",
+            email_verified_at: null
         };
         render(<Header onMenuClick={() => { }} user={mockUser} />);
 
@@ -52,11 +56,14 @@ describe("Header", () => {
 
     it("should display custom userName in dropdown", async () => {
         const userEventSetup = userEvent.setup();
-        const mockUser: any = {
+        const mockUser: User = {
             id: 1,
             name: "John Doe",
-            email: "john@example.com",
-            roles: [{ name: "Admin" }]
+            email: "test@example.com",
+            roles: [{ id: 1, name: "admin", created_at: "2026-01-27T16:54:01+05:30", updated_at: "2026-01-27T16:54:01+05:30" }],
+            created_at: "2026-01-27T16:54:01+05:30",
+            updated_at: "2026-01-27T16:54:01+05:30",
+            email_verified_at: null
         };
         render(<Header onMenuClick={() => { }} user={mockUser} />);
 

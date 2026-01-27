@@ -24,6 +24,7 @@ vi.mock("@/src/features/auth/hooks/use-auth", () => ({
 }));
 
 import { useMobile } from "@shared/hooks/use-mobile";
+import { User } from "../../types";
 
 describe("AppShell", () => {
     beforeEach(() => {
@@ -106,10 +107,14 @@ describe("AppShell", () => {
 
         it("should pass user to header", async () => {
             const userEventSetup = userEvent.setup();
-            const mockUser: any = {
+            const mockUser: User = {
                 id: 1,
                 name: "Test User",
-                roles: [{ name: "admin" }]
+                email: "test@example.com",
+                roles: [{ id: 1, name: "admin", created_at: "2026-01-27T16:54:01+05:30", updated_at: "2026-01-27T16:54:01+05:30" }],
+                created_at: "2026-01-27T16:54:01+05:30",
+                updated_at: "2026-01-27T16:54:01+05:30",
+                email_verified_at: null
             };
             render(<AppShell user={mockUser}>Content</AppShell>);
 
