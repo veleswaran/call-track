@@ -13,9 +13,26 @@ class PhoneNormalizer
     /**
      * Normalize phone number to digits only.
      */
-    public static function normalize(string $phone): string
+    public static function normalize(string $phone, string $defaultCountryCode = '+91'): string
     {
-        return preg_replace('/\D/', '', $phone);
+        $phone = preg_replace('/[\s\-\(\)]/', '', $phone);
+
+        // Already international format
+        if (preg_match('/^(\+|00)\d+$/', $phone)) {
+            return $phone;
+        }
+
+        // Starts with 91 but missing +
+        if (preg_match('/^91\d{10}$/', $phone)) {
+            return '+'.$phone;
+        }
+
+        // Plain 10-digit Indian number
+        if (preg_match('/^\d{10}$/', $phone)) {
+            return $defaultCountryCode.$phone;
+        }
+
+        return $phone;
     }
 
     /**

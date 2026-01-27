@@ -8,6 +8,7 @@ use App\Domain\Calls\DTOs\SyncCallLogsDTO;
 use App\Domain\Calls\Models\CallLog;
 use App\Domain\Devices\Models\Device;
 use App\Jobs\ProcessCallLogAnalytics;
+use App\Support\PhoneNormalizer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
@@ -23,7 +24,7 @@ class IngestCallLogsActionTest extends TestCase
         $device = Device::factory()->create();
         $logData = new CallLogData(
             callHash: 'unique-hash-123',
-            phoneNumber: '+1234567890',
+            phoneNumber: PhoneNormalizer::normalize('+1234567890'),
             direction: 'incoming',
             duration: 120,
             timestamp: now()->toDateTimeString(),
@@ -41,7 +42,7 @@ class IngestCallLogsActionTest extends TestCase
             'device_id' => $device->id,
             'call_hash' => 'unique-hash-123',
             // Phone is normalized before hashing: +1234567890 → 1234567890
-            'phone_number_hash' => hash('sha256', '1234567890'),
+            'phone_number_hash' => hash('sha256', PhoneNormalizer::normalize('+1234567890')),
             'duration' => 120,
         ]);
 
@@ -57,7 +58,7 @@ class IngestCallLogsActionTest extends TestCase
         $device = Device::factory()->create();
         $logData = new CallLogData(
             callHash: 'same-hash',
-            phoneNumber: '+1234567890',
+            phoneNumber: PhoneNormalizer::normalize('+1234567890'),
             direction: 'incoming',
             duration: 120,
             timestamp: now()->toDateTimeString(),

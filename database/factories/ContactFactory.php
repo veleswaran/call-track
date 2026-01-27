@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Domain\Calls\Models\Contact;
+use App\Support\PhoneNormalizer;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class ContactFactory extends Factory
@@ -16,7 +17,7 @@ class ContactFactory extends Factory
         return [
             'name' => $this->faker->name,
             'phone_hash' => hash('sha256', \App\Support\PhoneNormalizer::normalize($phone)),
-            'phone_number' => $phone, // Encrypted by cast
+            'phone_number' => PhoneNormalizer::normalize($phone), // Encrypted by cast
             'created_at' => now(),
             'updated_at' => now(),
         ];

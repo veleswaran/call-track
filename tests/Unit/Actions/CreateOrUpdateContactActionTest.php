@@ -7,6 +7,7 @@ namespace Tests\Unit\Actions;
 use App\Actions\Contacts\CreateOrUpdateContactAction;
 use App\Domain\Calls\Models\Contact;
 use App\Domain\Contacts\DTOs\StoreContactDTO;
+use App\Support\PhoneNormalizer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -18,7 +19,7 @@ class CreateOrUpdateContactActionTest extends TestCase
     {
         $dto = new StoreContactDTO(
             name: 'John Doe',
-            phoneNumber: '+1234567890'
+            phoneNumber: PhoneNormalizer::normalize('+1234567890')
         );
 
         $action = new CreateOrUpdateContactAction;
@@ -28,20 +29,20 @@ class CreateOrUpdateContactActionTest extends TestCase
         $this->assertEquals('John Doe', $contact->name);
         $this->assertEquals('+1234567890', $contact->phone_number);
         // Phone is normalized before hashing: +1234567890 → 1234567890
-        $this->assertEquals(hash('sha256', '1234567890'), $contact->phone_hash);
+        $this->assertEquals(hash('sha256', '+1234567890'), $contact->phone_hash);
     }
 
     public function test_it_updates_existing_contact_with_same_phone_hash(): void
     {
-        $phoneNumber = '+1234567890';
-        $phoneHash = hash('sha256', $phoneNumber);
+        $phoneNumber = PhoneNormalizer::normalize('+1234567890');
+        $phoneHash = $phoneNumber;
 
         // Create existing contact
         // Phone is normalized before hashing: +1234567890 → 1234567890
         $existingContact = Contact::create([
             'name' => 'Old Name',
             'phone_number' => $phoneNumber,
-            'phone_hash' => hash('sha256', '1234567890'),
+            'phone_hash' => hash('sha256', $phoneHash),
         ]);
 
         $dto = new StoreContactDTO(
@@ -60,7 +61,7 @@ class CreateOrUpdateContactActionTest extends TestCase
 
     public function test_same_phone_creates_single_global_contact(): void
     {
-        $phoneNumber = '+1234567890';
+        $phoneNumber = PhoneNormalizer::normalize('+1234567890');
 
         $dto1 = new StoreContactDTO(
             name: 'First Name',
