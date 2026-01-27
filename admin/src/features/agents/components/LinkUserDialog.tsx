@@ -68,7 +68,7 @@ export function LinkUserDialog({
                     toast.success("User linked successfully");
                     onOpenChange(false);
                 },
-                onError: (error: any) => {
+                onError: (error) => {
                     toast.error(error.message || "Failed to link user");
                 },
             }

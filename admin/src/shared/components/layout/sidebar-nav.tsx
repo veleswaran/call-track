@@ -33,7 +33,7 @@ export const defaultNavigation: NavItem[] = [
     { name: "Dashboard", href: "/", icon: LayoutDashboard },
     { name: "Reports", href: "/reports", icon: BarChart },
     { name: "Call Logs", href: "/call-logs", icon: Phone },
-    { name: "Devices", href: "/devices", icon: Smartphone },
+    { name: "Devices", href: "/devices", icon: Smartphone, role: "admin" },
     { name: "Users", href: "/users", icon: Users, role: "admin" },
     { name: "Teams", href: "/teams", icon: Users, role: "admin" },
     { name: "Agents", href: "/agents", icon: Users, role: "admin" },
@@ -59,7 +59,7 @@ export function SidebarNav({
     const { user } = useAuth();
 
     const userRoles: string[] =
-        user?.roles?.map((r: any) => r.name?.toLowerCase()) || [];
+        user?.roles?.map((r) => r.name?.toLowerCase()) || [];
 
     return (
         <aside
