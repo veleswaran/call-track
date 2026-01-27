@@ -46,13 +46,11 @@ public class CallSyncer extends Worker {
         long twoWeeksAgo = System.currentTimeMillis() - (20L * 24 * 60 * 60 * 1000);
         db.callRecordDao().deleteSynced(twoWeeksAgo);
         List<CallRecord> unsynced = db.callRecordDao().getUnsyncedRecords();
-        if (!unsynced.isEmpty()) {
-            if (callAPi(context, db, unsynced)) {
-                for (CallRecord record : unsynced) {
-                    record.synced = true;
-                }
-                db.callRecordDao().updateAll(unsynced);
+        if (callAPi(context, db, unsynced)) {
+            for (CallRecord record : unsynced) {
+                record.synced = true;
             }
+            db.callRecordDao().updateAll(unsynced);
         }
         return Result.success();
     }
@@ -112,7 +110,7 @@ public class CallSyncer extends Worker {
         extra.battery_level = record.batteryLevel;
         extra.metadata = record.metaData;
         extra.classification = record.category;
-        if(extra.classification == null || Objects.equals(extra.classification, "")){
+        if (extra.classification == null || Objects.equals(extra.classification, "")) {
             extra.classification = "BUSINESS";
         }
         extra.note = record.notes;

@@ -25,6 +25,7 @@ import com.calltrack.calltrackapp.bundles.RegistrationResponse;
 import com.calltrack.calltrackapp.db.AppDB;
 import com.calltrack.calltrackapp.db.bundles.TokenEntity;
 import com.calltrack.calltrackapp.monitors.CallMonitorService;
+import com.calltrack.calltrackapp.settings.LocalSettings;
 import com.calltrack.calltrackapp.syncer.CallSyncer;
 import com.calltrack.calltrackapp.utilities.Utility;
 
@@ -268,6 +269,7 @@ public class MainActivity extends AppCompatActivity {
                         AppDB db = AppDB.getInstance(MainActivity.this);
                         db.tokenDao().deleteAll();
                         db.tokenDao().insert(new TokenEntity(token, selectedSlots, code));
+                        new LocalSettings(MainActivity.this).resetToCurrentCallId();
                     });
                     runOnUiThread(() -> {
                         Toast.makeText(MainActivity.this, "Registration successful", Toast.LENGTH_SHORT).show();
