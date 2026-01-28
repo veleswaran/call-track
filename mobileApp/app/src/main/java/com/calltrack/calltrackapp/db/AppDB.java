@@ -4,8 +4,10 @@ import android.content.Context;
 
 import com.calltrack.calltrackapp.constants.DBConst;
 import com.calltrack.calltrackapp.db.bundles.CallRecord;
+import com.calltrack.calltrackapp.db.bundles.EventRecord;
 import com.calltrack.calltrackapp.db.bundles.TokenEntity;
 import com.calltrack.calltrackapp.db.dao.CallRecordDAO;
+import com.calltrack.calltrackapp.db.dao.EventDAO;
 import com.calltrack.calltrackapp.db.dao.TokenDAO;
 import com.calltrack.calltrackapp.db.utilities.Converters;
 
@@ -14,12 +16,14 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.room.TypeConverters;
 
-@Database(entities = {CallRecord.class, TokenEntity.class}, version = 1, exportSchema = false)
+@Database(entities = {CallRecord.class, TokenEntity.class, EventRecord.class}, version = 1, exportSchema = false)
 @TypeConverters({Converters.class})
 public abstract class AppDB extends RoomDatabase {
     public abstract CallRecordDAO callRecordDao();
 
     public abstract TokenDAO tokenDao();
+
+    public abstract EventDAO eventDAO();
 
     private static volatile AppDB INSTANCE;
 

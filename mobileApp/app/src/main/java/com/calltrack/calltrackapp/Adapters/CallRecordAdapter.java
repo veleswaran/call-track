@@ -65,10 +65,10 @@ public class CallRecordAdapter extends RecyclerView.Adapter<CallRecordAdapter.Vi
         return sdf.format(date);
     }
 
-//    public void updateData(List<CallRecord> newRecords) {
-//        this.records = newRecords;
-//        notifyDataSetChanged();
-//    }
+    public void updateData(List<CallRecord> newRecords) {
+        this.records = newRecords;
+        notifyDataSetChanged();
+    }
 
     private void applyCallTypeStyle(Context context, TextView tvNumber, String type) {
         int colorRes;
