@@ -15,7 +15,7 @@ class PhoneNormalizer
      */
     public static function normalize(string $phone, string $defaultCountryCode = '+91'): string
     {
-        $phone = preg_replace('/[\s\-\(\)]/', '', $phone);
+        $phone = preg_replace('/[\s\-\(\)\.]/', '', $phone);
 
         // Already international format
         if (preg_match('/^(\+|00)\d+$/', $phone)) {

@@ -58,7 +58,7 @@ class IngestCallLogsActionTest extends TestCase
         $device = Device::factory()->create();
         $logData = new CallLogData(
             callHash: 'same-hash',
-            phoneNumber: PhoneNormalizer::normalize('+1234567890'),
+            phoneNumber: '+1234567890',
             direction: 'incoming',
             duration: 120,
             timestamp: now()->toDateTimeString(),

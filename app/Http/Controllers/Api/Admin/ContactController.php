@@ -8,7 +8,6 @@ use App\Contracts\Services\ContactManagementServiceInterface;
 use App\Domain\Contacts\DTOs\StoreContactDTO;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreContactRequest;
-use App\Support\PhoneNormalizer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -34,7 +33,7 @@ class ContactController extends Controller
     {
         $dto = new StoreContactDTO(
             name: $request->string('name')->toString(),
-            phoneNumber: PhoneNormalizer::normalize($request->string('phone_number')->toString()),
+            phoneNumber: $request->string('phone_number')->toString(),
         );
 
         $contact = $this->contactService->storeContact($dto);
@@ -48,7 +47,7 @@ class ContactController extends Controller
 
         $dto = new StoreContactDTO(
             name: $request->string('name')->toString(),
-            phoneNumber: PhoneNormalizer::normalize($request->string('phone_number')->toString()),
+            phoneNumber: $request->string('phone_number')->toString(),
         );
 
         $updatedContact = $this->contactService->updateContact($contact, $dto);

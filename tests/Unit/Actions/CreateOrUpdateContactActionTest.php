@@ -19,7 +19,7 @@ class CreateOrUpdateContactActionTest extends TestCase
     {
         $dto = new StoreContactDTO(
             name: 'John Doe',
-            phoneNumber: PhoneNormalizer::normalize('+1234567890')
+            phoneNumber: '+1234567890'
         );
 
         $action = new CreateOrUpdateContactAction;
@@ -35,14 +35,12 @@ class CreateOrUpdateContactActionTest extends TestCase
     public function test_it_updates_existing_contact_with_same_phone_hash(): void
     {
         $phoneNumber = PhoneNormalizer::normalize('+1234567890');
-        $phoneHash = $phoneNumber;
-
         // Create existing contact
         // Phone is normalized before hashing: +1234567890 → 1234567890
         $existingContact = Contact::create([
             'name' => 'Old Name',
             'phone_number' => $phoneNumber,
-            'phone_hash' => hash('sha256', $phoneHash),
+            'phone_hash' => hash('sha256', $phoneNumber),
         ]);
 
         $dto = new StoreContactDTO(
@@ -61,7 +59,7 @@ class CreateOrUpdateContactActionTest extends TestCase
 
     public function test_same_phone_creates_single_global_contact(): void
     {
-        $phoneNumber = PhoneNormalizer::normalize('+1234567890');
+        $phoneNumber = '+1234567890';
 
         $dto1 = new StoreContactDTO(
             name: 'First Name',

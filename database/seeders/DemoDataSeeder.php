@@ -116,8 +116,8 @@ class DemoDataSeeder extends Seeder
                 $callLog = \App\Domain\Calls\Models\CallLog::create([
                     'device_id' => $device->id,
                     'call_hash' => md5($device->id.$phoneNumber.$timestamp->timestamp.$i),
-                    'phone_number_hash' => hash('sha256', PhoneNormalizer::normalize($phoneNumber)),
-                    'phone_number' => PhoneNormalizer::normalize($phoneNumber), // Model cast will encrypt this
+                    'phone_number_hash' => hash('sha256', $phoneNumber),
+                    'phone_number' => $phoneNumber, // Model cast will encrypt this
                     'sim_slot' => rand(0, 1),
                     'direction' => $direction,
                     'duration' => $duration,

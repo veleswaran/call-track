@@ -12,12 +12,12 @@ class ContactFactory extends Factory
 
     public function definition(): array
     {
-        $phone = $this->faker->e164PhoneNumber;
+        $phone = PhoneNormalizer::normalize($this->faker->e164PhoneNumber);
 
         return [
             'name' => $this->faker->name,
-            'phone_hash' => hash('sha256', \App\Support\PhoneNormalizer::normalize($phone)),
-            'phone_number' => PhoneNormalizer::normalize($phone), // Encrypted by cast
+            'phone_hash' => hash('sha256', $phone),
+            'phone_number' => $phone, // Encrypted by cast
             'created_at' => now(),
             'updated_at' => now(),
         ];
