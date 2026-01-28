@@ -7,7 +7,6 @@ use App\Domain\Calls\DTOs\CallLogData;
 use App\Domain\Calls\DTOs\SyncCallLogsDTO;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCallLogsRequest;
-use App\Support\PhoneNormalizer;
 use Illuminate\Http\JsonResponse;
 
 class CallLogController extends Controller
@@ -32,7 +31,7 @@ class CallLogController extends Controller
         foreach ($request->validated('logs') as $log) {
             $logsData[] = new CallLogData(
                 callHash: $log['call_hash'],
-                phoneNumber: PhoneNormalizer::normalize($log['phone_number']),
+                phoneNumber: $log['phone_number'],
                 direction: $log['direction'],
                 duration: (int) $log['duration'],
                 timestamp: $log['timestamp'],

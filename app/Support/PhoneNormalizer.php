@@ -17,13 +17,19 @@ class PhoneNormalizer
     {
         $phone = preg_replace('/[\s\-\(\)\.]/', '', $phone);
 
-        // Already international format
-        if (preg_match('/^(\+|00)\d+$/', $phone)) {
+        // Convert 00 prefix to +
+        if (str_starts_with($phone, '00')) {
+            $phone = '+'.substr($phone, 2);
+        }
+
+        // If already in international format like +441234567890
+        if (preg_match('/^\+\d{8,15}$/', $phone)) {
             return $phone;
         }
 
-        // Starts with 91 but missing +
-        if (preg_match('/^91\d{10}$/', $phone)) {
+        // If starts with country code but missing +
+        $countryDigits = ltrim($defaultCountryCode, '+');
+        if (preg_match('/^'.$countryDigits.'\d{6,12}$/', $phone)) {
             return '+'.$phone;
         }
 
@@ -32,7 +38,9 @@ class PhoneNormalizer
             return $defaultCountryCode.$phone;
         }
 
-        return $phone;
+        $digits = preg_replace('/\D/', '', $phone);
+
+        return '+'.$digits;
     }
 
     /**
