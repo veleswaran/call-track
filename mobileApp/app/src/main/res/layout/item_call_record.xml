@@ -41,7 +41,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:textAppearance="?attr/textAppearanceTitleMedium"
+            android:textSize="18sp"
             android:textColor="@color/text_primary"
             android:textStyle="bold"
             app:layout_constraintEnd_toStartOf="@+id/ivSynced"
@@ -55,7 +55,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:textAppearance="?attr/textAppearanceBodySmall"
+            android:textSize="14sp"
             android:textColor="@color/text_secondary"
             app:layout_constraintStart_toStartOf="@id/tvNumber"
             app:layout_constraintTop_toBottomOf="@id/tvNumber"
@@ -70,7 +70,7 @@
             android:background="@drawable/bg_badge"
             android:paddingHorizontal="8dp"
             android:paddingVertical="2dp"
-            android:textAppearance="?attr/textAppearanceLabelSmall"
+            android:textSize="14sp"
             android:textColor="@color/white"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="@id/tvNumber"
@@ -86,12 +86,13 @@
             android:background="@drawable/bg_badge_outline"
             android:paddingHorizontal="8dp"
             android:paddingVertical="2dp"
-            android:textAppearance="?attr/textAppearanceLabelSmall"
+            android:textSize="14sp"
             android:textColor="@color/text_secondary"
             app:layout_constraintBottom_toBottomOf="@id/tvType"
             app:layout_constraintStart_toEndOf="@id/tvType"
             app:layout_constraintTop_toTopOf="@id/tvType"
             tools:text="BUSINESS" />
+
 
         <!-- Synced Status Icon -->
         <ImageView
