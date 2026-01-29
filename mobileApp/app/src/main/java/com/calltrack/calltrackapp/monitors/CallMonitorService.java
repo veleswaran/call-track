@@ -52,13 +52,13 @@ public class CallMonitorService extends Service {
         }
         callStateMonitor = new CallStateMonitor(this);
         callStateMonitor.register();
-        executor.execute(() -> {
-            AppDB db = AppDB.getInstance(this);
-            EventRecord er = new EventRecord();
-            er.event_type = "APP_STARTED";
-            er.occurred_at = Instant.now().toString();
-            db.eventDAO().insert(er);
-        });
+//        executor.execute(() -> {
+//            AppDB db = AppDB.getInstance(this);
+//            EventRecord er = new EventRecord();
+//            er.event_type = "APP_STARTED";
+//            er.occurred_at = Instant.now().toString();
+//            db.eventDAO().insert(er);
+//        });
     }
 
     @Override
