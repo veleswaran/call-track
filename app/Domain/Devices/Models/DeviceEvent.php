@@ -22,7 +22,8 @@ class DeviceEvent extends Model
     use HasFactory;
 
     /**
-     * Allowed event types.
+     * Documented/Standard event types.
+     * Note: Not strictly enforced by validation to allow flexibility for mobile apps.
      */
     public const EVENT_TYPES = [
         'APP_STOPPED',
