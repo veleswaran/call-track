@@ -1,18 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
-    <color name="row_even">#FFFFFF</color>
-    <color name="row_odd">#F5F5F5</color>
+    <!-- Primary branding: Cobalt & Deep Slate -->
+    <color name="primary">#0F172A</color>
+    <color name="primary_light">#1E293B</color>
+    <color name="primary_dark">#020617</color>
 
-    <color name="call_incoming">#00897B</color> <!-- teal -->
-    <color name="call_outgoing">#1976D2</color> <!-- blue -->
-    <color name="call_missed">#D32F2F</color>  <!-- red -->
-    <color name="call_default">#000000</color> <!-- black -->
+    <!-- Secondary: Electric Blue -->
+    <color name="secondary">#3B82F6</color>
+    <color name="secondary_light">#60A5FA</color>
+    <color name="secondary_dark">#2563EB</color>
+
+    <!-- Surfaces & Backgrounds -->
+    <color name="background">#F1F5F9</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="surface_variant">#F8FAFC</color>
+
+    <!-- Typography -->
+    <color name="text_primary">#0F172A</color>
+    <color name="text_secondary">#64748B</color>
+    <color name="text_hint">#94A3B8</color>
+
+    <!-- Semantic Colors -->
+    <color name="call_incoming">#10B981</color> <!-- Emerald -->
+    <color name="call_outgoing">#6366F1</color> <!-- Indigo -->
+    <color name="call_missed">#F43F5E</color>   <!-- Rose -->
+    <color name="success">#10B981</color>
+    <color name="warning">#F59E0B</color>
+    <color name="error">#EF4444</color>
+
+    <!-- Basic Colors -->
+    <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
+    <color name="transparent">#00000000</color>
+
+    <!-- Legacy / Compatibility (can be removed later) -->
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#0F172A</color>
+    <color name="purple_700">#020617</color>
+    <color name="teal_200">#3B82F6</color>
+    <color name="teal_700">#2563EB</color>
 
 </resources>
