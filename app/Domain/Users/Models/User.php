@@ -31,6 +31,32 @@ class User extends Authenticatable
         return $this->agent !== null;
     }
 
+    /**
+     * Get teams where this user's agent has a 'MANAGER' role.
+     */
+    public function managedTeams(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        /** @var \App\Domain\Agents\Models\Agent|null $agent */
+        $agent = $this->agent;
+
+        if (! $agent) {
+            // Return empty relation if no agent linked
+            // We can't easily return an empty BelongsToMany without a query builder trick or similar.
+            // But for now let's just assume we return the relation off the agent if exists.
+            // If no agent, we can't really return a valid BelongsToMany properly scoped to THIS user easily without an empty query.
+            // A common trick is to query a relation that returns nothing.
+            // Or better, just return the relationship definition but with a condition that fails.
+            // However, since we are accessing $agent->teams(), we MUST have an agent.
+
+            // Workaround: Return a dummy relation or throw?
+            // Safest for logic:
+            return $this->belongsToMany(\App\Domain\Teams\Models\Team::class, 'team_members', 'agent_id', 'team_id')
+                ->whereRaw('1 = 0');
+        }
+
+        return $agent->teams()->wherePivot('role', 'MANAGER');
+    }
+
     protected static function newFactory()
     {
         return \Database\Factories\UserFactory::new();

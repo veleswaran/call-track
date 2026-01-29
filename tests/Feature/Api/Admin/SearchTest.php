@@ -18,8 +18,8 @@ class SearchTest extends TestCase
         $admin = \App\Domain\Users\Models\User::factory()->create();
         $role = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
         $admin->assignRole($role);
-        $device1 = Device::factory()->create(['name' => 'Pixel 7', 'device_uuid' => 'uuid-1']);
-        $device2 = Device::factory()->create(['name' => 'iPhone 15', 'device_uuid' => 'uuid-2']);
+        $device1 = Device::factory()->create(['name' => 'Pixel 7']);
+        $device2 = Device::factory()->create(['name' => 'iPhone 15']);
 
         $response = $this->actingAs($admin)->getJson('/api/v1/admin/devices?search=Pixel');
 

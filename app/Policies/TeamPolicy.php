@@ -12,7 +12,7 @@ class TeamPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasRole(['super-admin', 'admin']);
+        return $user->hasRole(['super-admin', 'admin']) || $user->can('manage team');
     }
 
     /**
@@ -57,9 +57,12 @@ class TeamPolicy
     /**
      * Determine whether the user can delete the model.
      */
+    /**
+     * Determine whether the user can delete the model.
+     */
     public function delete(User $user, Team $team): bool
     {
-        return $user->hasRole(['super-admin', 'admin']);
+        return $user->hasRole('super-admin');
     }
 
     /**
@@ -67,7 +70,7 @@ class TeamPolicy
      */
     public function restore(User $user, Team $team): bool
     {
-        return $user->hasRole(['super-admin', 'admin']);
+        return $user->hasRole('super-admin');
     }
 
     /**
@@ -75,6 +78,6 @@ class TeamPolicy
      */
     public function forceDelete(User $user, Team $team): bool
     {
-        return $user->hasRole(['super-admin', 'admin']);
+        return $user->hasRole('super-admin');
     }
 }

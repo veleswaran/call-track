@@ -63,7 +63,8 @@ export function UserActions({ user }: UserActionsProps) {
                         Reset 2FA
                     </DropdownMenuItem>
                 )}
-                {!isSelf && (
+                {/* Strict RBAC: Only Super Admin can delete */}
+                {!isSelf && currentUser?.permissions?.includes("delete records") && (
                     <DropdownMenuItem
                         onClick={handleDelete}
                         disabled={isDeleting}

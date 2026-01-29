@@ -37,7 +37,7 @@ class CallLogTeamFilterTest extends TestCase
 
         // 2. Create Manager (User + Agent)
         $this->manager = User::factory()->create();
-        $this->manager->assignRole('agent');
+        $this->manager->assignRole('member');
         $this->managerAgent = Agent::factory()->create([
             'user_id' => $this->manager->id,
             'status' => 'active',

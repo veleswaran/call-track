@@ -24,6 +24,7 @@ export interface NavItem {
     href: string;
     icon: LucideIcon;
     role?: string | string[];
+    permission?: string;
 }
 
 /**
@@ -31,13 +32,13 @@ export interface NavItem {
  */
 export const defaultNavigation: NavItem[] = [
     { name: "Dashboard", href: "/", icon: LayoutDashboard },
-    { name: "Reports", href: "/reports", icon: BarChart },
-    { name: "Call Logs", href: "/call-logs", icon: Phone },
-    { name: "Devices", href: "/devices", icon: Smartphone, role: "admin" },
-    { name: "Users", href: "/users", icon: Users, role: "admin" },
-    { name: "Teams", href: "/teams", icon: Users, role: "admin" },
-    { name: "Agents", href: "/agents", icon: Users, role: "admin" },
-    { name: "Contacts", href: "/contacts", icon: Contact, role: "admin" },
+    { name: "Reports", href: "/reports", icon: BarChart},
+    { name: "Call Logs", href: "/call-logs", icon: Phone }, // accessible by all logged in usually, or check permission
+    { name: "Devices", href: "/devices", icon: Smartphone, permission: "manage devices" }, // or view devices? 'manage devices' is permission name.
+    { name: "Users", href: "/users", icon: Users, permission: "manage users" },
+    { name: "Teams", href: "/teams", icon: Users, permission: "manage team" },
+    { name: "Agents", href: "/agents", icon: Users, permission: "manage team" }, // Managers manage team.
+    { name: "Contacts", href: "/contacts", icon: Contact, role: ["admin", "super-admin"] }, // Strict Policy: Only Admin/Super
 ];
 
 export interface SidebarNavProps {
@@ -58,8 +59,8 @@ export function SidebarNav({
     const pathname = usePathname();
     const { user } = useAuth();
 
-    const userRoles: string[] =
-        user?.roles?.map((r) => r.name?.toLowerCase()) || [];
+    const userRoles: string[] = user?.roles || [];
+    const userPermissions: string[] = user?.permissions || [];
 
     return (
         <aside
@@ -99,13 +100,16 @@ export function SidebarNav({
                         pathname.startsWith(item.href + "/");
 
                     // Role permission check
-                    const isAllowed = !item.role
-                        ? true
-                        : Array.isArray(item.role)
-                        ? item.role.some((role) =>
-                              userRoles.includes(role.toLowerCase())
-                          )
-                        : userRoles.includes(item.role.toLowerCase());
+                    let isAllowed = true;
+
+                    if (item.role) {
+                        const requiredRoles = Array.isArray(item.role) ? item.role : [item.role];
+                        isAllowed = requiredRoles.some(r => userRoles.includes(r));
+                    }
+
+                    if (isAllowed && item.permission) {
+                        isAllowed = userPermissions.includes(item.permission);
+                    }
 
                     if (!isAllowed) return null;
 

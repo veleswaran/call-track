@@ -21,5 +21,12 @@ class AssignTeamManagerAction
             // Add as MANAGER
             $team->members()->attach($agent->id, ['role' => 'MANAGER']);
         }
+
+        // Sync Spatie Role
+        /** @var \App\Domain\Users\Models\User|null $user */
+        $user = $agent->user;
+        if ($user && ! $user->hasRole('super-admin')) {
+            $user->syncRoles(['manager']);
+        }
     }
 }

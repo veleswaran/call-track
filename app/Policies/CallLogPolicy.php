@@ -80,9 +80,12 @@ class CallLogPolicy
     /**
      * Determine whether the user can delete the model.
      */
+    /**
+     * Determine whether the user can delete the model.
+     */
     public function delete(User $user, CallLog $callLog): bool
     {
-        return $user->hasRole(['super-admin', 'admin']);
+        return $user->hasRole('super-admin');
     }
 
     /**
@@ -90,7 +93,7 @@ class CallLogPolicy
      */
     public function restore(User $user, CallLog $callLog): bool
     {
-        return $user->hasRole(['super-admin', 'admin']);
+        return $user->hasRole('super-admin');
     }
 
     /**
@@ -98,6 +101,6 @@ class CallLogPolicy
      */
     public function forceDelete(User $user, CallLog $callLog): bool
     {
-        return $user->hasRole(['super-admin', 'admin']);
+        return $user->hasRole('super-admin');
     }
 }

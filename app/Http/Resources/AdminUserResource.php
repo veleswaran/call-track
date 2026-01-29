@@ -19,6 +19,7 @@ class AdminUserResource extends JsonResource
             'name' => $this->name,
             'email' => $this->email,
             'roles' => $this->getRoleNames(),
+            'permissions' => $this->getAllPermissions()->pluck('name'),
             'two_factor_enabled' => ! is_null($this->two_factor_secret),
             'two_factor_confirmed_at' => $this->two_factor_confirmed_at,
             'created_at' => $this->created_at->toIso8601String(),

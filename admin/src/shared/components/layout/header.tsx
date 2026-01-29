@@ -67,7 +67,7 @@ export function Header({ onMenuClick, user, onLogout }: HeaderProps) {
                                 Signed in as
                             </div>
                             <div className="px-4 py-1 text-sm font-medium text-zinc-900 dark:text-white capitalize">
-                                {user?.name} ( {user?.roles?.map(role => role.name).join(", ")} )
+                                {user?.name} ( {user?.roles?.join(", ")} )
                             </div>
                             <hr className="my-1 border-zinc-200 dark:border-zinc-800" />
                             <Link

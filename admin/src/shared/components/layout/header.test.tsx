@@ -4,6 +4,18 @@ import userEvent from "@testing-library/user-event";
 import { Header } from "./header";
 import { User } from "../../types";
 
+const mockUser: User = {
+    id: 1,
+    name: "Test User",
+    email: "test@example.com",
+    email_verified_at: null,
+    roles: ["admin"],
+    permissions: [],
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    two_factor_enabled: false,
+};
+
 describe("Header", () => {
     it("should render header with menu toggle", () => {
         render(<Header onMenuClick={() => { }} />);
@@ -30,50 +42,43 @@ describe("Header", () => {
     });
 
     it("should toggle user menu on click", async () => {
-        const userEventSetup = userEvent.setup();
-        const mockUser: User = {
-            id: 1,
-            name: "John Doe",
-            email: "test@example.com",
-            roles: [{ id: 1, name: "admin", created_at: "2026-01-27T16:54:01+05:30", updated_at: "2026-01-27T16:54:01+05:30" }],
-            created_at: "2026-01-27T16:54:01+05:30",
-            updated_at: "2026-01-27T16:54:01+05:30",
-            email_verified_at: null
-        };
+        const user = userEvent.setup();
         render(<Header onMenuClick={() => { }} user={mockUser} />);
 
         // Menu should be closed initially
         expect(screen.queryByTestId("user-menu-dropdown")).not.toBeInTheDocument();
 
         // Click to open
-        await userEventSetup.click(screen.getByTestId("user-menu-button"));
+        await user.click(screen.getByTestId("user-menu-button"));
         expect(screen.getByTestId("user-menu-dropdown")).toBeInTheDocument();
 
         // Click to close
-        await userEventSetup.click(screen.getByTestId("user-menu-button"));
+        await user.click(screen.getByTestId("user-menu-button"));
         expect(screen.queryByTestId("user-menu-dropdown")).not.toBeInTheDocument();
     });
 
-    it("should display custom userName in dropdown", async () => {
-        const userEventSetup = userEvent.setup();
-        const mockUser: User = {
-            id: 1,
-            name: "John Doe",
-            email: "test@example.com",
-            roles: [{ id: 1, name: "admin", created_at: "2026-01-27T16:54:01+05:30", updated_at: "2026-01-27T16:54:01+05:30" }],
-            created_at: "2026-01-27T16:54:01+05:30",
-            updated_at: "2026-01-27T16:54:01+05:30",
-            email_verified_at: null
-        };
-        render(<Header onMenuClick={() => { }} user={mockUser} />);
+    it("should display user name in dropdown", async () => {
+        const user = userEvent.setup();
+        const customUser: User = { ...mockUser, name: "John Doe" };
+        render(<Header onMenuClick={() => { }} user={customUser} />);
 
-        await userEventSetup.click(screen.getByTestId("user-menu-button"));
+        await user.click(screen.getByTestId("user-menu-button"));
         expect(screen.getByText(/John Doe/)).toBeInTheDocument();
+    });
+
+    it("should display nothing for user when not provided", async () => {
+        const user = userEvent.setup();
+        render(<Header onMenuClick={() => { }} />);
+
+        await user.click(screen.getByTestId("user-menu-button"));
+        // When no user is provided, the name part is empty
+        const dropdown = screen.getByTestId("user-menu-dropdown");
+        expect(dropdown).toBeInTheDocument();
     });
 
     it("should render logout button when onLogout is provided", async () => {
         const user = userEvent.setup();
-        render(<Header onMenuClick={() => { }} onLogout={() => { }} />);
+        render(<Header onMenuClick={() => { }} onLogout={() => { }} user={mockUser} />);
 
         await user.click(screen.getByTestId("user-menu-button"));
         expect(screen.getByTestId("logout-button")).toBeInTheDocument();
@@ -90,7 +95,7 @@ describe("Header", () => {
     it("should call onLogout when logout button is clicked", async () => {
         const user = userEvent.setup();
         const onLogout = vi.fn();
-        render(<Header onMenuClick={() => { }} onLogout={onLogout} />);
+        render(<Header onMenuClick={() => { }} onLogout={onLogout} user={mockUser} />);
 
         await user.click(screen.getByTestId("user-menu-button"));
         await user.click(screen.getByTestId("logout-button"));

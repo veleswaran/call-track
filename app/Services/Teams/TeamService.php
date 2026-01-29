@@ -71,9 +71,9 @@ class TeamService implements TeamServiceInterface
         $this->updateMemberRoleAction->execute($team, $agent, $dto->role);
     }
 
-    public function getAllTeams(): Collection
+    public function getAllTeams(?\App\Domain\Users\Models\User $user = null): Collection
     {
-        return $this->listTeamsAction->execute();
+        return $this->listTeamsAction->execute($user);
     }
 
     public function getTeamWithDetails(int $id): Team

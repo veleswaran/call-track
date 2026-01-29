@@ -19,6 +19,10 @@ class StoreAdminUserRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'role' => ['nullable', 'string'],
+            'status' => ['nullable', 'string'],
+            'employee_code' => ['nullable', 'string'],
+            'team_id' => ['nullable', 'string'],
         ];
     }
 }

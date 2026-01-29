@@ -24,7 +24,7 @@ interface TeamServiceInterface
 
     public function updateMemberRole(Team $team, UpdateTeamMemberRoleDTO $dto): void;
 
-    public function getAllTeams(): Collection;
+    public function getAllTeams(?\App\Domain\Users\Models\User $user = null): Collection;
 
     public function getTeamWithDetails(int $id): Team;
 

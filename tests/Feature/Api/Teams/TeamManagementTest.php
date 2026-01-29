@@ -78,7 +78,7 @@ class TeamManagementTest extends TestCase
     public function test_regular_agent_cannot_manage_teams()
     {
         $user = User::factory()->create();
-        $user->assignRole('agent'); // Should use agent role, not Team Manager role implicitly
+        $user->assignRole('member'); // member role doesn't have team management permissions
         // Note: Agent role doesn't have team management permissions
 
         $response = $this->actingAs($user)->postJson('/api/v1/admin/teams', [

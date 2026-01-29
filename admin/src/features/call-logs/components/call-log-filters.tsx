@@ -21,6 +21,7 @@ import { CalendarIcon, X } from "lucide-react";
 import type { CallLogFilters as FilterTypes } from "../hooks/use-call-logs";
 import { api } from "@shared/api/api";
 import type { PaginatedResponse, Device } from "@shared/types";
+import { useAuth } from "@features/auth/hooks/use-auth";
 
 interface CallLogFiltersProps {
     filters: FilterTypes;
@@ -28,6 +29,10 @@ interface CallLogFiltersProps {
 }
 
 export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
+    const { user } = useAuth();
+    // Allow if user is admin or can manage team
+    const canViewTeams = user?.roles?.includes('admin') || user?.roles?.includes('super-admin') || user?.permissions?.includes('manage team');
+
     const hasActiveFilters =
         filters.start_date ||
         filters.end_date ||
@@ -104,31 +109,33 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
                 </SelectContent>
             </Select>
 
-            {/* Team Filter */}
-            <AsyncSelect
-                label="Team"
-                placeholder="Team..."
-                value={filters.team_id?.toString()}
-                onChange={(val) => updateNumericFilter("team_id", val)}
-                loadOptions={async () => {
-                    try {
-                        // Dynamically import to avoid circular dependencies if any, though likely fine
-                        const { teamsApi } = await import("@features/teams/api/teams-api");
-                        const response = await teamsApi.getTeams({
-                            page: 1,
-                            per_page: 20,
-                        });
-                        return response.data.map((t) => ({
-                            label: t.name,
-                            value: t.id.toString(),
-                        }));
-                    } catch (e) {
-                        console.error(e);
-                        return [];
-                    }
-                }}
-                className="w-[160px]"
-            />
+            {/* Team Filter - Only for Admins/Managers */}
+            {canViewTeams && (
+                <AsyncSelect
+                    label="Team"
+                    placeholder="Team..."
+                    value={filters.team_id?.toString()}
+                    onChange={(val) => updateNumericFilter("team_id", val)}
+                    loadOptions={async () => {
+                        try {
+                            // Dynamically import to avoid circular dependencies if any, though likely fine
+                            const { teamsApi } = await import("@features/teams/api/teams-api");
+                            const response = await teamsApi.getTeams({
+                                page: 1,
+                                per_page: 20,
+                            });
+                            return response.data.map((t) => ({
+                                label: t.name,
+                                value: t.id.toString(),
+                            }));
+                        } catch (e) {
+                            console.error(e);
+                            return [];
+                        }
+                    }}
+                    className="w-[160px]"
+                />
+            )}
 
             <Select
                 value={filters.statuses?.[0] ?? "all"}

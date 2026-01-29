@@ -25,7 +25,7 @@ class TeamController extends Controller
     {
         $this->authorize('viewAny', Team::class);
 
-        $teams = $this->teamService->getAllTeams();
+        $teams = $this->teamService->getAllTeams($request->user());
 
         return response()->json([
             'data' => TeamResource::collection($teams),
