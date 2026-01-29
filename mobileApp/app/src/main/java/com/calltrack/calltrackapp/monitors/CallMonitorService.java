@@ -4,6 +4,7 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.IBinder;
@@ -63,7 +64,17 @@ public class CallMonitorService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        return START_STICKY; // Restart if killed
+        if (intent != null && "STOP_SERVICE".equals(intent.getAction())) {
+            Context appContext = getApplicationContext();
+            executor.execute(() -> {
+                AppDB db = AppDB.getInstance(appContext);
+                EventRecord er = new EventRecord();
+                er.event_type = "APP_STOPPED";
+                er.occurred_at = Instant.now().toString();
+                db.eventDAO().insert(er);
+            });
+        }
+        return START_STICKY;
     }
 
     @Override
@@ -73,14 +84,15 @@ public class CallMonitorService extends Service {
         if (callStateMonitor != null) {
             callStateMonitor.unregister();
             Log.d("CallMonitorService", "TelephonyCallback unregistered");
-            executor.execute(() -> {
-                AppDB db = AppDB.getInstance(this);
-                EventRecord er = new EventRecord();
-                er.event_type = "APP_STOPPED";
-                er.occurred_at = Instant.now().toString();
-                db.eventDAO().insert(er);
-            });
         }
+        Context appContext = getApplicationContext();
+        executor.execute(() -> {
+            AppDB db = AppDB.getInstance(appContext);
+            EventRecord er = new EventRecord();
+            er.event_type = "APP_STOPPED";
+            er.occurred_at = Instant.now().toString();
+            db.eventDAO().insert(er);
+        });
     }
 
     @Nullable

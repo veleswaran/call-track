@@ -69,11 +69,14 @@ public class CallSyncer extends Worker {
                 try {
                     Response<EventResponse> response = res.execute(); // synchronous
                     Log.d("Event Api response", String.valueOf(response.code()));
+                    Log.d("Event Api response", response.body().toString());
+                    if (response.isSuccessful()) {
+                        evr.synced = true;
+                        db.eventDAO().update(evr);
+                    }
                 } catch (IOException e) {
                     Log.d("Error", e.toString());
                 }
-                evr.synced = true;
-                db.eventDAO().update(evr);
             }
         }
         return Result.success();
