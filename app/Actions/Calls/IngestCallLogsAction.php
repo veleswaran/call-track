@@ -43,6 +43,7 @@ class IngestCallLogsAction
                 'call_hash' => $log->callHash,
                 'phone_number_hash' => hash('sha256', $normalizedPhone),
                 'phone_number' => \Illuminate\Support\Facades\Crypt::encryptString($log->phoneNumber),
+                'phone_contact_name' => $log->phoneContactName,
                 'direction' => $log->direction,
                 'duration' => $log->duration,
                 'timestamp' => $log->timestamp,

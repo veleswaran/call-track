@@ -32,5 +32,6 @@ public class CallRecord {
     public String category;
     public String notes;
     public String metaData;
+    public String phoneContactName;
     public boolean synced;  // flag to track if sent to server
 }

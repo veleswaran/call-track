@@ -36,6 +36,7 @@ class CallLogController extends Controller
                 duration: (int) $log['duration'],
                 timestamp: $log['timestamp'],
                 simSlot: (int) ($log['sim_slot'] ?? 0),
+                phoneContactName: $log['phone_contact_name'] ?? null,
                 extra: $log['extra'] ?? null,
             );
         }

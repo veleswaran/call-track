@@ -9,5 +9,6 @@ public class CallLogItem {
     public String carrier;
     public String id;
     public String call_hash;
+    public String phone_contact_name;
     public CallLogExtra extra;
 }

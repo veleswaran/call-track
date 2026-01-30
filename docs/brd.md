@@ -73,6 +73,7 @@ Incoming, outgoing, and missed calls
 Call start and end time
 Call duration
 SIM slot used
+Phone contact name
 Device identifier
 All calls are captured without user intervention.
 6.3 Call Deletion Handling
@@ -123,7 +124,7 @@ Architecture allows future CRM integrations without redesign
 # Security, Privacy & Compliance
 
 No call audio recording
-No syncing of personal phone contacts
+No syncing of the full personal phone contact book (only caller names for logged calls are captured)
 Secure device token authentication
 Admin-controlled access
 Full audit trail of call classifications

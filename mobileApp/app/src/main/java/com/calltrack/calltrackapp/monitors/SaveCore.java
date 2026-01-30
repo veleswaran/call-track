@@ -35,7 +35,7 @@ public class SaveCore {
         if (lastProcessedId > 0) {
             String selection = CallLog.Calls._ID + " > ?";
             String[] selectionArgs = new String[]{String.valueOf(lastProcessedId)};
-            String[] projection = {CallLog.Calls.NUMBER, CallLog.Calls.TYPE, CallLog.Calls.DATE, CallLog.Calls.DURATION, "subscription_id", CallLog.Calls._ID};
+            String[] projection = {CallLog.Calls.NUMBER, CallLog.Calls.TYPE, CallLog.Calls.DATE, CallLog.Calls.DURATION, "subscription_id", CallLog.Calls._ID, CallLog.Calls.CACHED_NAME};
             try (Cursor cursor = context.getContentResolver().query(CallLog.Calls.CONTENT_URI, projection, selection, selectionArgs, CallLog.Calls._ID + " ASC")) {
                 if (cursor == null) return;
                 int batteryLevel = Utility.getBatteryPercentage(context);
@@ -45,6 +45,7 @@ public class SaveCore {
                     record.batteryLevel = batteryLevel;
                     record.callLocalId = getLongSafe(cursor, CallLog.Calls._ID);
                     record.number = getStringSafe(cursor, CallLog.Calls.NUMBER);
+                    record.phoneContactName = getStringSafe(cursor, CallLog.Calls.CACHED_NAME);
                     record.date = getLongSafe(cursor, CallLog.Calls.DATE);
                     record.duration = getStringSafe(cursor, CallLog.Calls.DURATION);
                     int type = getIntSafe(cursor, CallLog.Calls.TYPE);

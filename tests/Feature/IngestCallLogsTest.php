@@ -234,4 +234,37 @@ class IngestCallLogsTest extends TestCase
             'metadata' => 'Blocked by spam filter',
         ]);
     }
+
+    public function test_it_ingests_phone_contact_name()
+    {
+        Queue::fake();
+
+        $plainToken = \Illuminate\Support\Str::random(60);
+        $tokenRecord = DeviceToken::factory()->create([
+            'token_hash' => hash('sha256', $plainToken),
+        ]);
+
+        $payload = [
+            'logs' => [
+                [
+                    'call_hash' => 'contact-name-hash-1',
+                    'phone_number' => '+15559999',
+                    'phone_contact_name' => 'John Doe Sync',
+                    'direction' => 'INCOMING',
+                    'duration' => 45,
+                    'timestamp' => now()->toDateTimeString(),
+                ],
+            ],
+        ];
+
+        $response = $this->withHeader('X-Device-Token', $plainToken)
+            ->postJson('/api/v1/call-logs/sync', $payload);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('call_logs', [
+            'call_hash' => 'contact-name-hash-1',
+            'phone_contact_name' => 'John Doe Sync',
+        ]);
+    }
 }

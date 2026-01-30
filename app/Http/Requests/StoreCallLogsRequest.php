@@ -25,6 +25,7 @@ class StoreCallLogsRequest extends FormRequest
             'logs.*.duration' => ['required', 'integer', 'min:0'],
             'logs.*.timestamp' => ['required', 'date'],
             'logs.*.sim_slot' => ['nullable', 'integer'],
+            'logs.*.phone_contact_name' => ['nullable', 'string', 'max:255'],
             'logs.*.extra' => ['nullable', 'array'],
             'logs.*.extra.classification' => ['required_with:logs.*.extra', 'in:BUSINESS,PERSONAL,IGNORED'],
             'logs.*.extra.note' => ['nullable', 'string', 'max:1000'],
