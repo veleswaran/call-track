@@ -9,7 +9,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 public class ApiUtilities {
-    private static final String URL = "http://192.168.0.114:8000/api/";
+    private static final String URL = "https://api-calltrack.altalya.in/api/";
     private static Retrofit retrofit = null;
 
     public static DeviceApi getDeviceApi() {
