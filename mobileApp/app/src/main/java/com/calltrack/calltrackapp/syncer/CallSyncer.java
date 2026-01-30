@@ -5,17 +5,22 @@ import android.util.Log;
 
 import com.calltrack.calltrackapp.api.ApiUtilities;
 import com.calltrack.calltrackapp.api.CallLogsApi;
+import com.calltrack.calltrackapp.api.EventApi;
 import com.calltrack.calltrackapp.bundles.CallLogExtra;
 import com.calltrack.calltrackapp.bundles.CallLogItem;
 import com.calltrack.calltrackapp.bundles.CallLogRequest;
 import com.calltrack.calltrackapp.bundles.CallLogResponse;
+import com.calltrack.calltrackapp.bundles.EventPayload;
+import com.calltrack.calltrackapp.bundles.EventResponse;
 import com.calltrack.calltrackapp.db.AppDB;
 import com.calltrack.calltrackapp.db.bundles.CallRecord;
+import com.calltrack.calltrackapp.db.bundles.EventRecord;
 import com.calltrack.calltrackapp.db.bundles.TokenEntity;
 import com.calltrack.calltrackapp.utilities.Utility;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
@@ -51,6 +56,28 @@ public class CallSyncer extends Worker {
                 record.synced = true;
             }
             db.callRecordDao().updateAll(unsynced);
+        }
+        List<EventRecord> ers = db.eventDAO().getUnsyncedRecords();
+        EventApi ev = ApiUtilities.getEventApi();
+        TokenEntity te = db.tokenDao().getOne();
+        if (te != null) {
+            for (EventRecord evr : ers) {
+                EventPayload ep = new EventPayload();
+                ep.event_type = evr.event_type;
+                ep.occurred_at = evr.occurred_at;
+                Call<EventResponse> res = ev.register(te.token, ep);
+                try {
+                    Response<EventResponse> response = res.execute(); // synchronous
+                    Log.d("Event Api response", String.valueOf(response.code()));
+                    Log.d("Event Api response", response.body().toString());
+                    if (response.isSuccessful()) {
+                        evr.synced = true;
+                        db.eventDAO().update(evr);
+                    }
+                } catch (IOException e) {
+                    Log.d("Error", e.toString());
+                }
+            }
         }
         return Result.success();
     }

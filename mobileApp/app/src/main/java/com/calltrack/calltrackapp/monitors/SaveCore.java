@@ -109,11 +109,11 @@ public class SaveCore {
     private void persistRecord(Context context, CallRecord record) {
         AppDB db = AppDB.getInstance(context);
         TokenEntity te = db.tokenDao().getOne();
-        if (te != null && te.simSlots.contains(record.simSlot)) {
+        if (te.simSlots.contains(record.simSlot) || record.simSlot == null) {
             db.callRecordDao().insert(record);
 //            Log.d("CallMonitor", "Call record persisted: " + record.type + " " + record.number);
         } else {
-//            Log.d("CallMonitor", "Skipped persisting record due to SIM slot mismatch");
+            Log.d("CallMonitor", "Skipped persisting record due to SIM slot mismatch");
         }
     }
 

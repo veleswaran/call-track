@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.calltrack.calltrackapp.R;
@@ -49,7 +50,15 @@ public class CallRecordAdapter extends RecyclerView.Adapter<CallRecordAdapter.Vi
         holder.tvDate.setText(formatDate(record.date));
         holder.tvType.setText(record.type);
         holder.tvCategory.setText(isEmpty(record.category) ? "No category" : record.category);
-        applyCallTypeStyle(context, holder.tvNumber, record.type);
+        applyCallTypeStyle(context, holder, record.type);
+        // Sync Status
+        if (record.synced) {
+            holder.ivSynced.setImageResource(android.R.drawable.stat_sys_upload_done);
+            holder.ivSynced.setColorFilter(ContextCompat.getColor(context, R.color.success));
+        } else {
+            holder.ivSynced.setImageResource(android.R.drawable.stat_sys_upload);
+            holder.ivSynced.setColorFilter(ContextCompat.getColor(context, R.color.warning));
+        }
         holder.itemView.setOnClickListener(v -> showDetailsDialog(context, record, position));
     }
 
@@ -65,12 +74,12 @@ public class CallRecordAdapter extends RecyclerView.Adapter<CallRecordAdapter.Vi
         return sdf.format(date);
     }
 
-//    public void updateData(List<CallRecord> newRecords) {
-//        this.records = newRecords;
-//        notifyDataSetChanged();
-//    }
+    public void updateData(List<CallRecord> newRecords) {
+        this.records = newRecords;
+        notifyDataSetChanged();
+    }
 
-    private void applyCallTypeStyle(Context context, TextView tvNumber, String type) {
+    private void applyCallTypeStyle(Context context, ViewHolder holder, String type) {
         int colorRes;
         int iconRes;
         switch (type) {
@@ -91,8 +100,10 @@ public class CallRecordAdapter extends RecyclerView.Adapter<CallRecordAdapter.Vi
                 iconRes = android.R.drawable.ic_menu_call;
                 break;
         }
-        tvNumber.setTextColor(ContextCompat.getColor(context, colorRes));
-        tvNumber.setCompoundDrawablesWithIntrinsicBounds(iconRes, 0, 0, 0);
+        int color = ContextCompat.getColor(context, colorRes);
+        holder.ivCallType.setImageResource(iconRes);
+        holder.ivCallType.setColorFilter(color);
+        holder.tvType.getBackground().setTint(color);
     }
 
     private void showDetailsDialog(Context context, CallRecord record, int position) {
@@ -113,18 +124,15 @@ public class CallRecordAdapter extends RecyclerView.Adapter<CallRecordAdapter.Vi
             .setTitle("Call Details")
             .setView(dialogView)
             .setPositiveButton("OK", null);
-        if (isEmpty(record.notes)) {
-            builder.setNeutralButton("Edit Notes", (dialog, which) -> showEditNotesDialog(context, record, position));
-        }
-        if (isEmpty(record.category)) {
-            builder.setNegativeButton("Set Category", (dialog, which) -> showCategoryDialog(context, record, position));
-        }
+        builder.setNeutralButton("Edit Notes", (dialog, which) -> showEditNotesDialog(context, record, position));
+        builder.setNegativeButton("Set Category", (dialog, which) -> showCategoryDialog(context, record, position));
         builder.show();
     }
 
     private void showEditNotesDialog(Context context, CallRecord record, int position) {
         EditText input = new EditText(context);
         input.setHint("Enter notes");
+        input.setText(record.notes);
         new AlertDialog.Builder(context)
             .setTitle("Add Notes")
             .setView(input)
@@ -161,6 +169,7 @@ public class CallRecordAdapter extends RecyclerView.Adapter<CallRecordAdapter.Vi
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvNumber, tvDate, tvCategory, tvType;
+        ImageView ivCallType, ivSynced;
 
         ViewHolder(View itemView) {
             super(itemView);
@@ -168,6 +177,8 @@ public class CallRecordAdapter extends RecyclerView.Adapter<CallRecordAdapter.Vi
             tvDate = itemView.findViewById(R.id.tvDate);
             tvCategory = itemView.findViewById(R.id.tvCategory);
             tvType = itemView.findViewById(R.id.tvType);
+            ivCallType = itemView.findViewById(R.id.ivCallType);
+            ivSynced = itemView.findViewById(R.id.ivSynced);
         }
     }
 }

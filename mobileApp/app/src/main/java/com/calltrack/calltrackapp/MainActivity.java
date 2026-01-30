@@ -132,6 +132,8 @@ public class MainActivity extends AppCompatActivity {
                 });
                 recyclerView.setLayoutManager(new LinearLayoutManager(this));
                 recyclerView.setAdapter(adapter);
+            } else {
+                adapter.updateData(records);
             }
         });
         WorkManager workManager = WorkManager.getInstance(this);
@@ -139,7 +141,11 @@ public class MainActivity extends AppCompatActivity {
         workManager.enqueueUniqueWork("startupWorker", ExistingWorkPolicy.REPLACE, workRequest);
         if (!CallMonitorService.isRunning) {
             Intent serviceIntent = new Intent(this, CallMonitorService.class);
-            startForegroundService(serviceIntent);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(serviceIntent);
+            } else {
+                startService(serviceIntent);
+            }
         }
     }
 

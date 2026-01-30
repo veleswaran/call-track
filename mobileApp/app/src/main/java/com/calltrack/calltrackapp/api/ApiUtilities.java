@@ -28,4 +28,12 @@ public class ApiUtilities {
         return retrofit.create(CallLogsApi.class);
     }
 
+    public static EventApi getEventApi() {
+        if (retrofit == null) {
+            Gson gson = new GsonBuilder().setStrictness(Strictness.LENIENT).create();
+            retrofit = new Retrofit.Builder().baseUrl(URL).addConverterFactory(ScalarsConverterFactory.create()).addConverterFactory(GsonConverterFactory.create(gson)).build();
+        }
+        return retrofit.create(EventApi.class);
+    }
+
 }
