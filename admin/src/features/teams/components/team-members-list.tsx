@@ -3,6 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Plus, Shield, User, MoreHorizontal, Trash2, RefreshCw } from "lucide-react";
+import { useAuth } from "@features/auth/hooks/use-auth";
 import { Button } from "@shared/components/ui/button";
 import {
     Table,
@@ -45,6 +46,9 @@ export function TeamMembersList({ teamId }: TeamMembersListProps) {
     const [isOpen, setIsOpen] = useState(false);
     const queryClient = useQueryClient();
 
+    const { user } = useAuth();
+    const isAdmin = user?.roles.some((role: string) => ['admin', 'super-admin'].includes(role));
+
     // Fetch team details to get members
     const { data: teamData, isLoading } = useQuery({
         queryKey: ["team", teamId],
@@ -73,16 +77,18 @@ export function TeamMembersList({ teamId }: TeamMembersListProps) {
         <div className="space-y-4">
             <div className="flex items-center justify-between">
                 <h3 className="text-lg font-medium">Members</h3>
-                <AddMemberDialog
-                    teamId={teamId}
-                    existingAgentIds={existingAgentIds}
-                    isOpen={isOpen}
-                    onOpenChange={setIsOpen}
-                    onSuccess={() => {
-                        queryClient.invalidateQueries({ queryKey: ["team", teamId] });
-                        setIsOpen(false);
-                    }}
-                />
+                {isAdmin && (
+                    <AddMemberDialog
+                        teamId={teamId}
+                        existingAgentIds={existingAgentIds}
+                        isOpen={isOpen}
+                        onOpenChange={setIsOpen}
+                        onSuccess={() => {
+                            queryClient.invalidateQueries({ queryKey: ["team", teamId] });
+                            setIsOpen(false);
+                        }}
+                    />
+                )}
             </div>
 
             <div className="rounded-md border">
@@ -125,33 +131,35 @@ export function TeamMembersList({ teamId }: TeamMembersListProps) {
                                         {new Date(member.created_at).toLocaleDateString()}
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="icon">
-                                                    <MoreHorizontal className="h-4 w-4" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuItem
-                                                    onClick={() => updateRoleMutation.mutate({
-                                                        agentId: member.agent_id,
-                                                        role: member.role === "MANAGER" ? "MEMBER" : "MANAGER"
-                                                    })}
-                                                    disabled={updateRoleMutation.isPending}
-                                                >
-                                                    <RefreshCw className="mr-2 h-4 w-4" />
-                                                    {member.role === "MANAGER" ? "Demote to Member" : "Promote to Manager"}
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem
-                                                    className="text-red-600"
-                                                    onClick={() => removeMutation.mutate(member.agent_id)}
-                                                    disabled={removeMutation.isPending}
-                                                >
-                                                    <Trash2 className="mr-2 h-4 w-4" />
-                                                    Remove from Team
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
+                                        {isAdmin && (
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" size="icon">
+                                                        <MoreHorizontal className="h-4 w-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem
+                                                        onClick={() => updateRoleMutation.mutate({
+                                                            agentId: member.agent_id,
+                                                            role: member.role === "MANAGER" ? "MEMBER" : "MANAGER"
+                                                        })}
+                                                        disabled={updateRoleMutation.isPending}
+                                                    >
+                                                        <RefreshCw className="mr-2 h-4 w-4" />
+                                                        {member.role === "MANAGER" ? "Demote to Member" : "Promote to Manager"}
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                        className="text-red-600"
+                                                        onClick={() => removeMutation.mutate(member.agent_id)}
+                                                        disabled={removeMutation.isPending}
+                                                    >
+                                                        <Trash2 className="mr-2 h-4 w-4" />
+                                                        Remove from Team
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        )}
                                     </TableCell>
                                 </TableRow>
                             ))

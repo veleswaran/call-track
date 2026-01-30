@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useAgents } from "@features/agents/hooks/use-agents";
+import { useAuth } from "@features/auth/hooks/use-auth";
 import { AddAgentDialog } from "@features/agents/components/AddAgentDialog";
 import { EditAgentDialog } from "@features/agents/components/EditAgentDialog";
 import { AssignDeviceDialog } from "@features/agents/components/AssignDeviceDialog";
@@ -22,12 +23,13 @@ import type { Agent } from "@shared/types";
  * Agents page - displays agent list with CRUD capabilities
  */
 export default function AgentsPage() {
+    const { user } = useAuth();
     const { data, isLoading, isError } = useAgents({ page: 1, per_page: 20 });
     const [editingAgent, setEditingAgent] = useState<Agent | null>(null);
     const [assigningAgent, setAssigningAgent] = useState<Agent | null>(null);
     const [linkingAgent, setLinkingAgent] = useState<Agent | null>(null);
 
-
+    const isAdmin = user?.roles.some((role: string) => ['admin', 'super-admin'].includes(role));
     const agents = data?.data ?? [];
 
     return (
@@ -39,7 +41,7 @@ export default function AgentsPage() {
                         Manage sales agents and their device assignments
                     </p>
                 </div>
-                <AddAgentDialog />
+                {isAdmin && <AddAgentDialog />}
             </div>
 
             <div className="rounded-md border border-zinc-200 dark:border-zinc-800">
@@ -102,14 +104,16 @@ export default function AgentsPage() {
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-2">
-                                            <Button
-                                                size="sm"
-                                                variant="ghost"
-                                                onClick={() => setLinkingAgent(agent)}
-                                                title="Link User"
-                                            >
-                                                <LinkIcon className="h-4 w-4" />
-                                            </Button>
+                                            {isAdmin && (
+                                                <Button
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    onClick={() => setLinkingAgent(agent)}
+                                                    title="Link User"
+                                                >
+                                                    <LinkIcon className="h-4 w-4" />
+                                                </Button>
+                                            )}
                                             <Button
                                                 size="sm"
                                                 variant="ghost"

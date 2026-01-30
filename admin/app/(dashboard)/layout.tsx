@@ -8,7 +8,6 @@ import { useAuth } from "@/src/features/auth/hooks/use-auth";
 
 export default function DashboardLayout({ children,}: {    children: React.ReactNode;}) {
     const {user} = useAuth();
-    console.log(user);
     const router = useRouter();
 
     const handleLogout = async () => {

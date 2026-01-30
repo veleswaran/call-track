@@ -64,6 +64,9 @@ class CreateSuperAdmin extends Command
             'password' => Hash::make($password),
         ]);
 
+        // Assign super-admin role
+        $user->assignRole('super-admin');
+
         $this->newLine();
         $this->info('✅ Super Admin created successfully!');
         $this->table(

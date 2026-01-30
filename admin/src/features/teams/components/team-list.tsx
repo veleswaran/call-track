@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import Link from "next/link";
+import { useAuth } from "@features/auth/hooks/use-auth";
 import { Button } from "@shared/components/ui/button";
 import {
     Table,
@@ -29,6 +30,9 @@ export function TeamList() {
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const queryClient = useQueryClient();
 
+    const { user } = useAuth();
+    const isAdmin = user?.roles.some((role: string) => ['admin', 'super-admin'].includes(role));
+
     const { data: teamsData, isLoading } = useQuery({
         queryKey: ["teams", page],
         queryFn: () => teamsApi.getTeams({ page }),
@@ -38,14 +42,16 @@ export function TeamList() {
         <div className="space-y-4">
             <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold tracking-tight">Teams</h2>
-                <CreateTeamDialog
-                    open={isCreateOpen}
-                    onOpenChange={setIsCreateOpen}
-                    onSuccess={() => {
-                        queryClient.invalidateQueries({ queryKey: ["teams"] });
-                        setIsCreateOpen(false);
-                    }}
-                />
+                {isAdmin && (
+                    <CreateTeamDialog
+                        open={isCreateOpen}
+                        onOpenChange={setIsCreateOpen}
+                        onSuccess={() => {
+                            queryClient.invalidateQueries({ queryKey: ["teams"] });
+                            setIsCreateOpen(false);
+                        }}
+                    />
+                )}
             </div>
 
             <div className="rounded-md border">

@@ -55,4 +55,48 @@ class TwoFactorAuthTest extends TestCase
         $this->assertNotNull($user->two_factor_confirmed_at);
         $this->assertEquals($secret, Crypt::decryptString($user->two_factor_secret));
     }
+
+    public function test_login_intercept_and_challenge()
+    {
+        $user = User::factory()->create([
+            'password' => bcrypt('password'),
+        ]);
+
+        // Manually enable 2FA
+        $google2fa = new Google2FA;
+        $secret = $google2fa->generateSecretKey();
+        $user->forceFill([
+            'two_factor_secret' => Crypt::encryptString($secret),
+            'two_factor_confirmed_at' => now(),
+        ])->save();
+
+        // 1. Login attempt
+        $response = $this->postJson('/login', [ // Assuming standard route
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+
+        // Should intercept
+        $response->assertOk()
+            ->assertJson(['requires_two_factor' => true]);
+
+        // User should NOT be authenticated
+        $this->assertGuest('web');
+
+        // 2. Challenge
+        $code = $google2fa->getCurrentOtp($secret);
+
+        // Session needs to be maintained. in tests, it usually is.
+        // But we need to check if session has 'auth.2fa.id'.
+
+        $response = $this->withHeaders(['Referer' => 'http://localhost:3000'])
+            ->postJson('/api/v1/auth/two-factor/challenge', [
+                'code' => $code,
+            ]);
+
+        $response->assertOk()
+            ->assertJson(['message' => 'Logged in successfully']);
+
+        $this->assertAuthenticatedAs($user, 'web');
+    }
 }

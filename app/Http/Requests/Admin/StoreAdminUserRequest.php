@@ -22,7 +22,9 @@ class StoreAdminUserRequest extends FormRequest
             'role' => ['nullable', 'string'],
             'status' => ['nullable', 'string'],
             'employee_code' => ['nullable', 'string'],
-            'team_id' => ['nullable', 'string'],
+            'team_id' => ['nullable', 'integer'],
+            'is_agent' => ['nullable', 'boolean'],
+            'is_team' => ['nullable', 'boolean'],
         ];
     }
 }

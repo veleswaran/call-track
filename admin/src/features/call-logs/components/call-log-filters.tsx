@@ -46,6 +46,7 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
         onChange({
             page: 1,
             per_page: filters.per_page,
+            search: filters.search,
         });
     };
 

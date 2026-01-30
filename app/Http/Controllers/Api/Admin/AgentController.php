@@ -22,6 +22,8 @@ class AgentController extends Controller
 
     public function index(Request $request): JsonResponse
     {
+        $this->authorize('viewAny', Agent::class);
+
         /** @var \App\Domain\Users\Models\User $user */
         $user = $request->user();
         $allowedAgentIds = $this->getAgentAccessScopeAction->execute($user);

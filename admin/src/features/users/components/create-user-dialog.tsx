@@ -27,6 +27,14 @@ import {
 
 import { Input } from "@shared/components/ui/input";
 import { Button } from "@shared/components/ui/button";
+import { Checkbox } from "@shared/components/ui/checkbox";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@shared/components/ui/select";
 import { useCreateUser } from "../hooks/use-users";
 import { useQuery } from "@tanstack/react-query";
 import { teamsApi } from "../../teams/api/teams-api";
@@ -114,7 +122,6 @@ export function CreateUserDialog() {
     }, [isAgent, form]);
 
     function onSubmit(values: z.infer<typeof formSchema>) {
-        console.log(values)
         createUser(values, {
             onSuccess: () => {
                 setOpen(false);
@@ -197,13 +204,12 @@ export function CreateUserDialog() {
                             control={form.control}
                             name="is_agent"
                             render={({ field }) => (
-                                <FormItem className="flex flex-row items-center justify-between rounded-lg  px-3">
+                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
                                     <FormLabel>Is Agent?</FormLabel>
                                     <FormControl>
-                                        <input
-                                            type="checkbox"
+                                        <Checkbox
                                             checked={field.value}
-                                            onChange={(e) => field.onChange(e.target.checked)}
+                                            onCheckedChange={field.onChange}
                                         />
                                     </FormControl>
                                 </FormItem>
@@ -224,12 +230,17 @@ export function CreateUserDialog() {
                                 <FormField control={form.control} name="status" render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Status</FormLabel>
-                                        <FormControl>
-                                            <select className="w-full border rounded px-3 py-2" value={field.value} onChange={field.onChange} >
-                                                <option value="active">Active</option>
-                                                <option value="inactive">Inactive</option>
-                                            </select>
-                                        </FormControl>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select status" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                <SelectItem value="active">Active</SelectItem>
+                                                <SelectItem value="inactive">Inactive</SelectItem>
+                                            </SelectContent>
+                                        </Select>
                                         <FormMessage />
                                     </FormItem>
                                 )} />
@@ -239,10 +250,13 @@ export function CreateUserDialog() {
                                     control={form.control}
                                     name="is_team"
                                     render={({ field }) => (
-                                        <FormItem className="flex flex-row items-center justify-between rounded-lg px-3">
+                                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
                                             <FormLabel>Add Team</FormLabel>
                                             <FormControl>
-                                                <input type="checkbox" checked={field.value} onChange={(e) => field.onChange(e.target.checked)} />
+                                                <Checkbox
+                                                    checked={field.value}
+                                                    onCheckedChange={field.onChange}
+                                                />
                                             </FormControl>
                                         </FormItem>
                                     )}
@@ -256,12 +270,20 @@ export function CreateUserDialog() {
                                             render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel>Team</FormLabel>
-                                                    <FormControl>
-                                                        <select className="w-full border rounded px-3 py-2" value={field.value} onChange={field.onChange} >
-                                                            <option value="">Select Team</option>
-                                                            {teamsData?.data.map((team) => <option key={team.id} value={team.id}>{team.name}</option>)}
-                                                        </select>
-                                                    </FormControl>
+                                                    <Select onValueChange={field.onChange} defaultValue={field.value?.toString() ?? ""}>
+                                                        <FormControl>
+                                                            <SelectTrigger>
+                                                                <SelectValue placeholder="Select Team" />
+                                                            </SelectTrigger>
+                                                        </FormControl>
+                                                        <SelectContent>
+                                                            {teamsData?.data.map((team) => (
+                                                                <SelectItem key={team.id} value={team.id.toString()}>
+                                                                    {team.name}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
                                                     <FormMessage />
                                                 </FormItem>
                                             )}
@@ -272,12 +294,17 @@ export function CreateUserDialog() {
                                             render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel>Role</FormLabel>
-                                                    <FormControl>
-                                                        <select className="w-full border rounded px-3 py-2" value={field.value} onChange={field.onChange} >
-                                                            <option value="MEMBER">Member</option>
-                                                            <option value="MANAGER">Manager</option>
-                                                        </select>
-                                                    </FormControl>
+                                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                        <FormControl>
+                                                            <SelectTrigger>
+                                                                <SelectValue placeholder="Select Role" />
+                                                            </SelectTrigger>
+                                                        </FormControl>
+                                                        <SelectContent>
+                                                            <SelectItem value="MEMBER">Member</SelectItem>
+                                                            <SelectItem value="MANAGER">Manager</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
                                                     <FormMessage />
                                                 </FormItem>
                                             )}

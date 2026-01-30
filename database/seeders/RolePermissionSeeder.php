@@ -36,6 +36,12 @@ class RolePermissionSeeder extends Seeder
         Permission::firstOrCreate(['name' => 'view reports']);
         Permission::firstOrCreate(['name' => 'manage team']);
 
+        // Call & Contact Actions
+        Permission::firstOrCreate(['name' => 'classify calls']);
+        Permission::firstOrCreate(['name' => 'manage contacts']);
+        Permission::firstOrCreate(['name' => 'view device sync logs']);
+        Permission::firstOrCreate(['name' => 'generate registration codes']);
+
         // Roles
         $superAdminRole = Role::firstOrCreate(['name' => 'super-admin']);
         $superAdminRole->givePermissionTo(Permission::all());
@@ -55,27 +61,27 @@ class RolePermissionSeeder extends Seeder
             'manage team records',
             'view dashboard',
             'view reports',
-            'manage team', // Manage their own team
+            'manage team',
+            'classify calls',
+            'manage contacts',
+            'view device sync logs',
         ]);
 
         $memberRole = Role::firstOrCreate(['name' => 'member']);
         $memberRole->givePermissionTo([
             'view own records',
             'view reports',
-            'view dashboard', // Own dashboard
+            'view dashboard',
+            'classify calls',
+            'manage contacts',
         ]);
 
-        // Cleanup old roles if necessary or ensuring 'agent' role maps to member if used previously
-        // Keeping 'agent' as alias or separate role? Spec calls for "Member (Agent/User Level)"
-        // sticking to 'member' as requested, but system might use 'agent' elsewhere?
-        // Let's create 'agent' as alias to 'member' for backward compat or clarify.
-        // Spec says "Member (Agent/User Level)". I will assume 'member' is the role name.
-        if (Role::where('name', 'agent')->exists()) {
-            $agentRole = Role::findByName('agent');
-            $agentRole->givePermissionTo([
-                'view own records',
-                'view dashboard',
-            ]);
-        }
+        // Assign all permissions to Admin as well, except delete records if we want to be strict
+        $adminRole->givePermissionTo([
+            'classify calls',
+            'manage contacts',
+            'view device sync logs',
+            'generate registration codes',
+        ]);
     }
 }

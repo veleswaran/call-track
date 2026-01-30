@@ -4,11 +4,19 @@ declare(strict_types=1);
 
 namespace App\Services\Users;
 
+use App\Contracts\Services\AgentManagementServiceInterface;
+use App\Contracts\Services\TeamServiceInterface;
 use App\Contracts\Services\UserManagementServiceInterface;
+use App\Domain\Agents\DTOs\AgentData;
+use App\Domain\Agents\Models\Agent;
+use App\Domain\Teams\DTOs\AddTeamMemberDTO;
 use App\Domain\Users\Actions\CreateAdminUserAction;
+use App\Domain\Users\Actions\LinkUserToAgentAction;
 use App\Domain\Users\DTOs\CreateAdminUserDTO;
+use App\Domain\Users\DTOs\CreateUserWithContextDTO;
 use App\Domain\Users\Models\User;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 
 class UserManagementService implements UserManagementServiceInterface
 {
@@ -17,6 +25,9 @@ class UserManagementService implements UserManagementServiceInterface
         protected \App\Domain\Users\Actions\GetPaginatedUsersAction $getPaginatedUsersAction,
         protected \App\Domain\Users\Actions\DeleteUserAction $deleteUserAction,
         protected \App\Domain\Users\Actions\ResetTwoFactorAction $resetTwoFactorAction,
+        protected LinkUserToAgentAction $linkUserToAgentAction,
+        protected AgentManagementServiceInterface $agentService,
+        protected TeamServiceInterface $teamService,
     ) {}
 
     public function getPaginatedUsers(int $perPage = 15): LengthAwarePaginator
@@ -37,5 +48,54 @@ class UserManagementService implements UserManagementServiceInterface
     public function resetTwoFactor(int $userId): void
     {
         $this->resetTwoFactorAction->execute($userId);
+    }
+
+    public function linkUserToAgent(User $user, Agent $agent): void
+    {
+        $this->linkUserToAgentAction->execute($user, $agent);
+    }
+
+    public function createUserWithContext(CreateUserWithContextDTO $dto): User
+    {
+        return DB::transaction(function () use ($dto) {
+            $user = $this->createAdminUser(new CreateAdminUserDTO(
+                name: $dto->name,
+                email: $dto->email,
+                password: $dto->password,
+            ));
+
+            if ($dto->isAgent) {
+                $agent = $this->agentService->createAgent(new AgentData(
+                    name: $dto->name,
+                    employeeCode: $dto->employeeCode,
+                    status: $dto->status,
+                ));
+
+                $this->linkUserToAgent($user, $agent);
+
+                $roleName = $dto->role ? strtolower($dto->role) : null;
+                if ($roleName) {
+                    $user->syncRoles([$roleName]);
+                }
+
+                if ($dto->isTeam && $dto->teamId) {
+                    $teamModel = $this->teamService->findTeam($dto->teamId);
+
+                    // Map user role 'manager' to Team role 'MANAGER'
+                    $teamRole = $roleName === 'manager' ? 'MANAGER' : 'MEMBER';
+
+                    $this->teamService->addMember(
+                        $teamModel,
+                        new AddTeamMemberDTO(
+                            teamId: $teamModel->id,
+                            agentId: $agent->id,
+                            role: $teamRole,
+                        )
+                    );
+                }
+            }
+
+            return $user;
+        });
     }
 }
