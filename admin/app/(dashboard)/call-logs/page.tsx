@@ -86,6 +86,7 @@ export default function CallLogsPage() {
                             <TableRow>
                                 <TableHead className="w-[50px]"></TableHead>
                                 <TableHead>Phone Number</TableHead>
+                                <TableHead>Contact Name</TableHead>
                                 <TableHead>Device</TableHead>
                                 <TableHead>Agent</TableHead>
                                 <TableHead>Duration</TableHead>
@@ -99,19 +100,19 @@ export default function CallLogsPage() {
                         <TableBody>
                             {isLoading ? (
                                 <TableRow>
-                                    <TableCell colSpan={10} className="h-24 text-center">
+                                    <TableCell colSpan={11} className="h-24 text-center">
                                         Loading...
                                     </TableCell>
                                 </TableRow>
                             ) : isError ? (
                                 <TableRow>
-                                    <TableCell colSpan={10} className="h-24 text-center text-red-500">
+                                    <TableCell colSpan={11} className="h-24 text-center text-red-500">
                                         Failed to load call logs
                                     </TableCell>
                                 </TableRow>
                             ) : callLogs.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={10} className="h-24 text-center">
+                                    <TableCell colSpan={11} className="h-24 text-center">
                                         No call logs found
                                     </TableCell>
                                 </TableRow>
@@ -136,13 +137,19 @@ export default function CallLogsPage() {
                                                 )}
                                             </TableCell>
                                             <TableCell className="font-medium">
-                                                {/* Contact name (if any) shown above the phone number */}
-                                                {log.contact_name ? (
+                                                {/* Device-synced contact name (if any) shown above the phone number */}
+                                                {log.phone_contact_name ? (
                                                     <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                                                        {log.contact_name}
+                                                        {log.phone_contact_name}
                                                     </div>
                                                 ) : null}
                                                 <div>{log.phone_number}</div>
+                                            </TableCell>
+                                            <TableCell>
+                                                {/* Central contact name from directory */}
+                                                <span className="text-sm font-medium">
+                                                    {log.contact_name || "-"}
+                                                </span>
                                             </TableCell>
                                             <TableCell>
                                                 <span className="text-sm text-zinc-600 dark:text-zinc-400">

@@ -22,6 +22,7 @@ export interface CallLog {
     device_name?: string | null;
     agent_name?: string | null;
     phone_number: string;
+    phone_contact_name?: string | null;
     contact_name?: string | null;
     contact_notes?: string | null;
     call_type: "incoming" | "outgoing" | "missed" | "unknown";
