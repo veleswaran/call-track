@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Requests\Device;
 
 use App\Domain\Devices\DTOs\StoreDeviceEventDTO;
-use App\Domain\Devices\Models\DeviceEvent;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Carbon;
-use Illuminate\Validation\Rule;
 
 class StoreDeviceEventRequest extends FormRequest
 {
@@ -23,7 +21,7 @@ class StoreDeviceEventRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'event_type' => ['required', 'string', Rule::in(DeviceEvent::EVENT_TYPES)],
+            'event_type' => ['required', 'string'],
             'payload' => ['nullable', 'array'],
             'occurred_at' => ['required', 'date'],
         ];

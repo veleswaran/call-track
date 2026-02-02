@@ -41,7 +41,7 @@ class DeviceEventTest extends TestCase
         ]);
     }
 
-    public function test_device_event_requires_valid_event_type(): void
+    public function test_device_event_accepts_custom_event_type(): void
     {
         $plainToken = Str::random(60);
         $device = Device::factory()->create();
@@ -49,14 +49,20 @@ class DeviceEventTest extends TestCase
             'token_hash' => hash('sha256', $plainToken),
         ]);
 
+        $customEventType = 'CUSTOM_MOBILE_EVENT_'.Str::upper(Str::random(5));
+
         $response = $this->withHeader('X-Device-Token', $plainToken)
             ->postJson('/api/v1/device/events', [
-                'event_type' => 'INVALID_EVENT',
+                'event_type' => $customEventType,
+                'payload' => ['foo' => 'bar'],
                 'occurred_at' => '2026-01-20T12:00:00Z',
             ]);
 
-        $response->assertStatus(422);
-        $response->assertJsonValidationErrors(['event_type']);
+        $response->assertStatus(201);
+        $this->assertDatabaseHas('device_events', [
+            'device_id' => $device->id,
+            'event_type' => $customEventType,
+        ]);
     }
 
     public function test_unauthenticated_device_cannot_submit_event(): void
