@@ -8,6 +8,7 @@ use App\Actions\Contacts\CreateOrUpdateContactAction;
 use App\Domain\Calls\Models\Contact;
 use App\Domain\Contacts\DTOs\StoreContactDTO;
 use App\Services\Contacts\ContactManagementService;
+use App\Support\PhoneNormalizer;
 use Mockery;
 use Tests\TestCase;
 
@@ -23,7 +24,7 @@ class ContactManagementServiceTest extends TestCase
 
         $dto = new StoreContactDTO(
             name: 'Jane Doe',
-            phoneNumber: '+9876543210'
+            phoneNumber: PhoneNormalizer::normalize('+9876543210')
         );
 
         $expectedContact = new Contact;
