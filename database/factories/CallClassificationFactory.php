@@ -17,7 +17,8 @@ class CallClassificationFactory extends Factory
             'call_log_id' => CallLog::factory(),
             'user_id' => User::factory(),
             'type' => $this->faker->randomElement(['BUSINESS', 'PERSONAL', 'IGNORED']),
-            'reason' => $this->faker->sentence,
+            'note' => $this->faker->optional()->sentence,
+            'metadata' => null,
         ];
     }
 }

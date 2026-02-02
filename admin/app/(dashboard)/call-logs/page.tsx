@@ -178,17 +178,17 @@ export default function CallLogsPage() {
                                                             <span className="font-medium">Contact:</span> {log.contact_notes}
                                                         </div>
                                                     )}
-                                                    {log.notes?.map((note) => (
-                                                        <div key={note.id} className="text-sm">
-                                                            {note.note}
-                                                            {note.metadata && (
+                                                    {log.classification?.note && (
+                                                        <div className="text-sm">
+                                                            {log.classification.note}
+                                                            {log.classification.metadata && (
                                                                 <div className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                                                                    <span className="font-medium">Metadata:</span> {note.metadata}
+                                                                    <span className="font-medium">Metadata:</span> {typeof log.classification.metadata === 'object' ? JSON.stringify(log.classification.metadata) : log.classification.metadata}
                                                                 </div>
                                                             )}
                                                         </div>
-                                                    ))}
-                                                    {!log.contact_notes && (!log.notes || log.notes.length === 0) && "-"}
+                                                    )}
+                                                    {!log.contact_notes && !log.classification?.note && "-"}
                                                 </div>
                                             </TableCell>
                                             <TableCell>

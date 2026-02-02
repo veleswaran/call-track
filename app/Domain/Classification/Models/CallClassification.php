@@ -24,7 +24,12 @@ class CallClassification extends Model
         'user_id',
         'agent_id',
         'type',
-        'reason',
+        'note',
+        'metadata',
+    ];
+
+    protected $casts = [
+        'metadata' => 'array',
     ];
 
     public function callLog(): BelongsTo
