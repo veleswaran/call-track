@@ -19,7 +19,6 @@ class ClassifyCallAction
                 ['call_log_id' => $dto->callLogId],
                 [
                     'user_id' => $dto->adminUserId,
-                    'agent_id' => $dto->agentId,
                     'type' => $dto->type,
                     'note' => $dto->note,
                     'metadata' => $dto->metadata,
