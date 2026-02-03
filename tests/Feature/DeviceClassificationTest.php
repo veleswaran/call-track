@@ -41,7 +41,6 @@ class DeviceClassificationTest extends TestCase
 
         $this->assertDatabaseHas('call_classifications', [
             'call_log_id' => $callLog->id,
-            'agent_id' => $agent->id,
             'type' => 'BUSINESS',
             'note' => 'Client meeting discussion',
             'user_id' => null,

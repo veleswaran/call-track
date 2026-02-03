@@ -58,7 +58,6 @@ class IngestCallLogsTest extends TestCase
             'call_log_id' => $log->id,
             'type' => 'BUSINESS',
             'user_id' => null,
-            'agent_id' => null,
         ]);
     }
 

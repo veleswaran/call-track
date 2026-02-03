@@ -39,6 +39,7 @@ class IngestCallLogsAction
 
             $records[] = [
                 'device_id' => $dto->device->id,
+                'agent_id' => $dto->device->agent_id,
                 'call_hash' => $log->callHash,
                 'phone_number_hash' => hash('sha256', $normalizedPhone),
                 'phone_number' => \Illuminate\Support\Facades\Crypt::encryptString($log->phoneNumber),
@@ -54,7 +55,6 @@ class IngestCallLogsAction
                 'type' => $log->extra['classification'] ?? 'BUSINESS',
                 'note' => ! empty($log->extra['note']) ? $log->extra['note'] : null,
                 'metadata' => ! empty($log->extra['metadata']) ? $log->extra['metadata'] : null,
-                'agent_id' => $dto->device->agent_id,
             ];
         }
 
@@ -80,7 +80,7 @@ class IngestCallLogsAction
             $classifications = [];
 
             foreach ($logsByHash as $hash => $callLog) {
-                $classInfo = $classificationMap[$hash] ?? ['type' => 'BUSINESS', 'note' => null, 'metadata' => null, 'agent_id' => null];
+                $classInfo = $classificationMap[$hash] ?? ['type' => 'BUSINESS', 'note' => null, 'metadata' => null];
 
                 $classifications[] = [
                     'call_log_id' => $callLog->id,
@@ -88,18 +88,17 @@ class IngestCallLogsAction
                     'note' => $classInfo['note'],
                     'metadata' => $classInfo['metadata'] ? json_encode($classInfo['metadata']) : null,
                     'user_id' => null,
-                    'agent_id' => $classInfo['agent_id'],
                     'created_at' => $now,
                     'updated_at' => $now,
                 ];
             }
 
             if (! empty($classifications)) {
-                // Upsert: update type/agent/note/metadata if classification already exists
+                // Upsert: update type/note/metadata if classification already exists
                 CallClassification::upsert(
                     $classifications,
                     ['call_log_id'], // unique key
-                    ['type', 'agent_id', 'note', 'metadata', 'updated_at'] // columns to update
+                    ['type', 'note', 'metadata', 'updated_at'] // columns to update
                 );
             }
         }

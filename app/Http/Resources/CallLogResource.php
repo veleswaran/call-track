@@ -27,7 +27,7 @@ class CallLogResource extends JsonResource
         $device = $this->getRelationValue('device');
 
         /** @var \App\Domain\Agents\Models\Agent|null $agent */
-        $agent = $device?->agent;
+        $agent = $this->getRelationValue('agent');
 
         return [
             'id' => $this->id,
