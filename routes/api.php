@@ -36,7 +36,6 @@ Route::prefix('v1')->group(function () {
         Route::get('/devices/codes', [\App\Http\Controllers\Api\Admin\DeviceCodeController::class, 'index']);
 
         Route::post('/calls/{id}/classify', [CallClassificationController::class, 'store']);
-        Route::put('/calls/{id}/note', [\App\Http\Controllers\Api\Admin\CallNoteController::class, 'update']);
 
         // Agent Management
         Route::apiResource('agents', \App\Http\Controllers\Api\Admin\AgentController::class);

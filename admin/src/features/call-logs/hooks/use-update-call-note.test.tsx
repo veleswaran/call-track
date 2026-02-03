@@ -1,18 +1,17 @@
 import { renderHook, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-// import { createWrapper } from "@shared/utils/test-utils"; 
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useUpdateCallNote } from "./use-update-call-note";
 import { api } from "@shared/api/api";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import type { PropsWithChildren } from "react";
 
-// Mock API
 vi.mock("@shared/api/api", () => ({
     api: {
-        put: vi.fn(),
+        post: vi.fn(),
     },
 }));
 
-const createTestWrapper = () => {
+const createWrapper = () => {
     const queryClient = new QueryClient({
         defaultOptions: {
             queries: {
@@ -20,11 +19,13 @@ const createTestWrapper = () => {
             },
         },
     });
-    const Wrapper = ({ children }: { children: React.ReactNode }) => (
-        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-    );
-    Wrapper.displayName = "QueryClientWrapper";
-    return Wrapper;
+    return function Wrapper({ children }: PropsWithChildren) {
+        return (
+            <QueryClientProvider client={queryClient}>
+                {children}
+            </QueryClientProvider>
+        );
+    };
 };
 
 describe("useUpdateCallNote", () => {
@@ -32,18 +33,45 @@ describe("useUpdateCallNote", () => {
         vi.clearAllMocks();
     });
 
-    it("should call api.put with correct arguments", async () => {
+    it("should call the classify endpoint with note and type", async () => {
+        const mockResponse = { message: "Call classified successfully" };
+        (api.post as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+
         const { result } = renderHook(() => useUpdateCallNote(), {
-            wrapper: createTestWrapper(),
+            wrapper: createWrapper(),
         });
 
-        const payload = { callLogId: 1, note: "Test Note" };
-
-        result.current.mutate(payload);
+        result.current.mutate({
+            callLogId: 1,
+            note: "Test note content",
+            classificationType: "BUSINESS",
+        });
 
         await waitFor(() => {
-            expect(api.put).toHaveBeenCalledWith("/api/v1/admin/calls/1/note", {
-                note: "Test Note",
+            expect(api.post).toHaveBeenCalledWith("/api/v1/admin/calls/1/classify", {
+                type: "BUSINESS",
+                note: "Test note content",
+            });
+        });
+    });
+
+    it("should default to BUSINESS classification when not specified", async () => {
+        const mockResponse = { message: "Call classified successfully" };
+        (api.post as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+
+        const { result } = renderHook(() => useUpdateCallNote(), {
+            wrapper: createWrapper(),
+        });
+
+        result.current.mutate({
+            callLogId: 2,
+            note: "Another note",
+        });
+
+        await waitFor(() => {
+            expect(api.post).toHaveBeenCalledWith("/api/v1/admin/calls/2/classify", {
+                type: "BUSINESS",
+                note: "Another note",
             });
         });
     });

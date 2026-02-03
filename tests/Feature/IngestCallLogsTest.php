@@ -58,7 +58,6 @@ class IngestCallLogsTest extends TestCase
             'call_log_id' => $log->id,
             'type' => 'BUSINESS',
             'user_id' => null,
-            'agent_id' => null,
         ]);
     }
 
@@ -180,9 +179,10 @@ class IngestCallLogsTest extends TestCase
             'type' => 'PERSONAL',
         ]);
 
-        // Verify note was created
-        $this->assertDatabaseHas('call_notes', [
+        // Verify note was stored in classification
+        $this->assertDatabaseHas('call_classifications', [
             'call_log_id' => $log->id,
+            'type' => 'PERSONAL',
             'note' => 'Personal call to family',
         ]);
     }
@@ -228,11 +228,16 @@ class IngestCallLogsTest extends TestCase
             'type' => 'IGNORED',
         ]);
 
-        // Verify metadata was created in notes
-        $this->assertDatabaseHas('call_notes', [
+        // Verify metadata was stored in classification
+        $this->assertDatabaseHas('call_classifications', [
             'call_log_id' => $log->id,
-            'metadata' => 'Blocked by spam filter',
+            'type' => 'IGNORED',
         ]);
+
+        // Check classification has metadata
+        $classification = \App\Domain\Classification\Models\CallClassification::where('call_log_id', $log->id)->first();
+        $this->assertNotNull($classification->metadata);
+        $this->assertEquals('Blocked by spam filter', $classification->metadata);
     }
 
     public function test_it_ingests_phone_contact_name()

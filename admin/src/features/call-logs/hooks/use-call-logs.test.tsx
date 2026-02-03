@@ -103,6 +103,26 @@ describe("useCallLogs", () => {
         );
         expect(api.get).toHaveBeenCalledWith(expect.stringContaining("page=2"));
     });
+
+    it("should fetch with search filter", async () => {
+        vi.mocked(api.get).mockResolvedValueOnce({ data: [], meta: {} });
+
+        const { result } = renderHook(
+            () =>
+                useCallLogs({
+                    search: "+1234567890",
+                }),
+            {
+                wrapper: createWrapper(),
+            }
+        );
+
+        await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+        expect(api.get).toHaveBeenCalledWith(
+            expect.stringContaining("search=%2B1234567890")
+        );
+    });
 });
 
 describe("useCallLog", () => {
