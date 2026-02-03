@@ -101,6 +101,14 @@ public class CallRecordAdapter extends RecyclerView.Adapter<CallRecordAdapter.Vi
                 colorRes = R.color.call_missed;
                 iconRes = android.R.drawable.sym_call_missed;
                 break;
+            case "REJECTED":
+                colorRes = R.color.call_missed;
+                iconRes = android.R.drawable.ic_delete;
+                break;
+            case "BLOCKED":
+                colorRes = R.color.black;
+                iconRes = android.R.drawable.ic_menu_close_clear_cancel;
+                break;
             default:
                 colorRes = R.color.black;
                 iconRes = android.R.drawable.ic_menu_call;

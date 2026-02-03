@@ -25,7 +25,7 @@ export interface CallLog {
     phone_contact_name?: string | null;
     contact_name?: string | null;
     contact_notes?: string | null;
-    call_type: "incoming" | "outgoing" | "missed" | "unknown";
+    call_type: "incoming" | "outgoing" | "missed" | "rejected" | "blocked" | "unknown";
     duration: number;
     timestamp: string;
     classification: CallClassification | null;

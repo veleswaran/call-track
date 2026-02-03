@@ -35,7 +35,7 @@ public class SaveCore {
         if (lastProcessedId > 0) {
             String selection = CallLog.Calls._ID + " > ?";
             String[] selectionArgs = new String[]{String.valueOf(lastProcessedId)};
-            String[] projection = {CallLog.Calls.NUMBER, CallLog.Calls.TYPE, CallLog.Calls.DATE, CallLog.Calls.DURATION, "subscription_id", CallLog.Calls._ID, CallLog.Calls.CACHED_NAME};
+            String[] projection = {CallLog.Calls.NUMBER, CallLog.Calls.TYPE, CallLog.Calls.DATE, CallLog.Calls.DURATION, "subscription_id", CallLog.Calls._ID, CallLog.Calls.CACHED_NAME, "block_reason"};
             try (Cursor cursor = context.getContentResolver().query(CallLog.Calls.CONTENT_URI, projection, selection, selectionArgs, CallLog.Calls._ID + " ASC")) {
                 if (cursor == null) return;
                 int batteryLevel = Utility.getBatteryPercentage(context);
@@ -50,7 +50,8 @@ public class SaveCore {
                     record.duration = getStringSafe(cursor, CallLog.Calls.DURATION);
                     int type = getIntSafe(cursor, CallLog.Calls.TYPE);
                     record.type = mapCallType(type);
-                    record.metaData = String.valueOf(type);
+                    int blockReason = getIntSafe(cursor, "block_reason");
+                    record.metaData = buildMetadata(type, blockReason);
                     int subId = getIntSafe(cursor, "subscription_id");
                     fillSubscriptionInfo(context, record, subId);
                     persistRecord(context.getApplicationContext(), record);
@@ -86,8 +87,37 @@ public class SaveCore {
                 return "OUTGOING";
             case CallLog.Calls.MISSED_TYPE:
                 return "MISSED";
+            case CallLog.Calls.REJECTED_TYPE:
+                return "REJECTED";
+            case CallLog.Calls.BLOCKED_TYPE:
+                return "BLOCKED";
             default:
                 return "UNKNOWN";
+        }
+    }
+
+    private String buildMetadata(int type, int blockReason) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{\"call_type_code\":").append(type);
+        if (type == CallLog.Calls.BLOCKED_TYPE && blockReason >= 0) {
+            sb.append(",\"block_reason_code\":").append(blockReason);
+            sb.append(",\"block_reason\":\"").append(mapBlockReason(blockReason)).append("\"");
+        }
+        sb.append("}");
+        return sb.toString();
+    }
+
+    private String mapBlockReason(int reason) {
+        switch (reason) {
+            case 0: return "not_blocked";
+            case 1: return "call_screening_service";
+            case 2: return "direct_to_voicemail";
+            case 3: return "blocked_number";
+            case 4: return "unknown_number";
+            case 5: return "restricted_number";
+            case 6: return "pay_phone";
+            case 7: return "not_in_contacts";
+            default: return "unknown";
         }
     }
 

@@ -24,8 +24,8 @@ export interface CallLogFilters {
 
     // Array filters support
     agents?: number[];    // Replaces single agent_id
-    types?: ("incoming" | "outgoing" | "missed" | "unknown")[]; // Replaces single call_type
-    statuses?: ("Connected" | "Missed" | "No Answer")[];
+    types?: ("incoming" | "outgoing" | "missed" | "rejected" | "blocked" | "unknown")[]; // Replaces single call_type
+    statuses?: ("Connected" | "Missed" | "No Answer" | "Rejected" | "Blocked")[];
     classifications?: ("business" | "personal" | "ignored")[];
 
     // Date range
@@ -34,7 +34,7 @@ export interface CallLogFilters {
 
     // Legacy single value support (optional, keep if needed)
     agent_id?: number;
-    call_type?: "incoming" | "outgoing" | "missed" | "unknown";
+    call_type?: "incoming" | "outgoing" | "missed" | "rejected" | "blocked" | "unknown";
     classification?: "business" | "personal" | "ignored";
 }
 

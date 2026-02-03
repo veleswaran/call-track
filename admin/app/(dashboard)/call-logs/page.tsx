@@ -10,7 +10,7 @@ import {
     TableRow,
 } from "@shared/components/ui/table";
 import { format } from "date-fns";
-import { PhoneIncoming, PhoneOutgoing, PhoneMissed, HelpCircle } from "lucide-react";
+import { PhoneIncoming, PhoneOutgoing, PhoneMissed, HelpCircle, PhoneOff, Ban } from "lucide-react";
 import { CallActions } from "@features/call-logs/components/call-actions";
 import { formatDuration } from "@shared/utils/time";
 import { getCallStatus } from "@shared/utils/call";
@@ -37,8 +37,8 @@ export default function CallLogsPage() {
         search: searchParams.get("search") || undefined,
         start_date: searchParams.get("start_date") || undefined,
         end_date: searchParams.get("end_date") || undefined,
-        types: searchParams.getAll("types[]") as ("incoming" | "outgoing" | "missed" | "unknown")[] | undefined,
-        statuses: searchParams.getAll("statuses[]") as ("Connected" | "Missed" | "No Answer")[] | undefined,
+        types: searchParams.getAll("types[]") as ("incoming" | "outgoing" | "missed" | "rejected" | "blocked" | "unknown")[] | undefined,
+        statuses: searchParams.getAll("statuses[]") as ("Connected" | "Missed" | "No Answer" | "Rejected" | "Blocked")[] | undefined,
         classifications: searchParams.getAll("classifications[]") as ("business" | "personal" | "ignored")[] | undefined,
         agents: searchParams.getAll("agents[]").map(Number).filter(n => !isNaN(n)),
     };
@@ -132,6 +132,12 @@ export default function CallLogsPage() {
                                                 {log.call_type === "missed" && (
                                                     <PhoneMissed className="h-4 w-4 text-red-500" />
                                                 )}
+                                                {log.call_type === "rejected" && (
+                                                    <PhoneOff className="h-4 w-4 text-orange-500" />
+                                                )}
+                                                {log.call_type === "blocked" && (
+                                                    <Ban className="h-4 w-4 text-gray-500" />
+                                                )}
                                                 {log.call_type === "unknown" && (
                                                     <HelpCircle className="h-4 w-4 text-gray-500" />
                                                 )}
@@ -170,7 +176,11 @@ export default function CallLogsPage() {
                                                         ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
                                                         : status === "No Answer"
                                                             ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
-                                                            : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"}`}
+                                                            : status === "Rejected"
+                                                                ? "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300"
+                                                                : status === "Blocked"
+                                                                    ? "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
+                                                                    : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"}`}
                                                 >
                                                     {status}
                                                 </span>
@@ -188,14 +198,47 @@ export default function CallLogsPage() {
                                                     {log.classification?.note && (
                                                         <div className="text-sm">
                                                             {log.classification.note}
-                                                            {log.classification.metadata && (
-                                                                <div className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                                                                    <span className="font-medium">Metadata:</span> {typeof log.classification.metadata === 'object' ? JSON.stringify(log.classification.metadata) : log.classification.metadata}
-                                                                </div>
-                                                            )}
                                                         </div>
                                                     )}
-                                                    {!log.contact_notes && !log.classification?.note && "-"}
+                                                    {log.classification?.metadata && (
+                                                        <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                                                            {(() => {
+                                                                const meta = log.classification.metadata;
+                                                                // If it's an object (parsed JSON), format nicely
+                                                                if (typeof meta === 'object' && meta !== null) {
+                                                                    const parts: string[] = [];
+                                                                    if ('block_reason' in meta) {
+                                                                        parts.push(`Blocked: ${String(meta.block_reason).replace(/_/g, ' ')}`);
+                                                                    }
+                                                                    if ('call_type_code' in meta) {
+                                                                        parts.push(`Type code: ${meta.call_type_code}`);
+                                                                    }
+                                                                    return parts.length > 0 ? parts.join(' • ') : JSON.stringify(meta);
+                                                                }
+                                                                // If it's a string, try to parse as JSON
+                                                                if (typeof meta === 'string') {
+                                                                    try {
+                                                                        const parsed = JSON.parse(meta);
+                                                                        if (typeof parsed === 'object' && parsed !== null) {
+                                                                            const parts: string[] = [];
+                                                                            if ('block_reason' in parsed) {
+                                                                                parts.push(`Blocked: ${String(parsed.block_reason).replace(/_/g, ' ')}`);
+                                                                            }
+                                                                            if ('call_type_code' in parsed) {
+                                                                                parts.push(`Type code: ${parsed.call_type_code}`);
+                                                                            }
+                                                                            return parts.length > 0 ? parts.join(' • ') : meta;
+                                                                        }
+                                                                    } catch {
+                                                                        // Not JSON, display as-is
+                                                                    }
+                                                                    return meta;
+                                                                }
+                                                                return String(meta);
+                                                            })()}
+                                                        </div>
+                                                    )}
+                                                    {!log.contact_notes && !log.classification?.note && !log.classification?.metadata && "-"}
                                                 </div>
                                             </TableCell>
                                             <TableCell>

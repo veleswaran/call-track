@@ -21,7 +21,7 @@ class StoreCallLogsRequest extends FormRequest
             'logs' => ['present', 'array', 'max:1000'],
             'logs.*.call_hash' => ['required', 'string'],
             'logs.*.phone_number' => ['required', 'string'],
-            'logs.*.direction' => ['required', 'in:INCOMING,OUTGOING,MISSED,UNKNOWN'],
+            'logs.*.direction' => ['required', 'in:INCOMING,OUTGOING,MISSED,REJECTED,BLOCKED,UNKNOWN'],
             'logs.*.duration' => ['required', 'integer', 'min:0'],
             'logs.*.timestamp' => ['required', 'date'],
             'logs.*.sim_slot' => ['nullable', 'integer'],
