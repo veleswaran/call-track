@@ -36,9 +36,9 @@ class IndexCallLogsRequest extends FormRequest
             'classifications' => ['sometimes', 'array'],
             'classifications.*' => ['string', 'in:business,personal,ignored'],
 
-            'call_type' => ['sometimes', 'string', 'in:incoming,outgoing,missed'],
+            'call_type' => ['sometimes', 'string', 'in:incoming,outgoing,missed,unknown'],
             'types' => ['sometimes', 'array'],
-            'types.*' => ['string', 'in:incoming,outgoing,missed'],
+            'types.*' => ['string', 'in:incoming,outgoing,missed,unknown'],
 
             'statuses' => ['sometimes', 'array'],
             'statuses.*' => ['string', 'in:Connected,Missed,No Answer'],

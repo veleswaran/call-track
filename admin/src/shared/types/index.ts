@@ -28,15 +28,6 @@ export interface CallLog {
     duration: number;
     timestamp: string;
     classification: CallClassification | null;
-    notes?: CallNote[];
-    created_at: string;
-}
-
-export interface CallNote {
-    id: number;
-    note: string;
-    metadata?: string | null;
-    agent_id: number | null;
     created_at: string;
 }
 
@@ -54,6 +45,8 @@ export interface CallClassification {
     classification: CallClassificationType;
     classified_by: number;
     classified_at: string;
+    note?: string | null;
+    metadata?: Record<string, unknown> | null;
 }
 
 /**

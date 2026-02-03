@@ -23,7 +23,8 @@ class CallClassificationController extends Controller
             callLogId: (int) $id,
             adminUserId: (int) $request->user()->id,
             type: $request->validated('type'),
-            reason: $request->validated('reason'),
+            note: $request->validated('note'),
+            metadata: $request->validated('metadata'),
         );
 
         $this->governanceService->classifyCall($dto);

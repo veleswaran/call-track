@@ -136,7 +136,7 @@ class DemoDataSeeder extends Seeder
                         'call_log_id' => $callLog->id,
                         'user_id' => $admin->id,
                         'type' => $classificationType,
-                        'reason' => $classificationType === 'BUSINESS' ? 'Client call' : ($classificationType === 'PERSONAL' ? 'Family call' : 'Spam'),
+                        'note' => $classificationType === 'BUSINESS' ? 'Client call' : ($classificationType === 'PERSONAL' ? 'Family call' : 'Spam'),
                     ]);
                     $classificationsCount++;
                 } else {
