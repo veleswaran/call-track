@@ -6,11 +6,6 @@
         android:title="Register"
         app:showAsAction="always" />
     <item
-        android:id="@+id/action_deregister"
-        android:title="Deregister"
-        android:visible="false"
-        app:showAsAction="never" />
-    <item
         android:id="@+id/action_sync"
         android:title="Sync Now"
         android:visible="false"
