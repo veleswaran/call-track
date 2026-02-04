@@ -123,7 +123,7 @@ public class CallSyncer extends Worker {
         } catch (Exception e) {
             Log.e("CallSyncer -> callAPi", "Exception occurred", e);
         }
-        return true;
+        return false;
     }
 
     CallLogItem recordToLog(CallRecord record) {
