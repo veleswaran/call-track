@@ -37,7 +37,7 @@ class DeviceRegistrationController extends Controller
             'message' => 'Device registered successfully',
             'device_id' => $result['device_id'],
             'device_uuid' => $result['device']->device_uuid,
-            'device' => $result['device'],
+            'device' => $result['device']->only(['id', 'name', 'metadata']),
             'token' => $result['token'],
         ], 201);
     }

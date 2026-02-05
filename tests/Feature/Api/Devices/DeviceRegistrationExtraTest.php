@@ -31,7 +31,8 @@ class DeviceRegistrationExtraTest extends TestCase
             'app_version' => '1.2.3',
             'tracked_sim_slots' => [0, 1],
             'extra' => [
-                'string',
+                'source' => 'integration-test',
+                'run_id' => 'xyz-123',
             ],
         ];
 
@@ -55,6 +56,6 @@ class DeviceRegistrationExtraTest extends TestCase
 
         $device = Device::where('name', 'Pixel 7')->first();
         $this->assertNotNull($device->metadata);
-        $this->assertContains('string', $device->metadata);
+        $this->assertEquals($payload['extra'], $device->metadata);
     }
 }
