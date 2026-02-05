@@ -47,6 +47,12 @@ public class CallRecordAdapter extends RecyclerView.Adapter<CallRecordAdapter.Vi
         Context context = holder.itemView.getContext();
         CallRecord record = records.get(position);
         holder.tvNumber.setText(record.number);
+        if (!isEmpty(record.phoneContactName)) {
+            holder.tvContactName.setText(record.phoneContactName);
+            holder.tvContactName.setVisibility(View.VISIBLE);
+        } else {
+            holder.tvContactName.setVisibility(View.GONE);
+        }
         holder.tvDate.setText(formatDate(record.date));
         holder.tvType.setText(record.type);
         holder.tvCategory.setText(isEmpty(record.category) ? "No category" : record.category);
@@ -94,6 +100,14 @@ public class CallRecordAdapter extends RecyclerView.Adapter<CallRecordAdapter.Vi
             case "MISSED":
                 colorRes = R.color.call_missed;
                 iconRes = android.R.drawable.sym_call_missed;
+                break;
+            case "REJECTED":
+                colorRes = R.color.call_missed;
+                iconRes = android.R.drawable.ic_delete;
+                break;
+            case "BLOCKED":
+                colorRes = R.color.black;
+                iconRes = android.R.drawable.ic_menu_close_clear_cancel;
                 break;
             default:
                 colorRes = R.color.black;
@@ -168,12 +182,13 @@ public class CallRecordAdapter extends RecyclerView.Adapter<CallRecordAdapter.Vi
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvNumber, tvDate, tvCategory, tvType;
+        TextView tvNumber, tvDate, tvCategory, tvType, tvContactName;
         ImageView ivCallType, ivSynced;
 
         ViewHolder(View itemView) {
             super(itemView);
             tvNumber = itemView.findViewById(R.id.tvNumber);
+            tvContactName = itemView.findViewById(R.id.tvContactName);
             tvDate = itemView.findViewById(R.id.tvDate);
             tvCategory = itemView.findViewById(R.id.tvCategory);
             tvType = itemView.findViewById(R.id.tvType);

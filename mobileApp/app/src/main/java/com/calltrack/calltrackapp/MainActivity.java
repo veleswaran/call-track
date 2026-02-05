@@ -156,11 +156,9 @@ public class MainActivity extends AppCompatActivity {
         db.tokenDao().getToken().observe(this, token -> {
             if (token != null) {
                 menu.findItem(R.id.action_register).setVisible(false);
-                menu.findItem(R.id.action_deregister).setVisible(true);
                 menu.findItem(R.id.action_sync).setVisible(true);
             } else {
                 menu.findItem(R.id.action_register).setVisible(true);
-                menu.findItem(R.id.action_deregister).setVisible(false);
                 menu.findItem(R.id.action_sync).setVisible(false);
             }
         });
@@ -173,9 +171,6 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
         if (id == R.id.action_register) {
             showRegistrationDialog();
-            return true;
-        } else if (id == R.id.action_deregister) {
-            confirmDeregister();
             return true;
         } else if (id == R.id.action_sync) {
             triggerManualSync();
@@ -279,7 +274,7 @@ public class MainActivity extends AppCompatActivity {
                     });
                     runOnUiThread(() -> {
                         Toast.makeText(MainActivity.this, "Registration successful", Toast.LENGTH_SHORT).show();
-                        invalidateOptionsMenu(); // refresh menu to show Deregister
+                        invalidateOptionsMenu(); // refresh menu
                     });
                 } else {
                     runOnUiThread(() -> Toast.makeText(MainActivity.this, "Registration failed", Toast.LENGTH_SHORT).show());
@@ -291,30 +286,6 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("callRegistrationApi", "error: " + t.getMessage());
                 runOnUiThread(() -> Toast.makeText(MainActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_LONG).show());
             }
-        });
-    }
-
-    private void confirmDeregister() {
-        new AlertDialog.Builder(this)
-            .setTitle("Confirm Deregistration")
-            .setMessage("Are you sure you want to deregister? This will delete all tokens.")
-            .setPositiveButton("Yes", (dialog, which) -> {
-                deregister();
-            })
-            .setNegativeButton("No", (dialog, which) -> {
-                dialog.dismiss();
-            })
-            .show();
-    }
-
-    private void deregister() {
-        executor.execute(() -> {
-            AppDB db = AppDB.getInstance(this);
-            db.tokenDao().deleteAll();
-            runOnUiThread(() -> {
-                invalidateOptionsMenu();
-                Toast.makeText(this, "Deregistered", Toast.LENGTH_SHORT).show();
-            });
         });
     }
 

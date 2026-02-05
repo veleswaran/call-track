@@ -48,6 +48,23 @@
             app:layout_constraintStart_toEndOf="@id/iconContainer"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="+91 9952507804" />
+        
+        <!-- Contact Name -->
+        <TextView
+            android:id="@+id/tvContactName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:textSize="16sp"
+            android:textColor="@color/primary"
+            android:textStyle="italic"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="@id/tvNumber"
+            app:layout_constraintStart_toStartOf="@id/tvNumber"
+            app:layout_constraintTop_toBottomOf="@id/tvNumber"
+            tools:text="John Doe"
+            tools:visibility="visible" />
+            
 
         <!-- Date & Time -->
         <TextView
@@ -58,7 +75,7 @@
             android:textSize="14sp"
             android:textColor="@color/text_secondary"
             app:layout_constraintStart_toStartOf="@id/tvNumber"
-            app:layout_constraintTop_toBottomOf="@id/tvNumber"
+            app:layout_constraintTop_toBottomOf="@id/tvContactName"
             tools:text="27/01/2026 22:42" />
 
         <!-- Call Type Label -->

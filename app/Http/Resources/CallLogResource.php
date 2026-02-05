@@ -38,6 +38,7 @@ class CallLogResource extends JsonResource
             'call_type' => strtolower($this->direction),
             'duration' => $this->duration,
             'timestamp' => $this->timestamp->format('Y-m-d H:i:s'),
+            'phone_contact_name' => $this->phone_contact_name,
             'contact_name' => $contact?->name,
             'contact_notes' => $contact?->notes,
             'classification' => $this->classification ? [

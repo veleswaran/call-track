@@ -123,7 +123,7 @@ public class CallSyncer extends Worker {
         } catch (Exception e) {
             Log.e("CallSyncer -> callAPi", "Exception occurred", e);
         }
-        return true;
+        return false;
     }
 
     CallLogItem recordToLog(CallRecord record) {
@@ -133,6 +133,7 @@ public class CallSyncer extends Worker {
         item.duration = record.duration;
         item.sim_slot = record.simSlot;
         item.carrier = record.carrier;
+        item.phone_contact_name = record.phoneContactName;
         CallLogExtra extra = new CallLogExtra();
         extra.battery_level = record.batteryLevel;
         extra.metadata = record.metaData;

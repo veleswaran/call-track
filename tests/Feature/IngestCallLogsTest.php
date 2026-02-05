@@ -239,4 +239,131 @@ class IngestCallLogsTest extends TestCase
         $this->assertNotNull($classification->metadata);
         $this->assertEquals('Blocked by spam filter', $classification->metadata);
     }
+
+    public function test_it_ingests_phone_contact_name()
+    {
+        Queue::fake();
+
+        $plainToken = \Illuminate\Support\Str::random(60);
+        $tokenRecord = DeviceToken::factory()->create([
+            'token_hash' => hash('sha256', $plainToken),
+        ]);
+
+        $payload = [
+            'logs' => [
+                [
+                    'call_hash' => 'contact-name-hash-1',
+                    'phone_number' => '+15559999',
+                    'phone_contact_name' => 'John Doe Sync',
+                    'direction' => 'INCOMING',
+                    'duration' => 45,
+                    'timestamp' => now()->toDateTimeString(),
+                ],
+            ],
+        ];
+
+        $response = $this->withHeader('X-Device-Token', $plainToken)
+            ->postJson('/api/v1/call-logs/sync', $payload);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('call_logs', [
+            'call_hash' => 'contact-name-hash-1',
+            'phone_contact_name' => 'John Doe Sync',
+        ]);
+    }
+
+    public function test_it_ingests_rejected_direction_with_metadata()
+    {
+        Queue::fake();
+
+        $plainToken = \Illuminate\Support\Str::random(60);
+        $tokenRecord = DeviceToken::factory()->create([
+            'token_hash' => hash('sha256', $plainToken),
+        ]);
+
+        $payload = [
+            'logs' => [
+                [
+                    'call_hash' => 'rejected-hash-1',
+                    'phone_number' => '+15550400',
+                    'direction' => 'REJECTED',
+                    'duration' => 0,
+                    'timestamp' => now()->toDateTimeString(),
+                    'extra' => [
+                        'classification' => 'IGNORED',
+                        'metadata' => '{"call_type_code":5}',
+                    ],
+                ],
+            ],
+        ];
+
+        $response = $this->withHeader('X-Device-Token', $plainToken)
+            ->postJson('/api/v1/call-logs/sync', $payload);
+
+        $response->assertOk();
+
+        // Verify call log was created with REJECTED direction
+        $log = \App\Domain\Calls\Models\CallLog::where('call_hash', 'rejected-hash-1')->first();
+        $this->assertNotNull($log);
+        $this->assertEquals('REJECTED', $log->direction);
+
+        // Verify classification is IGNORED
+        $this->assertDatabaseHas('call_classifications', [
+            'call_log_id' => $log->id,
+            'type' => 'IGNORED',
+        ]);
+    }
+
+    public function test_it_ingests_blocked_direction_with_block_reason()
+    {
+        Queue::fake();
+
+        $plainToken = \Illuminate\Support\Str::random(60);
+        $tokenRecord = DeviceToken::factory()->create([
+            'token_hash' => hash('sha256', $plainToken),
+        ]);
+
+        $payload = [
+            'logs' => [
+                [
+                    'call_hash' => 'blocked-hash-1',
+                    'phone_number' => '+15550500',
+                    'direction' => 'BLOCKED',
+                    'duration' => 0,
+                    'timestamp' => now()->toDateTimeString(),
+                    'extra' => [
+                        'classification' => 'IGNORED',
+                        'metadata' => '{"call_type_code":6,"block_reason_code":3,"block_reason":"blocked_number"}',
+                    ],
+                ],
+            ],
+        ];
+
+        $response = $this->withHeader('X-Device-Token', $plainToken)
+            ->postJson('/api/v1/call-logs/sync', $payload);
+
+        $response->assertOk();
+
+        // Verify call log was created with BLOCKED direction
+        $log = \App\Domain\Calls\Models\CallLog::where('call_hash', 'blocked-hash-1')->first();
+        $this->assertNotNull($log);
+        $this->assertEquals('BLOCKED', $log->direction);
+
+        // Verify classification is IGNORED with metadata
+        $classification = \App\Domain\Classification\Models\CallClassification::where('call_log_id', $log->id)->first();
+        $this->assertNotNull($classification);
+        $this->assertEquals('IGNORED', $classification->type);
+        $this->assertNotNull($classification->metadata);
+
+        // Verify metadata contains block reason
+        // Note: metadata comes from cast 'array' - if stored as JSON string, it's decoded
+        $metadata = $classification->metadata;
+        if (is_string($metadata)) {
+            $metadata = json_decode($metadata, true);
+        }
+        $this->assertIsArray($metadata);
+        $this->assertArrayHasKey('block_reason', $metadata);
+        $this->assertEquals('blocked_number', $metadata['block_reason']);
+    }
 }

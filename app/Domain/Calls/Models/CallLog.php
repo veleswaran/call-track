@@ -41,6 +41,7 @@ class CallLog extends Model
         'call_hash',
         'phone_number_hash', // We keep hash for lookups/deduplication
         'phone_number',      // Encrypted
+        'phone_contact_name',
         'sim_slot',
         'direction',
         'duration',
