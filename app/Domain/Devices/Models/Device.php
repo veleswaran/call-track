@@ -61,7 +61,7 @@ class Device extends Model
         return [
             'tracked_sim_slots' => 'array',
             'last_heartbeat_at' => 'datetime',
-            'metadata' => 'array',
+            'metadata' => 'string',
         ];
     }
 

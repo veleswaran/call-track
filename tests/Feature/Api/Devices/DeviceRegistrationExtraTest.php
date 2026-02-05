@@ -53,6 +53,6 @@ class DeviceRegistrationExtraTest extends TestCase
 
         $device = Device::where('name', 'Pixel 7')->first();
         $this->assertNotNull($device->metadata);
-        $this->assertEquals(json_decode($payload['metadata'], true), $device->metadata);
+        $this->assertEquals(json_decode($payload['metadata'], true), json_decode($device->metadata, true));
     }
 }

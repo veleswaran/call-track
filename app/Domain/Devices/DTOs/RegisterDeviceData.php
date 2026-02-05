@@ -13,7 +13,7 @@ class RegisterDeviceData
         public readonly string $osVersion,
         public readonly string $appVersion,
         public readonly ?array $trackedSimSlots = null,
-        public readonly ?array $metadata = null,
+        public readonly ?string $metadata = null,
     ) {}
 
     /**
