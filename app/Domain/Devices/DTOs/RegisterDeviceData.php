@@ -13,6 +13,7 @@ class RegisterDeviceData
         public readonly string $osVersion,
         public readonly string $appVersion,
         public readonly ?array $trackedSimSlots = null,
+        public readonly ?array $extra = null,
     ) {}
 
     /**
@@ -27,6 +28,7 @@ class RegisterDeviceData
             osVersion: (string) $data['os_version'],
             appVersion: (string) $data['app_version'],
             trackedSimSlots: $data['tracked_sim_slots'] ?? null,
+            extra: $data['extra'] ?? null,
         );
     }
 }

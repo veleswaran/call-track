@@ -35,6 +35,7 @@ class ResolveOrCreateDeviceAction
                 'app_version' => $data->appVersion,
                 'agent_id' => $agentId,
                 'tracked_sim_slots' => $data->trackedSimSlots,
+                'metadata' => $data->extra,
             ]);
 
             return [
@@ -52,6 +53,7 @@ class ResolveOrCreateDeviceAction
             'app_version' => $data->appVersion,
             'agent_id' => $agentId,
             'tracked_sim_slots' => $data->trackedSimSlots,
+            'metadata' => $data->extra,
         ]);
 
         return [
