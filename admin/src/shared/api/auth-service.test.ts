@@ -81,4 +81,44 @@ describe("authService", () => {
             expect(result).toBeNull();
         });
     });
+
+    describe("twoFactor", () => {
+        it("should challenge 2fa", async () => {
+            const mockUser = { id: 1, name: "User" };
+            vi.mocked(api.post).mockResolvedValueOnce({ user: mockUser });
+            const result = await authService.twoFactorChallenge("123456");
+            expect(api.post).toHaveBeenCalledWith("/api/v1/auth/two-factor/challenge", { code: "123456" });
+            expect(result).toEqual(mockUser);
+        });
+
+        it("should enable 2fa", async () => {
+            const mockRes = { secret: "secret", qr_code_url: "url" };
+            vi.mocked(api.post).mockResolvedValueOnce(mockRes);
+            const result = await authService.enableTwoFactor();
+            expect(api.post).toHaveBeenCalledWith("/api/v1/auth/two-factor/enable");
+            expect(result).toEqual(mockRes);
+        });
+
+        it("should confirm 2fa", async () => {
+            const mockRes = { recovery_codes: ["code1"] };
+            vi.mocked(api.post).mockResolvedValueOnce(mockRes);
+            const result = await authService.confirmTwoFactor("secret", "123456");
+            expect(api.post).toHaveBeenCalledWith("/api/v1/auth/two-factor/confirm", { secret: "secret", code: "123456" });
+            expect(result).toEqual(mockRes);
+        });
+
+        it("should disable 2fa", async () => {
+            vi.mocked(api.post).mockResolvedValueOnce(undefined);
+            await authService.disableTwoFactor("password");
+            expect(api.post).toHaveBeenCalledWith("/api/v1/auth/two-factor/disable", { password: "password" });
+        });
+
+        it("should get recovery codes", async () => {
+            const mockRes = { recovery_codes: ["code1"] };
+            vi.mocked(api.post).mockResolvedValueOnce(mockRes);
+            const result = await authService.getRecoveryCodes("password");
+            expect(api.post).toHaveBeenCalledWith("/api/v1/auth/two-factor/recovery-codes", { password: "password" });
+            expect(result).toEqual(mockRes);
+        });
+    });
 });

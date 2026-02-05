@@ -20,7 +20,6 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property int $duration
  * @property \Illuminate\Support\Carbon $timestamp
  * @property \Illuminate\Support\Carbon $created_at
-
  * @property-read Device $device
  * @property-read Agent|null $agent
  * @property-read CallClassification|null $classification

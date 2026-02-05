@@ -292,9 +292,6 @@ curl --request POST \
   }'
 ```
 
-  }'
-```
-
 ### Admin: Create Team & Assign Manager
 
 ```bash
