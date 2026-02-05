@@ -32,4 +32,8 @@ export const usersApi = {
     resetTwoFactor: async (id: number) => {
         await api.post(`/api/v1/admin/users/${id}/reset-2fa`);
     },
+
+    updateRole: async (id: number, role: string) => {
+        await api.put(`/api/v1/admin/users/${id}/role`, { role });
+    },
 };

@@ -60,6 +60,7 @@ Route::prefix('v1')->group(function () {
 
         // User Management
         Route::apiResource('users', \App\Http\Controllers\Api\Admin\AdminUserController::class);
+        Route::put('/users/{id}/role', [\App\Http\Controllers\Api\Admin\UserRoleController::class, 'update']);
         Route::post('/users/{id}/reset-2fa', [\App\Http\Controllers\Api\Admin\AdminUserController::class, 'resetTwoFactor']);
 
         // Team Management

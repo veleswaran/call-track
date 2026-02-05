@@ -90,6 +90,11 @@ class AppServiceProvider extends ServiceProvider
             \App\Contracts\Services\DeviceEventServiceInterface::class,
             \App\Services\Devices\DeviceEventService::class
         );
+
+        $this->app->bind(
+            \App\Contracts\Services\Users\UserRoleServiceInterface::class,
+            \App\Services\Users\UserRoleService::class
+        );
     }
 
     /**

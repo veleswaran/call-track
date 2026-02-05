@@ -1,14 +1,12 @@
 import { TeamDetails } from "@features/teams/components/team-details";
 
 interface PageProps {
-    params: {
-        id: string;
-    };
+    params: Promise<{ id: string }>;
 }
 
-export default function TeamDetailsPage({ params }: PageProps) {
-    const teamId = Number(params.id);
-
+export default async function TeamDetailsPage({ params }: PageProps) {
+    const resolvedParams = await params;
+    const teamId = parseInt(resolvedParams.id, 10);
     return (
         <div className="flex-1 space-y-4 p-8 pt-6">
             <TeamDetails teamId={teamId} />

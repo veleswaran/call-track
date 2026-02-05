@@ -72,4 +72,40 @@ class UserPolicy
     {
         return $user->hasRole('super-admin');
     }
+
+    /**
+     * Determine if the authenticated user can change the target user's role.
+     */
+    public function updateRole(User $user, User $targetUser, string $newRole): bool
+    {
+        // 1. Super Admin cannot be changed by anyone (handled in Action too, but redundant safety here)
+        if ($targetUser->hasRole('super-admin')) {
+            return false;
+        }
+
+        // 2. Super Admin can change anyone else
+        if ($user->hasRole('super-admin')) {
+            return true;
+        }
+
+        // 3. Admin logic
+        if ($user->hasRole('admin')) {
+            // Admin cannot switch other Admins or Super Admins
+            if ($targetUser->hasRole(['admin', 'super-admin'])) {
+                return false;
+            }
+
+            // Admin can only switch TO allowed roles (Manager, Member)
+            // Assuming 'manager' and 'member' are the allowed roles for Admin to assign.
+            // If newRole is ADMIN or SUPER_ADMIN, deny.
+            if (in_array($newRole, ['admin', 'super-admin'])) {
+                return false;
+            }
+
+            return true;
+        }
+
+        // 4. Everyone else -> Deny
+        return false;
+    }
 }
