@@ -88,6 +88,7 @@ export default function CallLogsPage() {
                                 <TableHead>Phone Number</TableHead>
                                 <TableHead>Contact Name</TableHead>
                                 <TableHead>Device</TableHead>
+                                <TableHead>SIM</TableHead>
                                 <TableHead>Agent</TableHead>
                                 <TableHead>Duration</TableHead>
                                 <TableHead>Status</TableHead>
@@ -100,19 +101,19 @@ export default function CallLogsPage() {
                         <TableBody>
                             {isLoading ? (
                                 <TableRow>
-                                    <TableCell colSpan={11} className="h-24 text-center">
+                                    <TableCell colSpan={12} className="h-24 text-center">
                                         Loading...
                                     </TableCell>
                                 </TableRow>
                             ) : isError ? (
                                 <TableRow>
-                                    <TableCell colSpan={11} className="h-24 text-center text-red-500">
+                                    <TableCell colSpan={12} className="h-24 text-center text-red-500">
                                         Failed to load call logs
                                     </TableCell>
                                 </TableRow>
                             ) : callLogs.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={11} className="h-24 text-center">
+                                    <TableCell colSpan={12} className="h-24 text-center">
                                         No call logs found
                                     </TableCell>
                                 </TableRow>
@@ -160,6 +161,11 @@ export default function CallLogsPage() {
                                             <TableCell>
                                                 <span className="text-sm text-zinc-600 dark:text-zinc-400">
                                                     {log.device_name || "-"}
+                                                </span>
+                                            </TableCell>
+                                            <TableCell>
+                                                <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                                                    {log.sim_slot !== null && log.sim_slot !== undefined ? `SIM ${log.sim_slot + 1}` : "-"}
                                                 </span>
                                             </TableCell>
                                             <TableCell>

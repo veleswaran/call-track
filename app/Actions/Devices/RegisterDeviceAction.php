@@ -23,7 +23,7 @@ class RegisterDeviceAction
                 'model' => $data->model,
                 'os_version' => $data->osVersion,
                 'app_version' => $data->appVersion,
-                'metadata' => $data->extra,
+                'metadata' => $data->metadata,
             ]);
 
             $plainTextToken = Str::random(60);

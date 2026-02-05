@@ -32,6 +32,8 @@ class IndexCallLogsRequest extends FormRequest
             'agents' => ['sometimes', 'array'],
             'agents.*' => ['integer', 'min:1'],
 
+            'sim_slot' => ['sometimes', 'integer', 'min:0'],
+
             'classification' => ['sometimes', 'string', 'in:business,personal,ignored'],
             'classifications' => ['sometimes', 'array'],
             'classifications.*' => ['string', 'in:business,personal,ignored'],

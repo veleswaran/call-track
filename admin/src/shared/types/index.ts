@@ -28,6 +28,7 @@ export interface CallLog {
     call_type: "incoming" | "outgoing" | "missed" | "rejected" | "blocked" | "unknown";
     duration: number;
     timestamp: string;
+    sim_slot?: number | null;
     classification: CallClassification | null;
     created_at: string;
 }

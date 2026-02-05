@@ -25,7 +25,7 @@ class DeviceRegistrationController extends Controller
             'os_version' => $request->validated('os_version'),
             'app_version' => $request->validated('app_version'),
             'tracked_sim_slots' => $request->validated('tracked_sim_slots'),
-            'extra' => $request->validated('extra') ?? null,
+            'metadata' => $request->validated('metadata') ? json_decode($request->validated('metadata'), true) : null,
         ]);
 
         $result = $this->service->registerDevice(

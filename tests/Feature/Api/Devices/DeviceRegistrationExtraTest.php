@@ -30,10 +30,7 @@ class DeviceRegistrationExtraTest extends TestCase
             'os_version' => '14.0',
             'app_version' => '1.2.3',
             'tracked_sim_slots' => [0, 1],
-            'extra' => [
-                'source' => 'integration-test',
-                'run_id' => 'xyz-123',
-            ],
+            'metadata' => '{"source":"integration-test","run_id":"xyz-123"}',
         ];
 
         $response = $this->postJson(route('devices.register'), $payload);
@@ -56,6 +53,6 @@ class DeviceRegistrationExtraTest extends TestCase
 
         $device = Device::where('name', 'Pixel 7')->first();
         $this->assertNotNull($device->metadata);
-        $this->assertEquals($payload['extra'], $device->metadata);
+        $this->assertEquals(json_decode($payload['metadata'], true), $device->metadata);
     }
 }
