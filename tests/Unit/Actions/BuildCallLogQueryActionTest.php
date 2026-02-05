@@ -8,6 +8,7 @@ use App\Actions\Calls\BuildCallLogQueryAction;
 use App\Domain\Calls\DTOs\ListCallLogsDTO;
 use App\Domain\Calls\Models\CallLog;
 use App\Domain\Calls\Models\Contact;
+use App\Support\PhoneNormalizer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -27,9 +28,9 @@ class BuildCallLogQueryActionTest extends TestCase
     public function it_filters_by_search_term_matching_phone_number(): void
     {
         // 1. Create a call log with a specific phone number
-        $phoneNumber = '+15551234567';
+        $phoneNumber = PhoneNormalizer::normalize('+15551234567');
         // Phone is normalized before hashing: +15551234567 → 15551234567
-        $hash = hash('sha256', '15551234567');
+        $hash = hash('sha256', PhoneNormalizer::normalize('15551234567'));
 
         CallLog::factory()->create([
             'phone_number_hash' => $hash,
@@ -39,7 +40,7 @@ class BuildCallLogQueryActionTest extends TestCase
 
         // Create unrelated
         CallLog::factory()->create([
-            'phone_number_hash' => hash('sha256', '1999999999'),
+            'phone_number_hash' => hash('sha256', PhoneNormalizer::normalize('1999999999')),
         ]);
 
         // Search for exact phone number
@@ -58,7 +59,7 @@ class BuildCallLogQueryActionTest extends TestCase
     public function it_filters_by_search_term_matching_contact_name_case_insensitive(): void
     {
         $name = 'John Doe';
-        $phone = '15559876543';
+        $phone = PhoneNormalizer::normalize('15559876543');
         $hash = hash('sha256', $phone);
 
         Contact::factory()->create([
@@ -72,7 +73,7 @@ class BuildCallLogQueryActionTest extends TestCase
         ]);
 
         CallLog::factory()->create([ // Unrelated
-            'phone_number_hash' => hash('sha256', '999999'),
+            'phone_number_hash' => hash('sha256', PhoneNormalizer::normalize('999999')),
         ]);
 
         // Search with lowercase 'john'

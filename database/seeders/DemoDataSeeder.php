@@ -7,6 +7,7 @@ namespace Database\Seeders;
 use App\Domain\Agents\Models\Agent;
 use App\Domain\Devices\Models\Device;
 use App\Domain\Users\Models\User;
+use App\Support\PhoneNormalizer;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -106,7 +107,7 @@ class DemoDataSeeder extends Seeder
             $numCalls = rand(20, 50);
 
             for ($i = 0; $i < $numCalls; $i++) {
-                $phoneNumber = $phoneNumbers[array_rand($phoneNumbers)];
+                $phoneNumber = PhoneNormalizer::normalize($phoneNumbers[array_rand($phoneNumbers)]);
                 $direction = $directions[array_rand($directions)];
                 $timestamp = now()->subDays(rand(0, 7))->subHours(rand(0, 23))->subMinutes(rand(0, 59));
                 $duration = $direction === 'MISSED' ? 0 : rand(15, 600);
@@ -115,7 +116,7 @@ class DemoDataSeeder extends Seeder
                 $callLog = \App\Domain\Calls\Models\CallLog::create([
                     'device_id' => $device->id,
                     'call_hash' => md5($device->id.$phoneNumber.$timestamp->timestamp.$i),
-                    'phone_number_hash' => hash('sha256', \App\Support\PhoneNormalizer::normalize($phoneNumber)),
+                    'phone_number_hash' => hash('sha256', $phoneNumber),
                     'phone_number' => $phoneNumber, // Model cast will encrypt this
                     'sim_slot' => rand(0, 1),
                     'direction' => $direction,
@@ -135,7 +136,7 @@ class DemoDataSeeder extends Seeder
                         'call_log_id' => $callLog->id,
                         'user_id' => $admin->id,
                         'type' => $classificationType,
-                        'reason' => $classificationType === 'BUSINESS' ? 'Client call' : ($classificationType === 'PERSONAL' ? 'Family call' : 'Spam'),
+                        'note' => $classificationType === 'BUSINESS' ? 'Client call' : ($classificationType === 'PERSONAL' ? 'Family call' : 'Spam'),
                     ]);
                     $classificationsCount++;
                 } else {

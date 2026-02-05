@@ -13,9 +13,34 @@ class PhoneNormalizer
     /**
      * Normalize phone number to digits only.
      */
-    public static function normalize(string $phone): string
+    public static function normalize(string $phone, string $defaultCountryCode = '+91'): string
     {
-        return preg_replace('/\D/', '', $phone);
+        $phone = preg_replace('/[\s\-\(\)\.]/', '', $phone);
+
+        // Convert 00 prefix to +
+        if (str_starts_with($phone, '00')) {
+            $phone = '+'.substr($phone, 2);
+        }
+
+        // If already in international format like +441234567890
+        if (preg_match('/^\+\d{8,15}$/', $phone)) {
+            return $phone;
+        }
+
+        // If starts with country code but missing +
+        $countryDigits = ltrim($defaultCountryCode, '+');
+        if (preg_match('/^'.$countryDigits.'\d{6,12}$/', $phone)) {
+            return '+'.$phone;
+        }
+
+        // Plain 10-digit Indian number
+        if (preg_match('/^\d{10}$/', $phone)) {
+            return $defaultCountryCode.$phone;
+        }
+
+        $digits = preg_replace('/\D/', '', $phone);
+
+        return '+'.$digits;
     }
 
     /**

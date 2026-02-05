@@ -27,7 +27,7 @@ class ClassifyCallActionTest extends TestCase
             callLogId: $callLog->id,
             adminUserId: $admin->id,
             type: 'BUSINESS',
-            reason: 'Work related'
+            note: 'Work related'
         );
 
         $action = new ClassifyCallAction;
@@ -37,7 +37,7 @@ class ClassifyCallActionTest extends TestCase
             'call_log_id' => $callLog->id,
             'user_id' => $admin->id,
             'type' => 'BUSINESS',
-            'reason' => 'Work related',
+            'note' => 'Work related',
         ]);
 
         Queue::assertPushed(ProcessCallLogAnalytics::class, function ($job) use ($callLog) {
@@ -63,7 +63,7 @@ class ClassifyCallActionTest extends TestCase
             callLogId: $callLog->id,
             adminUserId: $admin->id,
             type: 'BUSINESS',
-            reason: 'Correction'
+            note: 'Correction'
         );
 
         $action = new ClassifyCallAction;
@@ -72,7 +72,7 @@ class ClassifyCallActionTest extends TestCase
         $this->assertDatabaseHas('call_classifications', [
             'call_log_id' => $callLog->id,
             'type' => 'BUSINESS',
-            'reason' => 'Correction',
+            'note' => 'Correction',
         ]);
 
         // Ensure only one record exists

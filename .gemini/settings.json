@@ -1,11 +1,23 @@
 {
     "mcpServers": {
         "laravel-boost": {
-            "command": "php",
+            "command": "/usr/bin/php8.3",
             "args": [
-                "artisan",
+                "/home/z0401@ad.ziffity.com/PhpstormProjects/rent-mgr/app/artisan",
                 "boost:mcp"
-            ]
+            ],
+            "disabled": false
+        },
+        "playwright": {
+            "command": "/home/z0401@ad.ziffity.com/.nvm/versions/node/v22.17.0/bin/npx",
+            "args": [
+                "@playwright/mcp@latest"
+            ],
+            "env": {
+                "PATH": "/home/z0401@ad.ziffity.com/.nvm/versions/node/v22.17.0/bin:/usr/bin:/bin",
+                "NODE_BINARY": "/home/z0401@ad.ziffity.com/.nvm/versions/node/v22.17.0/bin/node"
+            },
+            "disabled": false
         }
     }
 }

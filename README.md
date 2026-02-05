@@ -11,6 +11,7 @@ CallTrack AI is an API-first enterprise platform designed to capture, classify, 
 - **Sales Agent Tagging**: Assign devices to sales agents for CRM attribution and analytics.
 - **Device Registration Codes**: Generate time-limited one-time codes for agent device registration.
 - **SIM Slot Filtering**: Track calls only from specific SIM slots (e.g. Work SIM).
+- **Phone Contact Name**: Captures the caller's contact name from the device and displays it in the app and admin panel.
 - **Agent Classification**: Agents can classify calls and add notes directly from the device.
 - **Server-Side UUIDs**: Privacy-first device registration where the server creates and manages unique device IDs.
 - **Battery Tracking**: Real-time battery level monitoring during call log syncs.
@@ -202,6 +203,7 @@ curl --request POST \
       "duration": 0,
       "timestamp": "2026-01-09T18:36:22Z",
       "sim_slot": 0,
+      "phone_contact_name": "John Doe",
       "extra": {
         "classification": "IGNORED",
         "note": "Spam call",
