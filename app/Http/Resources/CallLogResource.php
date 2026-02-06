@@ -32,6 +32,7 @@ class CallLogResource extends JsonResource
         return [
             'id' => $this->id,
             'device_id' => $this->device_id,
+            'sim_slot' => $this->sim_slot,
             'device_name' => $device?->name,
             'agent_name' => $agent?->name,
             'phone_number' => $this->phone_number, // Auto-decrypted by encrypted cast

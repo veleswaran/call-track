@@ -24,6 +24,7 @@ final readonly class ListCallLogsDTO
         public ?string $dateFrom = null,
         public ?string $dateTo = null,
         public ?string $search = null,
+        public ?int $simSlot = null,
     ) {}
 
     public static function fromRequest(IndexCallLogsRequest $request): self
@@ -62,6 +63,7 @@ final readonly class ListCallLogsDTO
             dateFrom: $dateFrom ? (string) $dateFrom : null,
             dateTo: $dateTo ? (string) $dateTo : null,
             search: $request->string('search')->toString() ?: null,
+            simSlot: $request->has('sim_slot') ? $request->integer('sim_slot') : null,
         );
     }
 }
