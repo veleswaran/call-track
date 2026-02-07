@@ -25,10 +25,11 @@ class User extends Authenticatable
 
     public function isAgent(): bool
     {
-        // Check if the agent relation exists (if loaded, use it; otherwise check DB existence?
-        // Actually, easiest is to check if agent is not null.
-        // Assuming developer will eager load 'agent' when needed, or lazy load occurs.
-        return $this->agent !== null;
+        if ($this->relationLoaded('agent')) {
+            return $this->agent !== null;
+        }
+
+        return $this->agent()->exists();
     }
 
     /**

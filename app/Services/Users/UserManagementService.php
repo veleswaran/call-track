@@ -75,6 +75,22 @@ class UserManagementService implements UserManagementServiceInterface
 
                 $roleName = $dto->role ? strtolower($dto->role) : null;
                 if ($roleName) {
+                    // Double check authorization in service layer for safety
+                    // This mirrors the Request validation but protects internal calls too
+                    $currentUser = auth()->user();
+                    if ($currentUser) {
+                        $allowedRoles = ['member', 'manager'];
+                        if ($currentUser->hasRole('super-admin')) {
+                            $allowedRoles = ['super-admin', 'admin', 'manager', 'member'];
+                        } elseif ($currentUser->hasRole('admin')) {
+                            $allowedRoles = ['admin', 'manager', 'member'];
+                        }
+
+                        if (! in_array($roleName, $allowedRoles)) {
+                            throw new \Illuminate\Auth\Access\AuthorizationException("You are not authorized to assign the role {$roleName}.");
+                        }
+                    }
+
                     $user->syncRoles([$roleName]);
                 }
 

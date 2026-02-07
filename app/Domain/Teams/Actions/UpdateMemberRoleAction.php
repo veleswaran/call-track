@@ -29,8 +29,8 @@ class UpdateMemberRoleAction
             // Implication: Reflect the change.
 
             // Check high level roles
-            if ($user->hasRole('super-admin')) {
-                return; // Do not mess with super-admin permissions
+            if ($user->hasRole(['super-admin', 'admin'])) {
+                return; // Do not mess with admin or super-admin permissions
             }
 
             if ($role === 'MANAGER') {

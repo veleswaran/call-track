@@ -60,7 +60,7 @@ class LinkUserToAgentRoleSyncTest extends TestCase
         $this->assertTrue($user->refresh()->hasRole('member'), 'User should inherit member role from agent');
     }
 
-    public function test_linking_admin_updates_role_to_match_team()
+    public function test_linking_admin_does_not_change_role()
     {
         $agent = Agent::factory()->create();
         $team = Team::factory()->create();
@@ -77,9 +77,9 @@ class LinkUserToAgentRoleSyncTest extends TestCase
         ]);
 
         $response->assertStatus(200);
-        // Expect Admin to be demoted to Member because the Agent is a Member
-        $this->assertTrue($targetAdmin->refresh()->hasRole('member'), 'Admin should be updated to Member');
-        $this->assertFalse($targetAdmin->hasRole('admin'), 'Admin role should be removed');
+        // Expect Admin role to be PRESERVED
+        $this->assertTrue($targetAdmin->refresh()->hasRole('admin'), 'Admin role should be preserved');
+        $this->assertFalse($targetAdmin->hasRole('member'), 'Admin should not be demoted to Member');
     }
 
     public function test_linking_super_admin_does_not_change_role()
