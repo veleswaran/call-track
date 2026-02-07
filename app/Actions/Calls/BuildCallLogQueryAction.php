@@ -35,6 +35,10 @@ final class BuildCallLogQueryAction
             $query->where('device_id', $dto->deviceId);
         }
 
+        if ($dto->simSlot !== null) {
+            $query->where('sim_slot', $dto->simSlot);
+        }
+
         // Filter by Call Types (Direction)
         if (! empty($dto->callTypes)) {
             $query->whereIn('direction', array_map('strtoupper', $dto->callTypes));

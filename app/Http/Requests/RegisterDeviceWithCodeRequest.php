@@ -22,6 +22,8 @@ class RegisterDeviceWithCodeRequest extends FormRequest
             'app_version' => ['nullable', 'string'],
             'tracked_sim_slots' => ['nullable', 'array'],
             'tracked_sim_slots.*' => ['integer'],
+            'metadata' => ['nullable', 'string'],
+
         ];
     }
 }

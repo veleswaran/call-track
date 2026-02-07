@@ -28,6 +28,7 @@ final readonly class ListCallLogsDTO
         public ?int $teamId = null,
         /** @var int[]|null Null = full access, array = restricted to these agent IDs */
         public ?array $allowedAgentIds = null,
+        public ?int $simSlot = null,
     ) {}
 
     public static function fromRequest(IndexCallLogsRequest $request): self
@@ -68,6 +69,7 @@ final readonly class ListCallLogsDTO
             search: $request->string('search')->toString() ?: null,
             user: $request->user(),
             teamId: $request->integer('team_id') ?: null,
+            simSlot: $request->has('sim_slot') ? $request->integer('sim_slot') : null,
         );
     }
 }
