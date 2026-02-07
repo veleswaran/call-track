@@ -47,6 +47,7 @@ class CallLogController extends Controller
             user: $dto->user,
             teamId: $dto->teamId,
             allowedAgentIds: $allowedAgentIds,
+            simSlot: $dto->simSlot,
         );
 
         $paginator = $this->service->list($scopedDto);

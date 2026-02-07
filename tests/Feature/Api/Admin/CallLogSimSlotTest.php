@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Tests\Feature\Api\Admin;
 
 use App\Domain\Calls\Models\CallLog;
@@ -20,6 +18,11 @@ class CallLogSimSlotTest extends TestCase
     {
         parent::setUp();
         $this->admin = User::factory()->create();
+
+        // Setup admin role
+        \Spatie\Permission\Models\Role::create(['name' => 'admin']);
+        $this->admin->assignRole('admin');
+
         Sanctum::actingAs($this->admin);
     }
 
