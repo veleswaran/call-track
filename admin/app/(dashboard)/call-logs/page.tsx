@@ -10,10 +10,11 @@ import {
     TableRow,
 } from "@shared/components/ui/table";
 import { format } from "date-fns";
-import { PhoneIncoming, PhoneOutgoing, PhoneMissed, HelpCircle } from "lucide-react";
+import { PhoneIncoming, PhoneOutgoing, PhoneMissed, HelpCircle, PhoneOff, Ban } from "lucide-react";
 import { CallActions } from "@features/call-logs/components/call-actions";
 import { formatDuration } from "@shared/utils/time";
 import { getCallStatus } from "@shared/utils/call";
+import { formatClassificationMetadata } from "@features/call-logs/utils/format-metadata";
 import { useState } from "react";
 import { CallLogSearch } from "@features/call-logs/components/call-log-search";
 import { CallLogFilters } from "@features/call-logs/components/call-log-filters";
@@ -37,8 +38,8 @@ export default function CallLogsPage() {
         search: searchParams.get("search") || undefined,
         start_date: searchParams.get("start_date") || undefined,
         end_date: searchParams.get("end_date") || undefined,
-        types: searchParams.getAll("types[]") as ("incoming" | "outgoing" | "missed" | "unknown")[] | undefined,
-        statuses: searchParams.getAll("statuses[]") as ("Connected" | "Missed" | "No Answer")[] | undefined,
+        types: searchParams.getAll("types[]") as ("incoming" | "outgoing" | "missed" | "rejected" | "blocked" | "unknown")[] | undefined,
+        statuses: searchParams.getAll("statuses[]") as ("Connected" | "Missed" | "No Answer" | "Rejected" | "Blocked")[] | undefined,
         classifications: searchParams.getAll("classifications[]") as ("business" | "personal" | "ignored")[] | undefined,
         agents: searchParams.getAll("agents[]").map(Number).filter(n => !isNaN(n)),
     };
@@ -86,7 +87,9 @@ export default function CallLogsPage() {
                             <TableRow>
                                 <TableHead className="w-[50px]"></TableHead>
                                 <TableHead>Phone Number</TableHead>
+                                <TableHead>Contact Name</TableHead>
                                 <TableHead>Device</TableHead>
+                                <TableHead>SIM</TableHead>
                                 <TableHead>Agent</TableHead>
                                 <TableHead>Duration</TableHead>
                                 <TableHead>Status</TableHead>
@@ -99,19 +102,19 @@ export default function CallLogsPage() {
                         <TableBody>
                             {isLoading ? (
                                 <TableRow>
-                                    <TableCell colSpan={10} className="h-24 text-center">
+                                    <TableCell colSpan={12} className="h-24 text-center">
                                         Loading...
                                     </TableCell>
                                 </TableRow>
                             ) : isError ? (
                                 <TableRow>
-                                    <TableCell colSpan={10} className="h-24 text-center text-red-500">
+                                    <TableCell colSpan={12} className="h-24 text-center text-red-500">
                                         Failed to load call logs
                                     </TableCell>
                                 </TableRow>
                             ) : callLogs.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={10} className="h-24 text-center">
+                                    <TableCell colSpan={12} className="h-24 text-center">
                                         No call logs found
                                     </TableCell>
                                 </TableRow>
@@ -131,22 +134,39 @@ export default function CallLogsPage() {
                                                 {log.call_type === "missed" && (
                                                     <PhoneMissed className="h-4 w-4 text-red-500" />
                                                 )}
+                                                {log.call_type === "rejected" && (
+                                                    <PhoneOff className="h-4 w-4 text-orange-500" />
+                                                )}
+                                                {log.call_type === "blocked" && (
+                                                    <Ban className="h-4 w-4 text-gray-500" />
+                                                )}
                                                 {log.call_type === "unknown" && (
                                                     <HelpCircle className="h-4 w-4 text-gray-500" />
                                                 )}
                                             </TableCell>
                                             <TableCell className="font-medium">
-                                                {/* Contact name (if any) shown above the phone number */}
-                                                {log.contact_name ? (
+                                                {/* Device-synced contact name (if any) shown above the phone number */}
+                                                {log.phone_contact_name ? (
                                                     <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                                                        {log.contact_name}
+                                                        {log.phone_contact_name}
                                                     </div>
                                                 ) : null}
                                                 <div>{log.phone_number}</div>
                                             </TableCell>
                                             <TableCell>
+                                                {/* Central contact name from directory */}
+                                                <span className="text-sm font-medium">
+                                                    {log.contact_name || "-"}
+                                                </span>
+                                            </TableCell>
+                                            <TableCell>
                                                 <span className="text-sm text-zinc-600 dark:text-zinc-400">
                                                     {log.device_name || "-"}
+                                                </span>
+                                            </TableCell>
+                                            <TableCell>
+                                                <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                                                    {log.sim_slot !== null && log.sim_slot !== undefined ? `SIM ${log.sim_slot + 1}` : "-"}
                                                 </span>
                                             </TableCell>
                                             <TableCell>
@@ -163,7 +183,11 @@ export default function CallLogsPage() {
                                                         ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
                                                         : status === "No Answer"
                                                             ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
-                                                            : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"}`}
+                                                            : status === "Rejected"
+                                                                ? "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300"
+                                                                : status === "Blocked"
+                                                                    ? "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
+                                                                    : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"}`}
                                                 >
                                                     {status}
                                                 </span>
@@ -178,17 +202,17 @@ export default function CallLogsPage() {
                                                             <span className="font-medium">Contact:</span> {log.contact_notes}
                                                         </div>
                                                     )}
-                                                    {log.notes?.map((note) => (
-                                                        <div key={note.id} className="text-sm">
-                                                            {note.note}
-                                                            {note.metadata && (
-                                                                <div className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                                                                    <span className="font-medium">Metadata:</span> {note.metadata}
-                                                                </div>
-                                                            )}
+                                                    {log.classification?.note && (
+                                                        <div className="text-sm">
+                                                            {log.classification.note}
                                                         </div>
-                                                    ))}
-                                                    {!log.contact_notes && (!log.notes || log.notes.length === 0) && "-"}
+                                                    )}
+                                                    {log.classification?.metadata && (
+                                                        <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                                                            {formatClassificationMetadata(log.classification.metadata)}
+                                                        </div>
+                                                    )}
+                                                    {!log.contact_notes && !log.classification?.note && !log.classification?.metadata && "-"}
                                                 </div>
                                             </TableCell>
                                             <TableCell>

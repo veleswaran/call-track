@@ -15,7 +15,8 @@ class StoreClassificationRequest extends FormRequest
     {
         return [
             'type' => ['required', 'string', 'in:BUSINESS,PERSONAL,IGNORED'],
-            'reason' => ['nullable', 'string', 'max:500'],
+            'note' => ['nullable', 'string', 'max:1000'],
+            'metadata' => ['nullable', 'array'],
         ];
     }
 }

@@ -25,7 +25,7 @@ class CallClassificationTest extends TestCase
 
         $payload = [
             'type' => 'BUSINESS',
-            'reason' => 'Sales lead',
+            'note' => 'Sales lead',
         ];
 
         $response = $this->postJson("/api/v1/admin/calls/{$callLog->id}/classify", $payload);

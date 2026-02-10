@@ -22,21 +22,14 @@ export interface CallLog {
     device_name?: string | null;
     agent_name?: string | null;
     phone_number: string;
+    phone_contact_name?: string | null;
     contact_name?: string | null;
     contact_notes?: string | null;
-    call_type: "incoming" | "outgoing" | "missed" | "unknown";
+    call_type: "incoming" | "outgoing" | "missed" | "rejected" | "blocked" | "unknown";
     duration: number;
     timestamp: string;
+    sim_slot?: number | null;
     classification: CallClassification | null;
-    notes?: CallNote[];
-    created_at: string;
-}
-
-export interface CallNote {
-    id: number;
-    note: string;
-    metadata?: string | null;
-    agent_id: number | null;
     created_at: string;
 }
 
@@ -54,6 +47,8 @@ export interface CallClassification {
     classification: CallClassificationType;
     classified_by: number;
     classified_at: string;
+    note?: string | null;
+    metadata?: Record<string, unknown> | null;
 }
 
 /**

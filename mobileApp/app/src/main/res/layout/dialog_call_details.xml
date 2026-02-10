@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="16dp">
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="6dp"
+        android:layout_marginBottom="16dp"
+        android:background="?attr/colorSurface">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <!-- Number -->
+            <TextView
+                android:text="Number"
+                android:textStyle="bold"
+                android:textAppearance="?attr/textAppearanceSubtitle1"
+                android:textColor="?attr/colorPrimary"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+            <TextView
+                android:id="@+id/tvDetailNumber"
+                android:textAppearance="?attr/textAppearanceBody1"
+                android:textColor="?android:attr/textColorPrimary"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="5dp"/>
+
+            <!-- Type -->
+            <TextView
+                android:text="Type"
+                android:textStyle="bold"
+                android:textAppearance="?attr/textAppearanceSubtitle1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+            <TextView
+                android:id="@+id/tvDetailType"
+                android:textAppearance="?attr/textAppearanceBody1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="5dp"/>
+
+            <!-- Date -->
+            <TextView
+                android:text="Date"
+                android:textStyle="bold"
+                android:textAppearance="?attr/textAppearanceSubtitle1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+            <TextView
+                android:id="@+id/tvDetailDate"
+                android:textAppearance="?attr/textAppearanceBody1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="5dp"/>
+
+            <!-- Duration -->
+            <TextView
+                android:text="Duration (s)"
+                android:textStyle="bold"
+                android:textAppearance="?attr/textAppearanceSubtitle1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+            <TextView
+                android:id="@+id/tvDetailDuration"
+                android:textAppearance="?attr/textAppearanceBody1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="5dp"/>
+
+            <!-- SIM Slot -->
+            <TextView
+                android:text="SIM Slot"
+                android:textStyle="bold"
+                android:textAppearance="?attr/textAppearanceSubtitle1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+            <TextView
+                android:id="@+id/tvDetailSimSlot"
+                android:textAppearance="?attr/textAppearanceBody1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="5dp"/>
+
+            <!-- Carrier -->
+            <TextView
+                android:text="Carrier"
+                android:textStyle="bold"
+                android:textAppearance="?attr/textAppearanceSubtitle1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+            <TextView
+                android:id="@+id/tvDetailCarrier"
+                android:textAppearance="?attr/textAppearanceBody1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="5dp"/>
+
+            <!-- Category -->
+            <TextView
+                android:text="Category"
+                android:textStyle="bold"
+                android:textAppearance="?attr/textAppearanceSubtitle1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+            <TextView
+                android:id="@+id/tvDetailCategory"
+                android:textAppearance="?attr/textAppearanceBody1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="5dp"/>
+
+            <!-- Notes -->
+            <TextView
+                android:text="Notes"
+                android:textStyle="bold"
+                android:textAppearance="?attr/textAppearanceSubtitle1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+            <TextView
+                android:id="@+id/tvDetailNotes"
+                android:textAppearance="?attr/textAppearanceBody1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="5dp"/>
+
+            <!-- Synced -->
+            <TextView
+                android:text="Synced"
+                android:textStyle="bold"
+                android:textAppearance="?attr/textAppearanceSubtitle1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+            <TextView
+                android:id="@+id/tvSynced"
+                android:textAppearance="?attr/textAppearanceBody1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="5dp"/>
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+</ScrollView>

@@ -10,8 +10,7 @@ readonly class CallClassificationDTO
         public int $callLogId,
         public ?int $adminUserId,
         public string $type, // BUSINESS, PERSONAL, IGNORED
-        public ?string $reason = null,
-        public ?int $agentId = null,
         public ?string $note = null,
+        public ?array $metadata = null,
     ) {}
 }

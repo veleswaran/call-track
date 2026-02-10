@@ -11,7 +11,7 @@ Route::get('/user', function (Request $request) {
 
 Route::prefix('v1')->group(function () {
     // Device Routes
-    Route::post('/devices/register', [\App\Http\Controllers\Api\DeviceRegistrationController::class, 'store']); // Open Registration
+    Route::post('/devices/register', [\App\Http\Controllers\Api\DeviceRegistrationController::class, 'store'])->name('devices.register'); // Open Registration
 
     Route::middleware([DeviceAuthMiddleware::class])->group(function () {
         Route::post('/call-logs/sync', [\App\Http\Controllers\Api\CallLogController::class, 'store']);
@@ -36,7 +36,6 @@ Route::prefix('v1')->group(function () {
         Route::get('/devices/codes', [\App\Http\Controllers\Api\Admin\DeviceCodeController::class, 'index']);
 
         Route::post('/calls/{id}/classify', [CallClassificationController::class, 'store']);
-        Route::put('/calls/{id}/note', [\App\Http\Controllers\Api\Admin\CallNoteController::class, 'update']);
 
         // Agent Management
         Route::apiResource('agents', \App\Http\Controllers\Api\Admin\AgentController::class);

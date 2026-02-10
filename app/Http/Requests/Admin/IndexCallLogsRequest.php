@@ -32,13 +32,15 @@ class IndexCallLogsRequest extends FormRequest
             'agents' => ['sometimes', 'array'],
             'agents.*' => ['integer', 'min:1'],
 
+            'sim_slot' => ['sometimes', 'integer', 'min:0'],
+
             'classification' => ['sometimes', 'string', 'in:business,personal,ignored'],
             'classifications' => ['sometimes', 'array'],
             'classifications.*' => ['string', 'in:business,personal,ignored'],
 
-            'call_type' => ['sometimes', 'string', 'in:incoming,outgoing,missed'],
+            'call_type' => ['sometimes', 'string', 'in:incoming,outgoing,missed,rejected,blocked,unknown'],
             'types' => ['sometimes', 'array'],
-            'types.*' => ['string', 'in:incoming,outgoing,missed'],
+            'types.*' => ['string', 'in:incoming,outgoing,missed,rejected,blocked,unknown'],
 
             'statuses' => ['sometimes', 'array'],
             'statuses.*' => ['string', 'in:Connected,Missed,No Answer'],

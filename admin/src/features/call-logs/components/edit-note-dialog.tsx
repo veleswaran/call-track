@@ -25,9 +25,13 @@ export function EditNoteDialog({ callLog, currentNote, open, onOpenChange }: Edi
     const handleSave = () => {
         if (!callLog || !note.trim()) return;
 
+        // Get the current classification type, or default to BUSINESS if unclassified
+        const classificationType = callLog.classification?.classification?.toUpperCase() as "BUSINESS" | "PERSONAL" | "IGNORED" || "BUSINESS";
+
         updateNote({
             callLogId: callLog.id,
             note: note.trim(),
+            classificationType,
         }, {
             onSuccess: () => {
                 onOpenChange(false);

@@ -16,7 +16,15 @@ vi.mock("@features/call-logs/hooks/use-update-call-note", () => ({
 const mockCallLog = {
     id: 1,
     phone_number: "1234567890",
-    direction: "incoming",
+    call_type: "incoming",
+    classification: {
+        id: 1,
+        classification: "business",
+        classified_by: 1,
+        classified_at: "2026-01-01T00:00:00Z",
+        note: null,
+        metadata: null,
+    },
 } as unknown as CallLog;
 
 describe("EditNoteDialog", () => {
@@ -38,7 +46,7 @@ describe("EditNoteDialog", () => {
         expect(screen.getByDisplayValue("Existing note")).toBeInTheDocument();
     });
 
-    it("updates note state and calls mutation on save", async () => {
+    it("updates note state and calls mutation on save with classification type", async () => {
         const onOpenChange = vi.fn();
         render(
             <EditNoteDialog
@@ -60,6 +68,7 @@ describe("EditNoteDialog", () => {
                 {
                     callLogId: 1,
                     note: "New Note Content",
+                    classificationType: "BUSINESS",
                 },
                 expect.objectContaining({
                     onSuccess: expect.any(Function),

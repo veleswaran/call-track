@@ -21,14 +21,8 @@ interface CallActionsProps {
 export function CallActions({ callLog }: CallActionsProps) {
     const [action, setAction] = useState<"classify" | "contact" | "note" | null>(null);
 
-    // Assuming callLog has a 'notes' relationship or 'note' field.
-    // The previous analysis showed CallLog has 'notes' collection.
-    // However, usually API returns a flattened view or we take the latest note of user.
-    // Let's assume there is a 'note' field or we take the first note from the array if available.
-    // Checking types.ts would be good but let's assume `callLog.note` or `callLog.notes[0]?.note` exists.
-    // Based on `CallClassificationDialog`, it uses `callLog.classification` object.
-    // Let's assume we pass empty string if no note.
-    const currentNote = callLog.notes?.[0]?.note || "";
+    // Notes are now stored in the classification object
+    const currentNote = callLog.classification?.note || "";
 
     return (
         <>

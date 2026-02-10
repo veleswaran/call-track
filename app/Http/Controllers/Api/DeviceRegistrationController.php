@@ -25,6 +25,7 @@ class DeviceRegistrationController extends Controller
             'os_version' => $request->validated('os_version'),
             'app_version' => $request->validated('app_version'),
             'tracked_sim_slots' => $request->validated('tracked_sim_slots'),
+            'metadata' => $request->validated('metadata') ? $request->validated('metadata') : null,
         ]);
 
         $result = $this->service->registerDevice(
@@ -36,6 +37,7 @@ class DeviceRegistrationController extends Controller
             'message' => 'Device registered successfully',
             'device_id' => $result['device_id'],
             'device_uuid' => $result['device']->device_uuid,
+            'device' => $result['device']->only(['id', 'name', 'metadata']),
             'token' => $result['token'],
         ], 201);
     }
