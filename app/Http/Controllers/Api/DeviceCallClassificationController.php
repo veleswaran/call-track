@@ -33,7 +33,6 @@ class DeviceCallClassificationController extends Controller
             callLogId: $callLog->id,
             adminUserId: null,
             type: $request->validated('type'),
-            agentId: $device->agent_id,
             note: $request->validated('note'),
             metadata: $request->validated('metadata'),
         );

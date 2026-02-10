@@ -14,6 +14,7 @@ import { PhoneIncoming, PhoneOutgoing, PhoneMissed, HelpCircle, PhoneOff, Ban } 
 import { CallActions } from "@features/call-logs/components/call-actions";
 import { formatDuration } from "@shared/utils/time";
 import { getCallStatus } from "@shared/utils/call";
+import { formatClassificationMetadata } from "@features/call-logs/utils/format-metadata";
 import { useState } from "react";
 import { CallLogSearch } from "@features/call-logs/components/call-log-search";
 import { CallLogFilters } from "@features/call-logs/components/call-log-filters";
@@ -208,40 +209,7 @@ export default function CallLogsPage() {
                                                     )}
                                                     {log.classification?.metadata && (
                                                         <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                                                            {(() => {
-                                                                const meta = log.classification.metadata;
-                                                                // If it's an object (parsed JSON), format nicely
-                                                                if (typeof meta === 'object' && meta !== null) {
-                                                                    const parts: string[] = [];
-                                                                    if ('block_reason' in meta) {
-                                                                        parts.push(`Blocked: ${String(meta.block_reason).replace(/_/g, ' ')}`);
-                                                                    }
-                                                                    if ('call_type_code' in meta) {
-                                                                        parts.push(`Type code: ${meta.call_type_code}`);
-                                                                    }
-                                                                    return parts.length > 0 ? parts.join(' • ') : JSON.stringify(meta);
-                                                                }
-                                                                // If it's a string, try to parse as JSON
-                                                                if (typeof meta === 'string') {
-                                                                    try {
-                                                                        const parsed = JSON.parse(meta);
-                                                                        if (typeof parsed === 'object' && parsed !== null) {
-                                                                            const parts: string[] = [];
-                                                                            if ('block_reason' in parsed) {
-                                                                                parts.push(`Blocked: ${String(parsed.block_reason).replace(/_/g, ' ')}`);
-                                                                            }
-                                                                            if ('call_type_code' in parsed) {
-                                                                                parts.push(`Type code: ${parsed.call_type_code}`);
-                                                                            }
-                                                                            return parts.length > 0 ? parts.join(' • ') : meta;
-                                                                        }
-                                                                    } catch {
-                                                                        // Not JSON, display as-is
-                                                                    }
-                                                                    return meta;
-                                                                }
-                                                                return String(meta);
-                                                            })()}
+                                                            {formatClassificationMetadata(log.classification.metadata)}
                                                         </div>
                                                     )}
                                                     {!log.contact_notes && !log.classification?.note && !log.classification?.metadata && "-"}
