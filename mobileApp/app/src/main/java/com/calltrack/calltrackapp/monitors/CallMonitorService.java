@@ -53,13 +53,13 @@ public class CallMonitorService extends Service {
         }
         callStateMonitor = new CallStateMonitor(this);
         callStateMonitor.register();
-//        executor.execute(() -> {
-//            AppDB db = AppDB.getInstance(this);
-//            EventRecord er = new EventRecord();
-//            er.event_type = "APP_STARTED";
-//            er.occurred_at = Instant.now().toString();
-//            db.eventDAO().insert(er);
-//        });
+        executor.execute(() -> {
+            AppDB db = AppDB.getInstance(this);
+            EventRecord er = new EventRecord();
+            er.event_type = "APP_STARTED";
+            er.occurred_at = Instant.now().toString();
+            db.eventDAO().insert(er);
+        });
     }
 
     @Override
@@ -73,7 +73,15 @@ public class CallMonitorService extends Service {
                 er.occurred_at = Instant.now().toString();
                 db.eventDAO().insert(er);
             });
+            stopSelf();
+            Intent restartIntent = new Intent(getApplicationContext(), CallMonitorService.class);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                getApplicationContext().startForegroundService(restartIntent);
+            } else {
+                getApplicationContext().startService(restartIntent);
+            }
         }
+        Log.d("CallMonitorService", "Somthing came");
         return START_STICKY;
     }
 

@@ -11,8 +11,8 @@ import retrofit2.http.POST;
 
 public interface EventApi {
 
-    @POST("v1/devices/register")
-    Call<EventResponse> register(
+    @POST("v1/device/events")
+    Call<EventResponse> store(
         @Header("X-Device-Token") String token,
         @Body EventPayload request
     );

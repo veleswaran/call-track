@@ -29,6 +29,7 @@ import com.calltrack.calltrackapp.settings.LocalSettings;
 import com.calltrack.calltrackapp.syncer.CallSyncer;
 import com.calltrack.calltrackapp.utilities.Utility;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -257,11 +258,12 @@ public class MainActivity extends AppCompatActivity {
         String model = Build.MODEL;
         String os = Build.VERSION.RELEASE;
         String appVersion = "1.0";
+        String metadata = Utility.getDeviceInfo(this);
         RegistrationRequest request = new RegistrationRequest(
-            code, uuid, name, model, os, appVersion, selectedSlots
+            code, uuid, name, model, os, appVersion, metadata, selectedSlots
         );
         DeviceApi api = ApiUtilities.getDeviceApi();
-        api.register(request).enqueue(new Callback<RegistrationResponse>() {
+        api.register(request).enqueue(new Callback<>() {
             @Override
             public void onResponse(@NonNull Call<RegistrationResponse> call, @NonNull Response<RegistrationResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
