@@ -32,6 +32,7 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
         filters.start_date ||
         filters.end_date ||
         filters.device_id ||
+        filters.sim_slot !== undefined ||
         (filters.agents && filters.agents.length > 0) ||
         (filters.types && filters.types.length > 0) ||
         (filters.statuses && filters.statuses.length > 0) ||
@@ -149,6 +150,20 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
                     <SelectItem value="business">Business</SelectItem>
                     <SelectItem value="personal">Personal</SelectItem>
                     <SelectItem value="ignored">Ignored</SelectItem>
+                </SelectContent>
+            </Select>
+
+            <Select
+                value={filters.sim_slot?.toString() ?? "all"}
+                onValueChange={(val) => updateNumericFilter("sim_slot", val)}
+            >
+                <SelectTrigger className="w-[120px]">
+                    <SelectValue placeholder="SIM Slot" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="all">All SIMs</SelectItem>
+                    <SelectItem value="0">SIM 1</SelectItem>
+                    <SelectItem value="1">SIM 2</SelectItem>
                 </SelectContent>
             </Select>
 
