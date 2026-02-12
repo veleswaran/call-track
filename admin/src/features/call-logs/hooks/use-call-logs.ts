@@ -18,6 +18,7 @@ export interface CallLogFilters {
     page?: number;
     per_page?: number;
     search?: string;
+    sim_slot?: number;
 
     // Filters
     device_id?: number;
