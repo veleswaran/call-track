@@ -107,7 +107,7 @@ export function CreateUserDialog() {
             employee_code: "",
             status: "active",
             team_id: "",
-            role: "MEMBER"
+            role: "member"
         },
     });
     const isAgent = useWatch({ control: form.control, name: "is_agent" });
@@ -301,8 +301,8 @@ export function CreateUserDialog() {
                                                             </SelectTrigger>
                                                         </FormControl>
                                                         <SelectContent>
-                                                            <SelectItem value="MEMBER">Member</SelectItem>
-                                                            <SelectItem value="MANAGER">Manager</SelectItem>
+                                                            <SelectItem value="member">Member</SelectItem>
+                                                            <SelectItem value="manager">Manager</SelectItem>
                                                         </SelectContent>
                                                     </Select>
                                                     <FormMessage />

@@ -23,6 +23,7 @@ class StoreAdminUserRequest extends FormRequest
                 'nullable',
                 'string',
                 function ($attribute, $value, $fail) {
+                    $value = strtolower($value);
                     $allowedRoles = ['member', 'manager'];
                     if ($this->user()->hasRole('super-admin')) {
                         $allowedRoles = ['super-admin', 'admin', 'manager', 'member'];

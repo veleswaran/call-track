@@ -37,11 +37,8 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
         filters.start_date ||
         filters.end_date ||
         filters.device_id ||
-<<<<<<< feature/teams
-=======
         filters.sim_slot !== undefined ||
         (filters.agents && filters.agents.length > 0) ||
->>>>>>> develop
         (filters.types && filters.types.length > 0) ||
         (filters.statuses && filters.statuses.length > 0) ||
         (filters.classifications && filters.classifications.length > 0) ||

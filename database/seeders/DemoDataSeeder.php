@@ -47,9 +47,24 @@ class DemoDataSeeder extends Seeder
 
         $createdAgents = [];
         foreach ($agents as $agentData) {
+            // Create user for agent to allow for Realistic RBAC testing
+            $email = strtolower(str_replace(' ', '.', $agentData['name'])).'@calltrack.com';
+            $user = User::firstOrCreate(
+                ['email' => $email],
+                [
+                    'name' => $agentData['name'],
+                    'password' => Hash::make('password'),
+                    'email_verified_at' => now(),
+                ]
+            );
+
+            if (! $user->hasRole('member')) {
+                $user->assignRole('member');
+            }
+
             $createdAgents[] = Agent::firstOrCreate(
                 ['employee_code' => $agentData['employee_code']],
-                $agentData
+                array_merge($agentData, ['user_id' => $user->id])
             );
         }
 
@@ -91,9 +106,21 @@ class DemoDataSeeder extends Seeder
 
         // Create call logs
         $phoneNumbers = [
-            '+1-555-8000', '+1-555-8001', '+1-555-8002', '+1-555-8003', '+1-555-8004',
-            '+1-555-8005', '+1-555-8006', '+1-555-8007', '+1-555-8008', '+1-555-8009',
-            '+1-555-9000', '+1-555-9001', '+1-555-9002', '+1-555-9003', '+1-555-9004',
+            '+1-555-8000',
+            '+1-555-8001',
+            '+1-555-8002',
+            '+1-555-8003',
+            '+1-555-8004',
+            '+1-555-8005',
+            '+1-555-8006',
+            '+1-555-8007',
+            '+1-555-8008',
+            '+1-555-8009',
+            '+1-555-9000',
+            '+1-555-9001',
+            '+1-555-9002',
+            '+1-555-9003',
+            '+1-555-9004',
         ];
 
         $directions = ['INCOMING', 'OUTGOING', 'MISSED'];
@@ -115,6 +142,7 @@ class DemoDataSeeder extends Seeder
                 /** @var \App\Domain\Calls\Models\CallLog $callLog */
                 $callLog = \App\Domain\Calls\Models\CallLog::create([
                     'device_id' => $device->id,
+                    'agent_id' => $device->agent_id, // Capture agent at time of ingestion
                     'call_hash' => md5($device->id.$phoneNumber.$timestamp->timestamp.$i),
                     'phone_number_hash' => hash('sha256', $phoneNumber),
                     'phone_number' => $phoneNumber, // Model cast will encrypt this
