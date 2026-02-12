@@ -65,12 +65,12 @@ public class CallSyncer extends Worker {
                 EventPayload ep = new EventPayload();
                 ep.event_type = evr.event_type;
                 ep.occurred_at = evr.occurred_at;
-                Call<EventResponse> res = ev.register(te.token, ep);
+                Call<EventResponse> res = ev.store(te.token, ep);
                 try {
                     Response<EventResponse> response = res.execute(); // synchronous
                     Log.d("Event Api response", String.valueOf(response.code()));
                     Log.d("Event Api response", response.body().toString());
-                    if (response.isSuccessful()) {
+                    if (response.isSuccessful() || response.code() == 201) {
                         evr.synced = true;
                         db.eventDAO().update(evr);
                     }
