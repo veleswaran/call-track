@@ -53,3 +53,22 @@ export function useResetTwoFactor() {
         },
     });
 }
+
+export function useUpdateUserRole() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ id, role }: { id: number; role: string }) => usersApi.updateRole(id, role),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["users"] });
+            toast.success("User role updated successfully");
+        },
+        onError: (error: ApiError) => {
+            if (error.status === 403) {
+                toast.error("You are not authorized to change this user's role.");
+            } else {
+                toast.error(error.message || "Failed to update user role");
+            }
+        },
+    });
+}

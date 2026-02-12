@@ -23,16 +23,16 @@ final class DashboardService implements DashboardServiceContract
     /**
      * Get aggregated dashboard metrics
      */
-    public function getMetrics(): DashboardMetricsDTO
+    public function getMetrics(?array $allowedAgentIds = null): DashboardMetricsDTO
     {
-        return $this->getDashboardMetricsAction->execute();
+        return $this->getDashboardMetricsAction->execute($allowedAgentIds);
     }
 
     /**
      * Get dashboard chart data
      */
-    public function getCharts(): DashboardChartsDTO
+    public function getCharts(?array $allowedAgentIds = null): DashboardChartsDTO
     {
-        return $this->getDashboardChartsAction->execute();
+        return $this->getDashboardChartsAction->execute($allowedAgentIds);
     }
 }

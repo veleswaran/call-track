@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Contracts\Services;
 
+use App\Domain\Agents\Models\Agent;
 use App\Domain\Users\DTOs\CreateAdminUserDTO;
+use App\Domain\Users\DTOs\CreateUserWithContextDTO;
 use App\Domain\Users\Models\User;
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -29,4 +31,14 @@ interface UserManagementServiceInterface
      * Reset 2FA for a user.
      */
     public function resetTwoFactor(int $userId): void;
+
+    /**
+     * Link a User to an Agent profile.
+     */
+    public function linkUserToAgent(User $user, Agent $agent): void;
+
+    /**
+     * Create a user with agent and team context.
+     */
+    public function createUserWithContext(CreateUserWithContextDTO $dto): User;
 }

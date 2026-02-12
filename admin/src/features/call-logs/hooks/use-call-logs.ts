@@ -37,6 +37,9 @@ export interface CallLogFilters {
     agent_id?: number;
     call_type?: "incoming" | "outgoing" | "missed" | "rejected" | "blocked" | "unknown";
     classification?: "business" | "personal" | "ignored";
+
+    // Team Filter
+    team_id?: number;
 }
 
 /**

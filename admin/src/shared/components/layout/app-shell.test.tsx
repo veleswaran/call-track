@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AppShell } from "./app-shell";
 
 // Mock Next.js navigation
@@ -8,12 +9,57 @@ vi.mock("next/navigation", () => ({
     usePathname: vi.fn(() => "/"),
 }));
 
+// Mock useAuth hook
+vi.mock("@features/auth/hooks/use-auth", () => ({
+    useAuth: vi.fn(() => ({
+        user: {
+            id: 1,
+            name: "Test User",
+            email: "test@example.com",
+            email_verified_at: null,
+            roles: ["admin"],
+            permissions: ["manage devices", "manage users", "manage team"],
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+        },
+        isLoading: false,
+        logout: vi.fn(),
+    })),
+}));
+
 // Mock useMobile hook - default to desktop
 vi.mock("@shared/hooks/use-mobile", () => ({
     useMobile: vi.fn(() => false),
 }));
 
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            retry: false,
+        },
+    },
+});
+
+const wrapper = ({ children }: { children: React.ReactNode }) => (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+);
+
+const renderWithProviders = (ui: React.ReactElement) => {
+    return render(ui, { wrapper });
+};
+
 import { useMobile } from "@shared/hooks/use-mobile";
+
+const mockUser = {
+    id: 1,
+    name: "Test User",
+    email: "test@example.com",
+    email_verified_at: null,
+    roles: ["admin"],
+    permissions: ["manage devices", "manage users", "manage team"],
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+};
 
 describe("AppShell", () => {
     beforeEach(() => {
@@ -22,7 +68,7 @@ describe("AppShell", () => {
     });
 
     it("should render app shell with children", () => {
-        render(
+        renderWithProviders(
             <AppShell>
                 <div data-testid="child-content">Page content</div>
             </AppShell>
@@ -33,12 +79,12 @@ describe("AppShell", () => {
     });
 
     it("should render main content area", () => {
-        render(<AppShell>Content</AppShell>);
+        renderWithProviders(<AppShell>Content</AppShell>);
         expect(screen.getByTestId("main-content")).toBeInTheDocument();
     });
 
     it("should render children in main content area", () => {
-        render(
+        renderWithProviders(
             <AppShell>
                 <h1>Dashboard</h1>
                 <p>Welcome to the dashboard</p>
@@ -60,18 +106,18 @@ describe("AppShell", () => {
         });
 
         it("should render sidebar on desktop", () => {
-            render(<AppShell>Content</AppShell>);
+            renderWithProviders(<AppShell>Content</AppShell>);
             expect(screen.getByTestId("sidebar")).toBeInTheDocument();
         });
 
         it("should render header with menu toggle", () => {
-            render(<AppShell>Content</AppShell>);
+            renderWithProviders(<AppShell>Content</AppShell>);
             expect(screen.getByTestId("menu-toggle")).toBeInTheDocument();
         });
 
         it("should toggle sidebar when sidebar toggle is clicked", async () => {
             const user = userEvent.setup();
-            render(<AppShell>Content</AppShell>);
+            renderWithProviders(<AppShell>Content</AppShell>);
 
             const sidebar = screen.getByTestId("sidebar");
             expect(sidebar).toHaveClass("w-64");
@@ -85,7 +131,7 @@ describe("AppShell", () => {
 
         it("should toggle sidebar when header menu button is clicked", async () => {
             const user = userEvent.setup();
-            render(<AppShell>Content</AppShell>);
+            renderWithProviders(<AppShell>Content</AppShell>);
 
             const sidebar = screen.getByTestId("sidebar");
             expect(sidebar).toHaveClass("w-64");
@@ -94,18 +140,18 @@ describe("AppShell", () => {
             expect(sidebar).toHaveClass("w-16");
         });
 
-        it("should pass userName to header", async () => {
+        it("should pass user to header", async () => {
             const user = userEvent.setup();
-            render(<AppShell userName="Test User">Content</AppShell>);
+            renderWithProviders(<AppShell user={mockUser}>Content</AppShell>);
 
             await user.click(screen.getByTestId("user-menu-button"));
-            expect(screen.getByText("Test User")).toBeInTheDocument();
+            expect(screen.getByText(/Test User/)).toBeInTheDocument();
         });
 
         it("should pass onLogout to header on desktop", async () => {
             const user = userEvent.setup();
             const onLogout = vi.fn();
-            render(<AppShell onLogout={onLogout}>Content</AppShell>);
+            renderWithProviders(<AppShell onLogout={onLogout}>Content</AppShell>);
 
             await user.click(screen.getByTestId("user-menu-button"));
             await user.click(screen.getByTestId("logout-button"));
@@ -113,7 +159,7 @@ describe("AppShell", () => {
         });
 
         it("should not render bottom nav on desktop", () => {
-            render(<AppShell>Content</AppShell>);
+            renderWithProviders(<AppShell>Content</AppShell>);
             expect(screen.queryByTestId("bottom-nav")).not.toBeInTheDocument();
         });
     });
@@ -124,18 +170,18 @@ describe("AppShell", () => {
         });
 
         it("should not render sidebar on mobile", () => {
-            render(<AppShell>Content</AppShell>);
+            renderWithProviders(<AppShell>Content</AppShell>);
             expect(screen.queryByTestId("sidebar")).not.toBeInTheDocument();
         });
 
         it("should render bottom nav on mobile", () => {
-            render(<AppShell>Content</AppShell>);
+            renderWithProviders(<AppShell>Content</AppShell>);
             expect(screen.getByTestId("bottom-nav")).toBeInTheDocument();
         });
 
         it("should open mobile menu when hamburger is clicked", async () => {
             const user = userEvent.setup();
-            render(<AppShell>Content</AppShell>);
+            renderWithProviders(<AppShell>Content</AppShell>);
 
             expect(screen.queryByTestId("mobile-menu")).not.toBeInTheDocument();
 
@@ -145,7 +191,7 @@ describe("AppShell", () => {
 
         it("should close mobile menu when close button is clicked", async () => {
             const user = userEvent.setup();
-            render(<AppShell>Content</AppShell>);
+            renderWithProviders(<AppShell>Content</AppShell>);
 
             await user.click(screen.getByTestId("menu-toggle"));
             expect(screen.getByTestId("mobile-menu")).toBeInTheDocument();
@@ -157,7 +203,7 @@ describe("AppShell", () => {
         it("should have logout in mobile menu", async () => {
             const user = userEvent.setup();
             const onLogout = vi.fn();
-            render(<AppShell onLogout={onLogout}>Content</AppShell>);
+            renderWithProviders(<AppShell onLogout={onLogout}>Content</AppShell>);
 
             await user.click(screen.getByTestId("menu-toggle"));
             expect(screen.getByTestId("mobile-menu-logout")).toBeInTheDocument();

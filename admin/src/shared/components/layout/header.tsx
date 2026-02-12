@@ -2,19 +2,20 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Menu, Bell, User, LogOut } from "lucide-react";
+import { Menu, Bell, User as UserIcon, LogOut } from "lucide-react";
 import { Button } from "@shared/components/ui/button";
+import { User } from "../../types";
 
 export interface HeaderProps {
     onMenuClick: () => void;
-    userName?: string;
+    user?: User;
     onLogout?: () => void;
 }
 
 /**
  * Top header bar with menu toggle, notifications, and user menu
  */
-export function Header({ onMenuClick, userName = "Admin", onLogout }: HeaderProps) {
+export function Header({ onMenuClick, user, onLogout }: HeaderProps) {
     const [userMenuOpen, setUserMenuOpen] = React.useState(false);
 
     return (
@@ -54,7 +55,7 @@ export function Header({ onMenuClick, userName = "Admin", onLogout }: HeaderProp
                         aria-expanded={userMenuOpen}
                         data-testid="user-menu-button"
                     >
-                        <User className="h-5 w-5" />
+                        <UserIcon className="h-5 w-5" />
                     </Button>
 
                     {userMenuOpen && (
@@ -65,8 +66,8 @@ export function Header({ onMenuClick, userName = "Admin", onLogout }: HeaderProp
                             <div className="px-4 py-2 text-sm text-zinc-500 dark:text-zinc-400">
                                 Signed in as
                             </div>
-                            <div className="px-4 py-1 text-sm font-medium text-zinc-900 dark:text-white">
-                                {userName}
+                            <div className="px-4 py-1 text-sm font-medium text-zinc-900 dark:text-white capitalize">
+                                {user?.name} ( {user?.roles?.join(", ")} )
                             </div>
                             <hr className="my-1 border-zinc-200 dark:border-zinc-800" />
                             <Link
@@ -74,7 +75,7 @@ export function Header({ onMenuClick, userName = "Admin", onLogout }: HeaderProp
                                 className="flex w-full items-center gap-2 px-4 py-2 text-sm text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
                                 onClick={() => setUserMenuOpen(false)}
                             >
-                                <User className="h-4 w-4" />
+                                <UserIcon className="h-4 w-4" />
                                 Profile
                             </Link>
                             <hr className="my-1 border-zinc-200 dark:border-zinc-800" />

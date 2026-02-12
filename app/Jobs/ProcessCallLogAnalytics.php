@@ -42,11 +42,11 @@ class ProcessCallLogAnalytics implements ShouldQueue
             ->join('call_classifications', 'call_logs.id', '=', 'call_classifications.call_log_id')
             ->where('call_logs.device_id', $this->deviceId)
             ->whereDate('call_logs.timestamp', $today)
-            ->selectRaw('
-                SUM(CASE WHEN type = "BUSINESS" THEN 1 ELSE 0 END) as business_calls,
-                SUM(CASE WHEN type = "PERSONAL" THEN 1 ELSE 0 END) as personal_calls,
-                SUM(CASE WHEN type = "IGNORED" THEN 1 ELSE 0 END) as ignored_calls
-            ')
+            ->selectRaw("
+                SUM(CASE WHEN type = 'BUSINESS' THEN 1 ELSE 0 END) as business_calls,
+                SUM(CASE WHEN type = 'PERSONAL' THEN 1 ELSE 0 END) as personal_calls,
+                SUM(CASE WHEN type = 'IGNORED' THEN 1 ELSE 0 END) as ignored_calls
+            ")
             ->first();
 
         \App\Domain\Analytics\Models\AnalyticsDaily::updateOrCreate(

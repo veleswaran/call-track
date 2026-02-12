@@ -113,10 +113,10 @@ class RegisterDeviceTest extends TestCase
 
         // Assert Old token revoked
         $hashedToken1 = hash('sha256', $token1);
-        $this->assertDatabaseHas('device_tokens', [
-            'token_hash' => $hashedToken1,
-            'revoked_at' => now(), // Approximate check, effectively not null
-        ]);
+        $tokenModel = \App\Domain\Devices\Models\DeviceToken::where('token_hash', $hashedToken1)->first();
+
+        $this->assertNotNull($tokenModel);
+        $this->assertNotNull($tokenModel->revoked_at, 'Old token should be revoked');
         $this->assertTrue(\App\Domain\Devices\Models\DeviceToken::where('token_hash', $hashedToken1)->first()->isRevoked());
 
         // Assert Device name updated

@@ -12,9 +12,17 @@ class RevokeDeviceTokensTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'admin']);
+        \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'super-admin']);
+    }
+
     public function test_admin_can_revoke_device_tokens()
     {
         $admin = User::factory()->create();
+        $admin->assignRole('admin');
         $device = Device::factory()->create();
 
         // Create 3 active tokens

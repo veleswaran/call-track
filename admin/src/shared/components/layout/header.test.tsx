@@ -2,6 +2,19 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Header } from "./header";
+import { User } from "../../types";
+
+const mockUser: User = {
+    id: 1,
+    name: "Test User",
+    email: "test@example.com",
+    email_verified_at: null,
+    roles: ["admin"],
+    permissions: [],
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    two_factor_enabled: false,
+};
 
 describe("Header", () => {
     it("should render header with menu toggle", () => {
@@ -30,7 +43,7 @@ describe("Header", () => {
 
     it("should toggle user menu on click", async () => {
         const user = userEvent.setup();
-        render(<Header onMenuClick={() => { }} userName="Test User" />);
+        render(<Header onMenuClick={() => { }} user={mockUser} />);
 
         // Menu should be closed initially
         expect(screen.queryByTestId("user-menu-dropdown")).not.toBeInTheDocument();
@@ -44,25 +57,28 @@ describe("Header", () => {
         expect(screen.queryByTestId("user-menu-dropdown")).not.toBeInTheDocument();
     });
 
-    it("should display custom userName in dropdown", async () => {
+    it("should display user name in dropdown", async () => {
         const user = userEvent.setup();
-        render(<Header onMenuClick={() => { }} userName="John Doe" />);
+        const customUser: User = { ...mockUser, name: "John Doe" };
+        render(<Header onMenuClick={() => { }} user={customUser} />);
 
         await user.click(screen.getByTestId("user-menu-button"));
-        expect(screen.getByText("John Doe")).toBeInTheDocument();
+        expect(screen.getByText(/John Doe/)).toBeInTheDocument();
     });
 
-    it("should display default userName when not provided", async () => {
+    it("should display nothing for user when not provided", async () => {
         const user = userEvent.setup();
         render(<Header onMenuClick={() => { }} />);
 
         await user.click(screen.getByTestId("user-menu-button"));
-        expect(screen.getByText("Admin")).toBeInTheDocument();
+        // When no user is provided, the name part is empty
+        const dropdown = screen.getByTestId("user-menu-dropdown");
+        expect(dropdown).toBeInTheDocument();
     });
 
     it("should render logout button when onLogout is provided", async () => {
         const user = userEvent.setup();
-        render(<Header onMenuClick={() => { }} onLogout={() => { }} />);
+        render(<Header onMenuClick={() => { }} onLogout={() => { }} user={mockUser} />);
 
         await user.click(screen.getByTestId("user-menu-button"));
         expect(screen.getByTestId("logout-button")).toBeInTheDocument();
@@ -79,7 +95,7 @@ describe("Header", () => {
     it("should call onLogout when logout button is clicked", async () => {
         const user = userEvent.setup();
         const onLogout = vi.fn();
-        render(<Header onMenuClick={() => { }} onLogout={onLogout} />);
+        render(<Header onMenuClick={() => { }} onLogout={onLogout} user={mockUser} />);
 
         await user.click(screen.getByTestId("user-menu-button"));
         await user.click(screen.getByTestId("logout-button"));

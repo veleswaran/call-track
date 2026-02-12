@@ -23,7 +23,16 @@ final class GetAgentPerformanceAction
             ->leftJoin('call_classifications', 'call_logs.id', '=', 'call_classifications.call_log_id')
             ->whereBetween('call_logs.timestamp', [$filters->startDate, $filters->endDate]);
 
-        // Filters
+        // RBAC scope - security constraint
+        if ($filters->allowedAgentIds !== null) {
+            if (empty($filters->allowedAgentIds)) {
+                // No access
+                return [];
+            }
+            $query->whereIn('agents.id', $filters->allowedAgentIds);
+        }
+
+        // User-selected agent filter
         if (! empty($filters->agentIds)) {
             $query->whereIn('agents.id', $filters->agentIds);
         }

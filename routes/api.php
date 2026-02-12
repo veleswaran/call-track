@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/user', function (Request $request) {
-    return $request->user();
+    return new \App\Http\Resources\AdminUserResource($request->user());
 })->middleware('auth:sanctum');
 
 Route::prefix('v1')->group(function () {
@@ -39,6 +39,7 @@ Route::prefix('v1')->group(function () {
 
         // Agent Management
         Route::apiResource('agents', \App\Http\Controllers\Api\Admin\AgentController::class);
+        Route::post('/agents/{agent}/link-user', \App\Http\Controllers\Api\Admin\LinkUserToAgentController::class);
         Route::post('/devices/{device}/assign-agent', [\App\Http\Controllers\Api\Admin\DeviceAgentController::class, 'assign']);
         Route::post('/devices/{device}/unassign-agent', [\App\Http\Controllers\Api\Admin\DeviceAgentController::class, 'unassign']);
 
@@ -58,7 +59,16 @@ Route::prefix('v1')->group(function () {
 
         // User Management
         Route::apiResource('users', \App\Http\Controllers\Api\Admin\AdminUserController::class);
+        Route::put('/users/{id}/role', [\App\Http\Controllers\Api\Admin\UserRoleController::class, 'update']);
         Route::post('/users/{id}/reset-2fa', [\App\Http\Controllers\Api\Admin\AdminUserController::class, 'resetTwoFactor']);
+
+        // Team Management
+        Route::get('teams', [\App\Http\Controllers\Api\Teams\TeamController::class, 'index']);
+        Route::post('teams', [\App\Http\Controllers\Api\Teams\TeamController::class, 'store']);
+        Route::get('teams/{team}', [\App\Http\Controllers\Api\Teams\TeamController::class, 'show']);
+        Route::post('teams/{team}/members', [\App\Http\Controllers\Api\Teams\TeamController::class, 'addMember']);
+        Route::delete('teams/{team}/members/{agent}', [\App\Http\Controllers\Api\Teams\TeamController::class, 'removeMember']);
+        Route::patch('teams/{team}/members/{agent}', [\App\Http\Controllers\Api\Teams\TeamController::class, 'updateMemberRole']);
 
     });
 

@@ -14,6 +14,7 @@ import {
     ChevronLeft,
     type LucideIcon,
 } from "lucide-react";
+import { useAuth } from "@/src/features/auth/hooks/use-auth";
 
 /**
  * Navigation item configuration
@@ -22,6 +23,8 @@ export interface NavItem {
     name: string;
     href: string;
     icon: LucideIcon;
+    role?: string | string[];
+    permission?: string;
 }
 
 /**
@@ -29,12 +32,13 @@ export interface NavItem {
  */
 export const defaultNavigation: NavItem[] = [
     { name: "Dashboard", href: "/", icon: LayoutDashboard },
-    { name: "Reports", href: "/reports", icon: BarChart },
-    { name: "Call Logs", href: "/call-logs", icon: Phone },
-    { name: "Devices", href: "/devices", icon: Smartphone },
-    { name: "Users", href: "/users", icon: Users },
-    { name: "Agents", href: "/agents", icon: Users },
-    { name: "Contacts", href: "/contacts", icon: Contact },
+    { name: "Reports", href: "/reports", icon: BarChart},
+    { name: "Call Logs", href: "/call-logs", icon: Phone }, // accessible by all logged in usually, or check permission
+    { name: "Devices", href: "/devices", icon: Smartphone, permission: "manage devices" }, // or view devices? 'manage devices' is permission name.
+    { name: "Users", href: "/users", icon: Users, permission: "manage users" },
+    { name: "Teams", href: "/teams", icon: Users, permission: "manage team" },
+    { name: "Agents", href: "/agents", icon: Users, permission: "manage team" }, // Managers manage team.
+    { name: "Contacts", href: "/contacts", icon: Contact, role: ["admin", "super-admin"] }, // Strict Policy: Only Admin/Super
 ];
 
 export interface SidebarNavProps {
@@ -53,6 +57,10 @@ export function SidebarNav({
     navigation = defaultNavigation,
 }: SidebarNavProps) {
     const pathname = usePathname();
+    const { user } = useAuth();
+
+    const userRoles: string[] = user?.roles || [];
+    const userPermissions: string[] = user?.permissions || [];
 
     return (
         <aside
@@ -87,7 +95,24 @@ export function SidebarNav({
             {/* Navigation */}
             <nav className="flex-1 p-4 space-y-1" role="navigation">
                 {navigation.map((item) => {
-                    const isActive = pathname === item.href;
+                    const isActive =
+                        pathname === item.href ||
+                        pathname.startsWith(item.href + "/");
+
+                    // Role permission check
+                    let isAllowed = true;
+
+                    if (item.role) {
+                        const requiredRoles = Array.isArray(item.role) ? item.role : [item.role];
+                        isAllowed = requiredRoles.some(r => userRoles.includes(r));
+                    }
+
+                    if (isAllowed && item.permission) {
+                        isAllowed = userPermissions.includes(item.permission);
+                    }
+
+                    if (!isAllowed) return null;
+
                     return (
                         <Link
                             key={item.name}
@@ -100,7 +125,7 @@ export function SidebarNav({
                             )}
                             aria-current={isActive ? "page" : undefined}
                         >
-                            <item.icon className="h-5 w-5 shrink-0" aria-hidden="true" />
+                            <item.icon className="h-5 w-5 shrink-0" />
                             {open && <span>{item.name}</span>}
                         </Link>
                     );
