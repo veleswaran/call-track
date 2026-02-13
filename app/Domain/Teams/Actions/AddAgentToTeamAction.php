@@ -19,6 +19,9 @@ class AddAgentToTeamAction
             /** @var \App\Domain\Users\Models\User|null $user */
             $user = $agent->user;
             if ($user && ! $user->hasRole('super-admin')) {
+                if ($user->hasRole('manager')) {
+                    return;
+                }
                 $user->syncRoles(['member']); // Default to member
             }
         }

@@ -17,4 +17,9 @@ interface ContactManagementServiceInterface
     public function updateContact(Contact $contact, StoreContactDTO $data): Contact;
 
     public function deleteContact(Contact $contact): void;
+
+    /**
+     * Get paginated contacts
+     */
+    public function getPaginatedContacts(int $perPage = 15, ?string $search = null): \Illuminate\Contracts\Pagination\LengthAwarePaginator;
 }

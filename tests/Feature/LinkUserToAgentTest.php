@@ -89,4 +89,95 @@ class LinkUserToAgentTest extends TestCase
             ->assertStatus(422)
             ->assertJsonStructure(['errors' => ['user_id']]);
     }
+
+    public function test_role_sync_on_link()
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+
+        $team = \App\Domain\Teams\Models\Team::create(['name' => 'Test Team']);
+
+        // Case 1: Agent with no team -> gets 'member'
+        $user1 = User::factory()->create();
+        $agent1 = Agent::factory()->create();
+        $this->actingAs($admin)->postJson("/api/v1/admin/agents/{$agent1->id}/link-user", ['user_id' => $user1->id])->assertOk();
+        $this->assertTrue($user1->fresh()->hasRole('member'));
+
+        // Case 2: Agent in team as MEMBER -> gets 'member'
+        $user2 = User::factory()->create();
+        $agent2 = Agent::factory()->create();
+        $team->members()->attach($agent2->id, ['role' => 'MEMBER']);
+        $this->actingAs($admin)->postJson("/api/v1/admin/agents/{$agent2->id}/link-user", ['user_id' => $user2->id])->assertOk();
+        $this->assertTrue($user2->fresh()->hasRole('member'));
+
+        // Case 3: Agent in team as MANAGER -> gets 'manager'
+        $user3 = User::factory()->create();
+        $agent3 = Agent::factory()->create();
+        $team->members()->attach($agent3->id, ['role' => 'MANAGER']);
+        $this->actingAs($admin)->postJson("/api/v1/admin/agents/{$agent3->id}/link-user", ['user_id' => $user3->id])->assertOk();
+        $this->assertTrue($user3->fresh()->hasRole('manager'));
+    }
+
+    public function test_role_sync_skips_admins()
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+
+        $superAdmin = User::factory()->create();
+        $superAdmin->assignRole('super-admin');
+
+        $agent = Agent::factory()->create();
+
+        $this->actingAs($admin)
+            ->postJson("/api/v1/admin/agents/{$agent->id}/link-user", ['user_id' => $superAdmin->id])
+            ->assertOk();
+
+        // Role should still be super-admin, not member
+        $this->assertTrue($superAdmin->fresh()->hasRole('super-admin'));
+        $this->assertFalse($superAdmin->fresh()->hasRole('member'));
+    }
+
+    public function test_role_sync_agent_in_multiple_teams()
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+
+        $team1 = \App\Domain\Teams\Models\Team::create(['name' => 'Team Manager']);
+        $team2 = \App\Domain\Teams\Models\Team::create(['name' => 'Team Member']);
+
+        $user = User::factory()->create();
+        $agent = Agent::factory()->create();
+
+        // Agent is manager in one team and member in another
+        $team1->members()->attach($agent->id, ['role' => 'MANAGER']);
+        $team2->members()->attach($agent->id, ['role' => 'MEMBER']);
+
+        $this->actingAs($admin)
+            ->postJson("/api/v1/admin/agents/{$agent->id}/link-user", ['user_id' => $user->id])
+            ->assertOk();
+
+        // Should have manager role because it's the higher role
+        $this->assertTrue($user->fresh()->hasRole('manager'));
+    }
+
+    public function test_role_sync_admin_user()
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+
+        $targetAdmin = User::factory()->create();
+        $targetAdmin->assignRole('admin');
+
+        $team = \App\Domain\Teams\Models\Team::create(['name' => 'Management Team']);
+        $agent = Agent::factory()->create();
+        $team->members()->attach($agent->id, ['role' => 'MANAGER']);
+
+        $this->actingAs($admin)
+            ->postJson("/api/v1/admin/agents/{$agent->id}/link-user", ['user_id' => $targetAdmin->id])
+            ->assertOk();
+
+        // Admin role should be REPLACED by Manager role
+        $this->assertFalse($targetAdmin->fresh()->hasRole('admin'));
+        $this->assertTrue($targetAdmin->fresh()->hasRole('manager'));
+    }
 }

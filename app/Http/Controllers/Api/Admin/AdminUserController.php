@@ -16,10 +16,14 @@ class AdminUserController extends Controller
         protected UserManagementServiceInterface $userService,
     ) {}
 
-    public function index(): JsonResponse
+    public function index(\Illuminate\Http\Request $request): JsonResponse
     {
-        // Simple list for now
-        $users = $this->userService->getPaginatedUsers();
+        $this->authorize('viewAny', \App\Domain\Users\Models\User::class);
+
+        $search = $request->query('search');
+        $perPage = (int) $request->query('per_page', '15');
+
+        $users = $this->userService->getPaginatedUsers($perPage, $search);
 
         return response()->json(AdminUserResource::collection($users)->response()->getData());
     }

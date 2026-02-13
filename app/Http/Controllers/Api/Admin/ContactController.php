@@ -19,14 +19,14 @@ class ContactController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $query = \App\Domain\Calls\Models\Contact::query();
+        $this->authorize('viewAny', \App\Domain\Calls\Models\Contact::class);
 
-        if ($request->has('search')) {
-            $search = $request->search;
-            $query->where('name', 'like', "%{$search}%");
-        }
+        $search = $request->query('search');
+        $perPage = (int) $request->query('per_page', '15');
 
-        return response()->json($query->paginate(20));
+        $contacts = $this->contactService->getPaginatedContacts($perPage, $search);
+
+        return response()->json(\App\Http\Resources\ContactResource::collection($contacts)->response()->getData());
     }
 
     public function store(StoreContactRequest $request): JsonResponse
