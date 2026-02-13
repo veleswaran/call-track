@@ -12,8 +12,7 @@ readonly class ListUsersDTO
         public int $page,
         public int $perPage,
         public ?string $search = null,
-    ) {
-    }
+    ) {}
 
     public static function fromRequest(Request $request): self
     {
