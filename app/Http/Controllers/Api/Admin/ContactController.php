@@ -21,10 +21,8 @@ class ContactController extends Controller
     {
         $this->authorize('viewAny', \App\Domain\Calls\Models\Contact::class);
 
-        $search = $request->query('search');
-        $perPage = (int) $request->query('per_page', '15');
-
-        $contacts = $this->contactService->getPaginatedContacts($perPage, $search);
+        $dto = \App\Domain\Contacts\DTOs\ListContactsDTO::fromRequest($request);
+        $contacts = $this->contactService->getPaginatedContacts($dto);
 
         return response()->json(\App\Http\Resources\ContactResource::collection($contacts)->response()->getData());
     }

@@ -18,15 +18,9 @@ class ContactManagementService implements ContactManagementServiceInterface
         private readonly \App\Actions\Contacts\ListContactsAction $listContactsAction,
     ) {}
 
-    public function getPaginatedContacts(int $perPage = 15, ?string $search = null): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    public function getPaginatedContacts(\App\Domain\Contacts\DTOs\ListContactsDTO $dto): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
-        return $this->listContactsAction->execute(
-            new \App\Domain\Contacts\DTOs\ListContactsDTO(
-                page: (int) request()->input('page', 1),
-                perPage: $perPage,
-                search: $search
-            )
-        );
+        return $this->listContactsAction->execute($dto);
     }
 
     public function storeContact(StoreContactDTO $data): Contact

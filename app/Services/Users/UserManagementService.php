@@ -30,9 +30,9 @@ class UserManagementService implements UserManagementServiceInterface
         protected TeamServiceInterface $teamService,
     ) {}
 
-    public function getPaginatedUsers(int $perPage = 15, ?string $search = null): LengthAwarePaginator
+    public function getPaginatedUsers(\App\Domain\Users\DTOs\ListUsersDTO $dto): LengthAwarePaginator
     {
-        return $this->getPaginatedUsersAction->execute($perPage, $search);
+        return $this->getPaginatedUsersAction->execute($dto);
     }
 
     public function createAdminUser(CreateAdminUserDTO $dto): User

@@ -18,7 +18,7 @@ readonly class ListContactsDTO
     {
         return new self(
             page: (int) $request->input('page', 1),
-            perPage: (int) $request->input('per_page', 15),
+            perPage: (int) min(100, (int) $request->input('per_page', 15)),
             search: $request->input('search'),
         );
     }

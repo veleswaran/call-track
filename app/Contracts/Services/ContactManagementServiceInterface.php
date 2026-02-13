@@ -21,5 +21,5 @@ interface ContactManagementServiceInterface
     /**
      * Get paginated contacts
      */
-    public function getPaginatedContacts(int $perPage = 15, ?string $search = null): \Illuminate\Contracts\Pagination\LengthAwarePaginator;
+    public function getPaginatedContacts(\App\Domain\Contacts\DTOs\ListContactsDTO $dto): \Illuminate\Contracts\Pagination\LengthAwarePaginator;
 }

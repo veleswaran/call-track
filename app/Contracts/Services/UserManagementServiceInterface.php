@@ -15,7 +15,7 @@ interface UserManagementServiceInterface
     /**
      * Get paginated users.
      */
-    public function getPaginatedUsers(int $perPage = 15, ?string $search = null): LengthAwarePaginator;
+    public function getPaginatedUsers(\App\Domain\Users\DTOs\ListUsersDTO $dto): LengthAwarePaginator;
 
     /**
      * Create a new admin user.

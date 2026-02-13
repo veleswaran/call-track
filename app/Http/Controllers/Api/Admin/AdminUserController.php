@@ -20,10 +20,8 @@ class AdminUserController extends Controller
     {
         $this->authorize('viewAny', \App\Domain\Users\Models\User::class);
 
-        $search = $request->query('search');
-        $perPage = (int) $request->query('per_page', '15');
-
-        $users = $this->userService->getPaginatedUsers($perPage, $search);
+        $dto = \App\Domain\Users\DTOs\ListUsersDTO::fromRequest($request);
+        $users = $this->userService->getPaginatedUsers($dto);
 
         return response()->json(AdminUserResource::collection($users)->response()->getData());
     }
