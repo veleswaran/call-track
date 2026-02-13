@@ -20,7 +20,7 @@ import { format } from "date-fns";
 import { CalendarIcon, X } from "lucide-react";
 import type { CallLogFilters as FilterTypes } from "../hooks/use-call-logs";
 import { api } from "@shared/api/api";
-import type { PaginatedResponse, Device } from "@shared/types";
+import type { PaginatedResponse, Device, Agent } from "@shared/types";
 import { useAuth } from "@features/auth/hooks/use-auth";
 
 interface CallLogFiltersProps {
@@ -69,6 +69,14 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
         });
     };
 
+    const updateAgentFilter = (value: string | undefined) => {
+        onChange({
+            ...filters,
+            page: 1,
+            agents: value && value !== "all" ? [parseInt(value)] : undefined,
+        });
+    };
+
     // Load functions for AsyncSelect
     const loadDevices = async (search: string) => {
         try {
@@ -78,6 +86,21 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
             return response.data.map((d) => ({
                 label: d.device_name || d.device_model || `Device ${d.id}`,
                 value: d.id.toString(),
+            }));
+        } catch (e) {
+            console.error(e);
+            return [];
+        }
+    };
+
+    const loadAgents = async (search: string) => {
+        try {
+            const response = await api.get<{ data: Agent[] }>(
+                `/api/v1/admin/agents?page=1&per_page=20&search=${encodeURIComponent(search)}`
+            );
+            return response.data.map((u: Agent) => ({
+                label: u.name,
+                value: u.id.toString(),
             }));
         } catch (e) {
             console.error(e);
@@ -95,6 +118,18 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
                 loadOptions={loadDevices}
                 className="w-[160px]"
             />
+
+            {/* Agent Filter - Only for Admins/Managers */}
+            {canViewTeams && (
+                <AsyncSelect
+                    label="Agent"
+                    placeholder="Agent..."
+                    value={filters.agents?.[0]?.toString()}
+                    onChange={updateAgentFilter}
+                    loadOptions={loadAgents}
+                    className="w-[160px]"
+                />
+            )}
 
             <Select
                 value={filters.types?.[0] ?? "all"}

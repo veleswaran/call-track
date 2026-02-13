@@ -37,17 +37,16 @@ final class LinkUserToAgentAction
             $agent->update(['user_id' => $user->id]);
 
             // Sync Spatie Roles based on Agent's Team Status
-            if (! $user->hasRole(['super-admin', 'admin'])) {
+            if (! $user->hasRole(['super-admin'])) {
                 // Check if agent manages any team
                 $isManager = $agent->teams()->wherePivot('role', 'MANAGER')->exists();
 
                 if ($isManager) {
                     $user->syncRoles(['manager']);
-                } elseif ($agent->teams()->exists()) {
-                    // Is in a team but not manager
+                } else {
+                    // Default to member even if not in any team yet
                     $user->syncRoles(['member']);
                 }
-                // If no teams, leave as is (likely just 'user' or empty, waiting for team assignment)
             }
         });
     }

@@ -16,10 +16,12 @@ class AdminUserController extends Controller
         protected UserManagementServiceInterface $userService,
     ) {}
 
-    public function index(): JsonResponse
+    public function index(\Illuminate\Http\Request $request): JsonResponse
     {
-        // Simple list for now
-        $users = $this->userService->getPaginatedUsers();
+        $this->authorize('viewAny', \App\Domain\Users\Models\User::class);
+
+        $dto = \App\Domain\Users\DTOs\ListUsersDTO::fromRequest($request);
+        $users = $this->userService->getPaginatedUsers($dto);
 
         return response()->json(AdminUserResource::collection($users)->response()->getData());
     }

@@ -15,7 +15,13 @@ class ContactManagementService implements ContactManagementServiceInterface
         private readonly CreateOrUpdateContactAction $createOrUpdateContactAction,
         private readonly \App\Actions\Contacts\UpdateContactAction $updateContactAction,
         private readonly \App\Actions\Contacts\DeleteContactAction $deleteContactAction,
+        private readonly \App\Actions\Contacts\ListContactsAction $listContactsAction,
     ) {}
+
+    public function getPaginatedContacts(\App\Domain\Contacts\DTOs\ListContactsDTO $dto): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    {
+        return $this->listContactsAction->execute($dto);
+    }
 
     public function storeContact(StoreContactDTO $data): Contact
     {

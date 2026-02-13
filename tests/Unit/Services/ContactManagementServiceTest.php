@@ -19,8 +19,9 @@ class ContactManagementServiceTest extends TestCase
         $action = Mockery::mock(CreateOrUpdateContactAction::class);
         $updateAction = Mockery::mock(\App\Actions\Contacts\UpdateContactAction::class);
         $deleteAction = Mockery::mock(\App\Actions\Contacts\DeleteContactAction::class);
+        $listAction = Mockery::mock(\App\Actions\Contacts\ListContactsAction::class);
 
-        $service = new ContactManagementService($action, $updateAction, $deleteAction);
+        $service = new ContactManagementService($action, $updateAction, $deleteAction, $listAction);
 
         $dto = new StoreContactDTO(
             name: 'Jane Doe',

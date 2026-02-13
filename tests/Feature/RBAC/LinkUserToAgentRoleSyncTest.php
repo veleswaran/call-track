@@ -77,9 +77,9 @@ class LinkUserToAgentRoleSyncTest extends TestCase
         ]);
 
         $response->assertStatus(200);
-        // Expect Admin role to be PRESERVED
-        $this->assertTrue($targetAdmin->refresh()->hasRole('admin'), 'Admin role should be preserved');
-        $this->assertFalse($targetAdmin->hasRole('member'), 'Admin should not be demoted to Member');
+        // Expect Admin role to be CHANGED to member
+        $this->assertFalse($targetAdmin->refresh()->hasRole('admin'), 'Admin role should be removed');
+        $this->assertTrue($targetAdmin->hasRole('member'), 'Admin should be demoted to Member');
     }
 
     public function test_linking_super_admin_does_not_change_role()

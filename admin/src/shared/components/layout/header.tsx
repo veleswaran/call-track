@@ -19,7 +19,7 @@ export function Header({ onMenuClick, user, onLogout }: HeaderProps) {
     const [userMenuOpen, setUserMenuOpen] = React.useState(false);
 
     return (
-        <header className="flex h-16 items-center justify-between border-b border-zinc-200 bg-white px-4 dark:border-zinc-800 dark:bg-zinc-900">
+        <header className="flex h-16 items-center justify-between border-b border-zinc-200 bg-white px-4 dark:border-zinc-800 dark:bg-zinc-900 z-50">
             {/* Left side - Menu toggle */}
             <div className="flex items-center gap-4">
                 <Button
