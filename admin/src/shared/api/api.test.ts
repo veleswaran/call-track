@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { api, type ApiError } from "./api";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 describe("api client", () => {
     const mockFetch = vi.fn();
