@@ -40,6 +40,7 @@ Route::prefix('v1')->group(function () {
         // Agent Management
         Route::apiResource('agents', \App\Http\Controllers\Api\Admin\AgentController::class);
         Route::post('/agents/{agent}/link-user', \App\Http\Controllers\Api\Admin\LinkUserToAgentController::class);
+        Route::post('/agents/{agent}/unlink-user', \App\Http\Controllers\Api\Admin\UnlinkUserFromAgentController::class);
         Route::post('/devices/{device}/assign-agent', [\App\Http\Controllers\Api\Admin\DeviceAgentController::class, 'assign']);
         Route::post('/devices/{device}/unassign-agent', [\App\Http\Controllers\Api\Admin\DeviceAgentController::class, 'unassign']);
 

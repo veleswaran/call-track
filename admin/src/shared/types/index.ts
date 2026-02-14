@@ -11,6 +11,7 @@ export interface User {
     two_factor_enabled?: boolean;
     two_factor_confirmed_at?: string | null;
     is_agent?: boolean;
+    agent?: Agent | null;
     created_at: string;
     updated_at: string;
 }
@@ -77,6 +78,7 @@ export interface Device {
     battery_level: number | null;
     tracked_sim_slots: number[] | null;
     last_sync_at: string | null;
+    metadata?: Record<string, unknown> | null;
     created_at: string;
     updated_at: string;
 }

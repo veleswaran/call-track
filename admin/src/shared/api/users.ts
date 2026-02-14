@@ -36,4 +36,8 @@ export const usersApi = {
     updateRole: async (id: number, role: string) => {
         await api.put(`/api/v1/admin/users/${id}/role`, { role });
     },
+
+    unlinkUserFromAgent: async (agentId: number, userId: number) => {
+        await api.post(`/api/v1/admin/agents/${agentId}/unlink-user`, { user_id: userId });
+    },
 };

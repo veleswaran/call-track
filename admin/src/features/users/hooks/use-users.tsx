@@ -72,3 +72,18 @@ export function useUpdateUserRole() {
         },
     });
 }
+
+export function useUnlinkUserFromAgent() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ agentId, userId }: { agentId: number; userId: number }) => usersApi.unlinkUserFromAgent(agentId, userId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["users"] });
+            toast.success("User unlinked from agent successfully");
+        },
+        onError: (error: ApiError) => {
+            toast.error(error.message || "Failed to unlink user");
+        },
+    });
+}

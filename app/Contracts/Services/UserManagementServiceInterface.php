@@ -41,4 +41,9 @@ interface UserManagementServiceInterface
      * Create a user with agent and team context.
      */
     public function createUserWithContext(CreateUserWithContextDTO $dto): User;
+
+    /**
+     * Unlink a User from an Agent profile.
+     */
+    public function unlinkUserFromAgent(User $user, Agent $agent): void;
 }
