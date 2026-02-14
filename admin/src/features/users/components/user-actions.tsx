@@ -12,8 +12,8 @@ import {
     DropdownMenuTrigger,
 } from "@shared/components/ui/dropdown-menu";
 import { Button } from "@shared/components/ui/button";
-import { MoreHorizontal, Trash, ShieldAlert } from "lucide-react";
-import { useDeleteUser, useResetTwoFactor } from "../hooks/use-users";
+import { MoreHorizontal, Trash, ShieldAlert, Unlink } from "lucide-react";
+import { useDeleteUser, useResetTwoFactor, useUnlinkUserFromAgent } from "../hooks/use-users";
 import { User } from "@shared/types";
 import { useAuth } from "@features/auth/hooks/use-auth";
 
@@ -25,6 +25,7 @@ export function UserActions({ user }: UserActionsProps) {
     const { user: currentUser } = useAuth();
     const { mutate: deleteUser, isPending: isDeleting } = useDeleteUser();
     const { mutate: reset2FA, isPending: isResetting } = useResetTwoFactor();
+    const { mutate: unlinkUser, isPending: isUnlinking } = useUnlinkUserFromAgent();
     const [showRoleDialog, setShowRoleDialog] = useState(false);
 
     const isSelf = currentUser?.id === user.id;
@@ -40,6 +41,16 @@ export function UserActions({ user }: UserActionsProps) {
             reset2FA(user.id);
         }
     };
+
+    const handleUnlink = () => {
+        if (user.agent?.id && confirm(`Are you sure you want to unlink this user from agent ${user.agent.name}?`)) {
+            unlinkUser({ agentId: user.agent.id, userId: user.id });
+        }
+    };
+
+    const canUnlinkAgent = user.agent &&
+        !isSelf &&
+        (currentUser?.roles?.includes("super-admin") || currentUser?.roles?.includes("admin"));
 
     return (
         <>
@@ -84,6 +95,18 @@ export function UserActions({ user }: UserActionsProps) {
                                 Change Role
                             </DropdownMenuItem>
                         )}
+
+                    {/* Unlink User from Agent Logic */}
+                    {canUnlinkAgent && (
+                        <DropdownMenuItem
+                            onClick={handleUnlink}
+                            disabled={isUnlinking}
+                            className="text-amber-600 focus:text-amber-600"
+                        >
+                            <Unlink className="mr-2 h-4 w-4" />
+                            Unlink Agent
+                        </DropdownMenuItem>
+                    )}
 
                     <DropdownMenuSeparator />
 

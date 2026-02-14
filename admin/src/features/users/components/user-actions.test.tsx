@@ -2,7 +2,7 @@ import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { UserActions } from "./user-actions";
 import { useAuth } from "@features/auth/hooks/use-auth";
-import { useDeleteUser, useResetTwoFactor } from "../hooks/use-users";
+import { useDeleteUser, useResetTwoFactor, useUnlinkUserFromAgent } from "../hooks/use-users";
 import { vi, describe, it, expect, beforeEach, Mock } from "vitest";
 
 // Mock hooks
@@ -47,6 +47,7 @@ describe("UserActions", () => {
         vi.clearAllMocks();
         (useDeleteUser as Mock).mockReturnValue({ mutate: mockDeleteUser, isPending: false });
         (useResetTwoFactor as Mock).mockReturnValue({ mutate: mockReset2FA, isPending: false });
+        (useUnlinkUserFromAgent as Mock).mockReturnValue({ mutate: vi.fn(), isPending: false });
         (useAuth as Mock).mockReturnValue({
             user: { id: 99, roles: ["admin"], permissions: ["delete records"] }
         });

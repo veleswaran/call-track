@@ -12,6 +12,7 @@ use App\Domain\Agents\Models\Agent;
 use App\Domain\Teams\DTOs\AddTeamMemberDTO;
 use App\Domain\Users\Actions\CreateAdminUserAction;
 use App\Domain\Users\Actions\LinkUserToAgentAction;
+use App\Domain\Users\Actions\UnlinkUserFromAgentAction;
 use App\Domain\Users\DTOs\CreateAdminUserDTO;
 use App\Domain\Users\DTOs\CreateUserWithContextDTO;
 use App\Domain\Users\Models\User;
@@ -26,6 +27,7 @@ class UserManagementService implements UserManagementServiceInterface
         protected \App\Domain\Users\Actions\DeleteUserAction $deleteUserAction,
         protected \App\Domain\Users\Actions\ResetTwoFactorAction $resetTwoFactorAction,
         protected LinkUserToAgentAction $linkUserToAgentAction,
+        protected UnlinkUserFromAgentAction $unlinkUserFromAgentAction,
         protected AgentManagementServiceInterface $agentService,
         protected TeamServiceInterface $teamService,
     ) {}
@@ -53,6 +55,14 @@ class UserManagementService implements UserManagementServiceInterface
     public function linkUserToAgent(User $user, Agent $agent): void
     {
         $this->linkUserToAgentAction->execute($user, $agent);
+    }
+
+    public function unlinkUserFromAgent(\App\Domain\Users\DTOs\UnlinkUserFromAgentDTO $dto): void
+    {
+        $user = User::findOrFail($dto->userId);
+        $agent = Agent::findOrFail($dto->agentId);
+
+        $this->unlinkUserFromAgentAction->execute($user, $agent);
     }
 
     public function createUserWithContext(CreateUserWithContextDTO $dto): User

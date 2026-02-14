@@ -23,6 +23,7 @@ class AdminUserResource extends JsonResource
             'two_factor_enabled' => ! is_null($this->two_factor_secret),
             'two_factor_confirmed_at' => $this->two_factor_confirmed_at,
             'created_at' => $this->created_at->toIso8601String(),
+            'agent' => $this->whenLoaded('agent'),
         ];
     }
 }

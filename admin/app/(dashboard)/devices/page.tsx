@@ -18,6 +18,7 @@ import { DeviceRegistrationCodeDialog } from "@features/devices/components/devic
 import { useRevokeDeviceTokens } from "@features/devices/hooks/use-devices";
 import { Button } from "@shared/components/ui/button";
 import { LogOut } from "lucide-react";
+import { DeviceMetadataDialog } from "@features/devices/components/device-metadata-dialog";
 
 import { useAuth } from "@features/auth/hooks/use-auth";
 
@@ -139,6 +140,7 @@ export default function DevicesPage() {
                                                     deviceId={device.id}
                                                     deviceName={device.device_name}
                                                 />
+                                                <DeviceMetadataDialog device={device} />
                                                 {canManageDevices && (
                                                     <Button
                                                         variant="ghost"

@@ -40,6 +40,7 @@ export default function UsersPage() {
                             <TableHead>Name</TableHead>
                             <TableHead>Email</TableHead>
                             <TableHead>Roles</TableHead>
+                            <TableHead>Agent</TableHead>
                             <TableHead>2FA</TableHead>
                             <TableHead>Created At</TableHead>
                             <TableHead className="w-[70px]"></TableHead>
@@ -58,6 +59,16 @@ export default function UsersPage() {
                                             </Badge>
                                         ))}
                                     </div>
+                                </TableCell>
+                                <TableCell>
+                                    {user.agent ? (
+                                        <div className="flex flex-col">
+                                            <span className="font-medium">{user.agent.name}</span>
+                                            {/* <span className="text-xs text-muted-foreground">{user.agent.employee_code}</span> */}
+                                        </div>
+                                    ) : (
+                                        <span className="text-muted-foreground">-</span>
+                                    )}
                                 </TableCell>
                                 <TableCell>
                                     {user.two_factor_enabled ? (

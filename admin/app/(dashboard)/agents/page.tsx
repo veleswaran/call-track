@@ -104,7 +104,7 @@ export default function AgentsPage() {
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-2">
-                                            {isAdmin && (
+                                            {isAdmin && !agent.user_id && (
                                                 <Button
                                                     size="sm"
                                                     variant="ghost"
