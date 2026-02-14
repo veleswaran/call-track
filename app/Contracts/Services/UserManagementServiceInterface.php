@@ -45,5 +45,5 @@ interface UserManagementServiceInterface
     /**
      * Unlink a User from an Agent profile.
      */
-    public function unlinkUserFromAgent(User $user, Agent $agent): void;
+    public function unlinkUserFromAgent(\App\Domain\Users\DTOs\UnlinkUserFromAgentDTO $dto): void;
 }

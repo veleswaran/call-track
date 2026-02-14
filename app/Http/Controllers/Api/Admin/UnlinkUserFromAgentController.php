@@ -23,15 +23,17 @@ class UnlinkUserFromAgentController extends Controller
     {
         $this->authorize('update', $agent);
 
-        $request->validate([
+        $validated = $request->validate([
             'user_id' => ['required', 'exists:users,id'],
         ]);
 
-        /** @var User $user */
-        $user = User::findOrFail($request->input('user_id'));
+        $dto = new \App\Domain\Users\DTOs\UnlinkUserFromAgentDTO(
+            userId: (int) $validated['user_id'],
+            agentId: $agent->id,
+        );
 
         try {
-            $this->userService->unlinkUserFromAgent($user, $agent);
+            $this->userService->unlinkUserFromAgent($dto);
         } catch (\InvalidArgumentException $e) {
             return response()->json(['message' => $e->getMessage()], 422);
         }

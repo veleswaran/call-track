@@ -57,8 +57,11 @@ class UserManagementService implements UserManagementServiceInterface
         $this->linkUserToAgentAction->execute($user, $agent);
     }
 
-    public function unlinkUserFromAgent(User $user, Agent $agent): void
+    public function unlinkUserFromAgent(\App\Domain\Users\DTOs\UnlinkUserFromAgentDTO $dto): void
     {
+        $user = User::findOrFail($dto->userId);
+        $agent = Agent::findOrFail($dto->agentId);
+
         $this->unlinkUserFromAgentAction->execute($user, $agent);
     }
 

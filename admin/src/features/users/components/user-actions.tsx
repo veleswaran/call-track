@@ -48,6 +48,10 @@ export function UserActions({ user }: UserActionsProps) {
         }
     };
 
+    const canUnlinkAgent = user.agent &&
+        !isSelf &&
+        (currentUser?.roles?.includes("super-admin") || currentUser?.roles?.includes("admin"));
+
     return (
         <>
             <DropdownMenu>
@@ -93,18 +97,16 @@ export function UserActions({ user }: UserActionsProps) {
                         )}
 
                     {/* Unlink User from Agent Logic */}
-                    {user.agent && !isSelf && (
-                        (currentUser?.roles?.includes("super-admin") || currentUser?.roles?.includes("admin"))
-                    ) && (
-                            <DropdownMenuItem
-                                onClick={handleUnlink}
-                                disabled={isUnlinking}
-                                className="text-amber-600 focus:text-amber-600"
-                            >
-                                <Unlink className="mr-2 h-4 w-4" />
-                                Unlink Agent
-                            </DropdownMenuItem>
-                        )}
+                    {canUnlinkAgent && (
+                        <DropdownMenuItem
+                            onClick={handleUnlink}
+                            disabled={isUnlinking}
+                            className="text-amber-600 focus:text-amber-600"
+                        >
+                            <Unlink className="mr-2 h-4 w-4" />
+                            Unlink Agent
+                        </DropdownMenuItem>
+                    )}
 
                     <DropdownMenuSeparator />
 
