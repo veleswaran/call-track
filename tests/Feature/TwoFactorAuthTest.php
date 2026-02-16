@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Domain\Users\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Crypt;
+use PHPUnit\Framework\Attributes\Test;
 use PragmaRX\Google2FA\Google2FA;
 use Tests\TestCase;
 
@@ -12,11 +13,15 @@ class TwoFactorAuthTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_can_enable_two_factor()
+    #[Test]
+    public function can_enable_two_factor(): void
     {
         $user = User::factory()->create();
 
-        $response = $this->withHeaders(['Referer' => 'http://localhost:3000'])
+        $response = $this->withHeaders([
+            'Referer' => 'http://localhost:3000',
+            'Accept' => 'application/json',
+        ])
             ->actingAs($user)
             ->postJson('/api/v1/auth/two-factor/enable');
 
@@ -24,20 +29,18 @@ class TwoFactorAuthTest extends TestCase
             ->assertJsonStructure(['secret', 'qr_code_url']);
     }
 
-    public function test_can_confirm_two_factor()
+    #[Test]
+    public function can_confirm_two_factor(): void
     {
         $user = User::factory()->create();
         $google2fa = new Google2FA;
         $secret = $google2fa->generateSecretKey();
-
-        // Enable first (in reality, frontend has secret)
-        // But we skip enable step and call confirm directly with a valid code for a secret we know.
-        // TwoFactorController::confirm takes 'secret' and 'code'.
-        // It validates that code matches secret. Then enables it for user.
-
         $code = $google2fa->getCurrentOtp($secret);
 
-        $response = $this->withHeaders(['Referer' => 'http://localhost:3000'])
+        $response = $this->withHeaders([
+            'Referer' => 'http://localhost:3000',
+            'Accept' => 'application/json',
+        ])
             ->actingAs($user)
             ->postJson('/api/v1/auth/two-factor/confirm', [
                 'secret' => $secret,

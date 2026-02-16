@@ -21,7 +21,13 @@ class CallLogSearchTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        // Create admin role if it doesn't exist (scope to test run)
+        \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
+
         $this->admin = User::factory()->create();
+        $this->admin->assignRole('admin');
+
         Sanctum::actingAs($this->admin);
     }
 

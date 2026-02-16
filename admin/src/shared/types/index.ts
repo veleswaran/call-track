@@ -6,13 +6,23 @@ export interface User {
     name: string;
     email: string;
     email_verified_at: string | null;
-    roles?: string[];
+    roles: string[];
+    permissions: string[];
     two_factor_enabled?: boolean;
     two_factor_confirmed_at?: string | null;
+    is_agent?: boolean;
+    agent?: Agent | null;
     created_at: string;
     updated_at: string;
 }
 
+
+export interface Role {
+    id: number;
+    name: string;
+    created_at: string;
+    updated_at: string;
+}
 /**
  * Call log entry from the API
  */
@@ -62,12 +72,13 @@ export interface Device {
     device_model: string | null;
     os_version: string | null;
     app_version: string | null;
-    status: "active" | "inactive";
+    status: "active" | "suspended";
     agent_id: number | null;
     agent: { id: number; name: string } | null;
     battery_level: number | null;
     tracked_sim_slots: number[] | null;
     last_sync_at: string | null;
+    metadata?: Record<string, unknown> | null;
     created_at: string;
     updated_at: string;
 }
@@ -80,6 +91,8 @@ export interface Agent {
     name: string;
     employee_code: string | null;
     status: "active" | "inactive";
+    user_id?: number | null;
+    user?: User | null;
     devices_count?: number;
     created_at: string;
     updated_at: string;
@@ -168,10 +181,39 @@ export interface DashboardMetrics {
 export interface TwoFactorSetupResponse {
     secret: string;
     qr_code_url: string;
+    recovery_codes: string[];
 }
 
-export interface RecoveryCodesResponse {
-    recovery_codes: string[];
+/**
+ * Team Role
+ */
+export type TeamRole = "MANAGER" | "MEMBER";
+
+/**
+ * Team Member (Pivot)
+ */
+export interface TeamMember {
+    id: number;
+    team_id: number;
+    agent_id: number;
+    role: TeamRole;
+    created_at: string;
+    updated_at: string;
+    // Relationships
+    agent?: Agent;
+}
+
+/**
+ * Team entity
+ */
+export interface Team {
+    id: number;
+    name: string;
+    created_at: string;
+    updated_at: string;
+    members?: TeamMember[];
+    members_count?: number;
+    managers_count?: number;
 }
 
 /**

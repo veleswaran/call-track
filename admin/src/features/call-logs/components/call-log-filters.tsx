@@ -21,6 +21,7 @@ import { CalendarIcon, X } from "lucide-react";
 import type { CallLogFilters as FilterTypes } from "../hooks/use-call-logs";
 import { api } from "@shared/api/api";
 import type { PaginatedResponse, Device, Agent } from "@shared/types";
+import { useAuth } from "@features/auth/hooks/use-auth";
 
 interface CallLogFiltersProps {
     filters: FilterTypes;
@@ -28,6 +29,10 @@ interface CallLogFiltersProps {
 }
 
 export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
+    const { user } = useAuth();
+    // Allow if user is admin or can manage team
+    const canViewTeams = user?.roles?.includes('admin') || user?.roles?.includes('super-admin') || user?.permissions?.includes('manage team');
+
     const hasActiveFilters =
         filters.start_date ||
         filters.end_date ||
@@ -36,7 +41,8 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
         (filters.agents && filters.agents.length > 0) ||
         (filters.types && filters.types.length > 0) ||
         (filters.statuses && filters.statuses.length > 0) ||
-        (filters.classifications && filters.classifications.length > 0);
+        (filters.classifications && filters.classifications.length > 0) ||
+        filters.team_id;
 
     const clearFilters = () => {
         onChange({
@@ -55,11 +61,19 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
     };
 
     // Helper for single-select dropdowns that map to array filters
-    const updateArrayFilter = (key: 'types' | 'classifications', value: string) => {
+    const updateArrayFilter = (key: 'types' | 'classifications' | 'statuses', value: string) => {
         onChange({
             ...filters,
             page: 1,
             [key]: value === "all" ? undefined : [value],
+        });
+    };
+
+    const updateAgentFilter = (value: string | undefined) => {
+        onChange({
+            ...filters,
+            page: 1,
+            agents: value && value !== "all" ? [parseInt(value)] : undefined,
         });
     };
 
@@ -81,12 +95,12 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
 
     const loadAgents = async (search: string) => {
         try {
-            const response = await api.get<PaginatedResponse<Agent>>(
+            const response = await api.get<{ data: Agent[] }>(
                 `/api/v1/admin/agents?page=1&per_page=20&search=${encodeURIComponent(search)}`
             );
-            return response.data.map((a) => ({
-                label: a.name,
-                value: a.id.toString(),
+            return response.data.map((u: Agent) => ({
+                label: u.name,
+                value: u.id.toString(),
             }));
         } catch (e) {
             console.error(e);
@@ -105,20 +119,17 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
                 className="w-[160px]"
             />
 
-            <AsyncSelect
-                label="Agent"
-                placeholder="Agent..."
-                value={filters.agents?.[0]?.toString()}
-                onChange={(val) => {
-                    onChange({
-                        ...filters,
-                        page: 1,
-                        agents: val ? [parseInt(val)] : undefined
-                    });
-                }}
-                loadOptions={loadAgents}
-                className="w-[160px]"
-            />
+            {/* Agent Filter - Only for Admins/Managers */}
+            {canViewTeams && (
+                <AsyncSelect
+                    label="Agent"
+                    placeholder="Agent..."
+                    value={filters.agents?.[0]?.toString()}
+                    onChange={updateAgentFilter}
+                    loadOptions={loadAgents}
+                    className="w-[160px]"
+                />
+            )}
 
             <Select
                 value={filters.types?.[0] ?? "all"}
@@ -135,6 +146,49 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
                     <SelectItem value="rejected">Rejected</SelectItem>
                     <SelectItem value="blocked">Blocked</SelectItem>
                     <SelectItem value="unknown">Unknown</SelectItem>
+                </SelectContent>
+            </Select>
+
+            {/* Team Filter - Only for Admins/Managers */}
+            {canViewTeams && (
+                <AsyncSelect
+                    label="Team"
+                    placeholder="Team..."
+                    value={filters.team_id?.toString()}
+                    onChange={(val) => updateNumericFilter("team_id", val)}
+                    loadOptions={async () => {
+                        try {
+                            // Dynamically import to avoid circular dependencies if any, though likely fine
+                            const { teamsApi } = await import("@features/teams/api/teams-api");
+                            const response = await teamsApi.getTeams({
+                                page: 1,
+                                per_page: 20,
+                            });
+                            return response.data.map((t) => ({
+                                label: t.name,
+                                value: t.id.toString(),
+                            }));
+                        } catch (e) {
+                            console.error(e);
+                            return [];
+                        }
+                    }}
+                    className="w-[160px]"
+                />
+            )}
+
+            <Select
+                value={filters.statuses?.[0] ?? "all"}
+                onValueChange={(val) => updateArrayFilter("statuses", val)}
+            >
+                <SelectTrigger className="w-[140px]">
+                    <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="all">All Statuses</SelectItem>
+                    <SelectItem value="Connected">Connected</SelectItem>
+                    <SelectItem value="Missed">Missed</SelectItem>
+                    <SelectItem value="No Answer">No Answer</SelectItem>
                 </SelectContent>
             </Select>
 

@@ -15,6 +15,8 @@ final class ReportFilterDTO
         public readonly ?array $statuses = null,
         public readonly ?array $types = null,
         public readonly ?string $search = null,
+        /** @var int[]|null Null = full access, array = restricted agent IDs */
+        public readonly ?array $allowedAgentIds = null,
     ) {}
 
     public static function fromArray(array $data): self

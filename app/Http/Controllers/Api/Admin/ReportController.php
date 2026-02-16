@@ -16,11 +16,12 @@ final class ReportController extends Controller
 {
     public function __construct(
         private readonly ReportServiceInterface $reportService,
+        private readonly \App\Domain\Auth\Actions\GetAgentAccessScopeAction $getAgentAccessScopeAction,
     ) {}
 
     public function metrics(GetReportDataRequest $request): ReportMetricCollection
     {
-        $filters = ReportFilterDTO::fromArray($request->validated());
+        $filters = $this->buildScopedFilters($request);
         $data = $this->reportService->getMetrics($filters);
 
         return new ReportMetricCollection($data);
@@ -28,7 +29,7 @@ final class ReportController extends Controller
 
     public function charts(GetReportDataRequest $request): ReportChartResource
     {
-        $filters = ReportFilterDTO::fromArray($request->validated());
+        $filters = $this->buildScopedFilters($request);
         $data = $this->reportService->getCharts($filters);
 
         return new ReportChartResource($data);
@@ -36,9 +37,28 @@ final class ReportController extends Controller
 
     public function performance(GetReportDataRequest $request): AgentPerformanceCollection
     {
-        $filters = ReportFilterDTO::fromArray($request->validated());
+        $filters = $this->buildScopedFilters($request);
         $data = $this->reportService->getPerformance($filters);
 
         return new AgentPerformanceCollection($data);
+    }
+
+    private function buildScopedFilters(GetReportDataRequest $request): ReportFilterDTO
+    {
+        /** @var \App\Domain\Users\Models\User $user */
+        $user = $request->user();
+        $allowedAgentIds = $this->getAgentAccessScopeAction->execute($user);
+
+        $base = ReportFilterDTO::fromArray($request->validated());
+
+        return new ReportFilterDTO(
+            startDate: $base->startDate,
+            endDate: $base->endDate,
+            agentIds: $base->agentIds,
+            statuses: $base->statuses,
+            types: $base->types,
+            search: $base->search,
+            allowedAgentIds: $allowedAgentIds,
+        );
     }
 }

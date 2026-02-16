@@ -18,8 +18,10 @@ final class GetDashboardMetricsAction
     /**
      * Execute the action to get aggregated dashboard metrics for current week
      * with comparison to previous week
+     *
+     * @param  int[]|null  $allowedAgentIds  Null = full access, array = restricted agent IDs
      */
-    public function execute(): DashboardMetricsDTO
+    public function execute(?array $allowedAgentIds = null): DashboardMetricsDTO
     {
         // Use Asia/Kolkata timezone to match database timestamp storage
         $tz = 'Asia/Kolkata';
@@ -29,22 +31,34 @@ final class GetDashboardMetricsAction
         $previousWeekEnd = Carbon::now($tz)->subWeek()->endOfWeek();
 
         // Get current week metrics
-        $currentStats = $this->getCallStats($currentWeekStart, $currentWeekEnd);
+        $currentStats = $this->getCallStats($currentWeekStart, $currentWeekEnd, $allowedAgentIds);
         $currentMissedCalls = $currentStats->missed_calls ?? 0;
 
         // Get previous week metrics for comparison
-        $previousStats = $this->getCallStats($previousWeekStart, $previousWeekEnd);
+        $previousStats = $this->getCallStats($previousWeekStart, $previousWeekEnd, $allowedAgentIds);
         $previousMissedCalls = $previousStats->missed_calls ?? 0;
 
-        // Device and agent counts (total, not time-filtered)
-        $totalDevices = Device::count();
-        $totalAgents = Agent::count();
+        // Device and agent counts (scoped)
+        if ($allowedAgentIds !== null) {
+            $totalDevices = Device::whereIn('agent_id', $allowedAgentIds)->count();
+            $totalAgents = count($allowedAgentIds);
+        } else {
+            $totalDevices = Device::count();
+            $totalAgents = Agent::count();
+        }
 
         // Active devices: Devices that have synced calls in the current period
-        $activeDevices = DB::table('call_logs')
-            ->whereBetween('timestamp', [$currentWeekStart, $currentWeekEnd])
-            ->distinct('device_id')
-            ->count('device_id');
+        $activeDevicesQuery = DB::table('call_logs')
+            ->join('devices', 'call_logs.device_id', '=', 'devices.id')
+            ->whereBetween('call_logs.timestamp', [$currentWeekStart, $currentWeekEnd]);
+
+        if ($allowedAgentIds !== null) {
+            $activeDevicesQuery->whereIn('devices.agent_id', $allowedAgentIds);
+        }
+
+        $activeDevices = $activeDevicesQuery
+            ->distinct('call_logs.device_id')
+            ->count('call_logs.device_id');
 
         // Calculate comparison percentages
         $totalCallsChange = $this->calculatePercentChange(
@@ -86,21 +100,27 @@ final class GetDashboardMetricsAction
     /**
      * Get call statistics for a given date range
      */
-    private function getCallStats(Carbon $start, Carbon $end): object
+    private function getCallStats(Carbon $start, Carbon $end, ?array $allowedAgentIds): object
     {
-        return DB::table('call_logs')
+        $query = DB::table('call_logs')
+            ->join('devices', 'call_logs.device_id', '=', 'devices.id')
             ->leftJoin('call_classifications', 'call_logs.id', '=', 'call_classifications.call_log_id')
-            ->whereBetween('call_logs.timestamp', [$start, $end])
-            ->select([
-                DB::raw('COUNT(call_logs.id) as total_calls'),
-                DB::raw("SUM(CASE WHEN call_classifications.type = 'BUSINESS' OR call_classifications.type IS NULL THEN 1 ELSE 0 END) as business_calls"),
-                DB::raw("SUM(CASE WHEN call_classifications.type = 'PERSONAL' THEN 1 ELSE 0 END) as personal_calls"),
-                DB::raw("SUM(CASE WHEN call_classifications.type = 'IGNORED' THEN 1 ELSE 0 END) as ignored_calls"),
-                DB::raw("SUM(CASE WHEN call_logs.direction = 'MISSED' THEN 1 ELSE 0 END) as missed_calls"),
-                DB::raw('0 as unclassified_calls'),
-                DB::raw('COALESCE(SUM(call_logs.duration), 0) as total_duration_seconds'),
-                DB::raw('COALESCE(AVG(call_logs.duration), 0) as average_call_duration_seconds'),
-            ])
+            ->whereBetween('call_logs.timestamp', [$start, $end]);
+
+        if ($allowedAgentIds !== null) {
+            $query->whereIn('devices.agent_id', $allowedAgentIds);
+        }
+
+        return $query->select([
+            DB::raw('COUNT(call_logs.id) as total_calls'),
+            DB::raw("SUM(CASE WHEN call_classifications.type = 'BUSINESS' OR call_classifications.type IS NULL THEN 1 ELSE 0 END) as business_calls"),
+            DB::raw("SUM(CASE WHEN call_classifications.type = 'PERSONAL' THEN 1 ELSE 0 END) as personal_calls"),
+            DB::raw("SUM(CASE WHEN call_classifications.type = 'IGNORED' THEN 1 ELSE 0 END) as ignored_calls"),
+            DB::raw("SUM(CASE WHEN call_logs.direction = 'MISSED' THEN 1 ELSE 0 END) as missed_calls"),
+            DB::raw('0 as unclassified_calls'),
+            DB::raw('COALESCE(SUM(call_logs.duration), 0) as total_duration_seconds'),
+            DB::raw('COALESCE(AVG(call_logs.duration), 0) as average_call_duration_seconds'),
+        ])
             ->first() ?? (object) [];
     }
 

@@ -20,6 +20,17 @@ final class BuildCallLogQueryAction
             ->with(['classification', 'device', 'agent'])
             ->orderByDesc('timestamp');
 
+        // Access Control Scope - uses pre-calculated allowedAgentIds from Controller
+        if ($dto->allowedAgentIds !== null) {
+            if (empty($dto->allowedAgentIds)) {
+                $query->whereRaw('1 = 0');
+            } else {
+                $query->whereHas('device', function ($deviceQuery) use ($dto) {
+                    $deviceQuery->whereIn('agent_id', $dto->allowedAgentIds);
+                });
+            }
+        }
+
         if ($dto->deviceId !== null) {
             $query->where('device_id', $dto->deviceId);
         }
@@ -90,6 +101,13 @@ final class BuildCallLogQueryAction
         // Filter by Agents (uses call_logs.agent_id for accurate historical filtering)
         if (! empty($dto->agentIds)) {
             $query->whereIn('agent_id', $dto->agentIds);
+        }
+
+        // Filter by Team
+        if ($dto->teamId !== null) {
+            $query->whereHas('device.agent.teams', function (Builder $q) use ($dto): void {
+                $q->where('teams.id', $dto->teamId);
+            });
         }
 
         return $query;

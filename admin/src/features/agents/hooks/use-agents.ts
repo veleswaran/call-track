@@ -160,3 +160,21 @@ export function useUnassignDevice() {
         },
     });
 }
+/**
+ * Link a system user to an agent profile
+ */
+export function useLinkUser() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async ({ agentId, userId }: { agentId: number; userId: number }) => {
+            return api.post(`/api/v1/admin/agents/${agentId}/link-user`, {
+                user_id: userId,
+            });
+        },
+        onSuccess: (_, { agentId }) => {
+            queryClient.invalidateQueries({ queryKey: agentKeys.detail(agentId) });
+            queryClient.invalidateQueries({ queryKey: agentKeys.lists() });
+        },
+    });
+}

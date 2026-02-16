@@ -10,6 +10,8 @@ class AdminUserTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected User $admin;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -65,5 +67,33 @@ class AdminUserTest extends TestCase
         $response = $this->actingAs($this->admin)->deleteJson("/api/v1/admin/users/{$this->admin->id}");
 
         $response->assertStatus(403);
+    }
+
+    public function test_non_admin_cannot_list_users()
+    {
+        $user = User::factory()->create();
+        // No roles assigned
+
+        $response = $this->actingAs($user)->getJson('/api/v1/admin/users');
+
+        $response->assertStatus(403);
+    }
+
+    public function test_can_filter_users_by_search_term()
+    {
+        User::factory()->create(['name' => 'Searchable User', 'email' => 'findme@example.com']);
+        User::factory()->create(['name' => 'Other User', 'email' => 'other@example.com']);
+
+        // Search by name
+        $response = $this->actingAs($this->admin)->getJson('/api/v1/admin/users?search=Searchable');
+        $response->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.name', 'Searchable User');
+
+        // Search by email
+        $response = $this->actingAs($this->admin)->getJson('/api/v1/admin/users?search=findme');
+        $response->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.email', 'findme@example.com');
     }
 }

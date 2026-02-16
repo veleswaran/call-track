@@ -13,8 +13,10 @@ import {
 import { Button } from "@shared/components/ui/button";
 import { MoreVertical, Pencil, Trash } from "lucide-react";
 import type { Contact } from "@shared/types";
+import { useAuth } from "@features/auth/hooks/use-auth";
 
 export function ContactsList() {
+    const { user } = useAuth(); // RBAC
     const [page, setPage] = useState(1);
     const { data, isLoading, isError } = useContacts({ page, per_page: 15 });
     const [editingContact, setEditingContact] = useState<Contact | null>(null);
@@ -98,13 +100,16 @@ export function ContactsList() {
                                                 <Pencil className="mr-2 h-4 w-4" />
                                                 Edit
                                             </DropdownMenuItem>
-                                            <DropdownMenuItem
-                                                onClick={() => handleDelete(c)}
-                                                className="text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400"
-                                            >
-                                                <Trash className="mr-2 h-4 w-4" />
-                                                Delete
-                                            </DropdownMenuItem>
+                                            {/* RBAC: Only Super Admin can delete */}
+                                            {user?.permissions?.includes("delete records") && (
+                                                <DropdownMenuItem
+                                                    onClick={() => handleDelete(c)}
+                                                    className="text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400"
+                                                >
+                                                    <Trash className="mr-2 h-4 w-4" />
+                                                    Delete
+                                                </DropdownMenuItem>
+                                            )}
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </td>

@@ -10,12 +10,12 @@ describe("AsyncSelect", () => {
 
     it("displays selected label when value matches option", async () => {
         const mockLoadOptions = vi.fn().mockResolvedValue([
-            { label: "Phone", value: "phone" }
+            { label: "phone", value: "phone" }
         ]);
         render(<AsyncSelect onChange={() => { }} loadOptions={mockLoadOptions} value="phone" />);
 
         await waitFor(() => {
-            expect(screen.getByRole("combobox")).toHaveTextContent("Phone");
+            expect(screen.getByRole("combobox")).toHaveTextContent("phone");
         });
     });
 

@@ -26,6 +26,8 @@ class DashboardControllerTest extends TestCase
     public function test_dashboard_returns_metrics(): void
     {
         $user = User::factory()->create();
+        $role = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
+        $user->assignRole($role);
         Sanctum::actingAs($user);
 
         // Create test data

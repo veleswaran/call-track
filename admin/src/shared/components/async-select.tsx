@@ -116,9 +116,9 @@ export function AsyncSelect({
                         </div>
                     )}
                     {!loading &&
-                        options.map((option) => (
+                        options.map((option, index) => (
                             <div
-                                key={option.value}
+                                key={option.value || `option-${index}`}
                                 className={cn(
                                     "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
                                     value === option.value && "bg-accent text-accent-foreground"

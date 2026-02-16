@@ -77,8 +77,18 @@ class AppServiceProvider extends ServiceProvider
         );
 
         $this->app->bind(
+            \App\Contracts\Services\TeamServiceInterface::class,
+            \App\Services\Teams\TeamService::class
+        );
+
+        $this->app->bind(
             \App\Contracts\Services\DeviceEventServiceInterface::class,
             \App\Services\Devices\DeviceEventService::class
+        );
+
+        $this->app->bind(
+            \App\Contracts\Services\Users\UserRoleServiceInterface::class,
+            \App\Services\Users\UserRoleService::class
         );
     }
 
@@ -90,5 +100,9 @@ class AppServiceProvider extends ServiceProvider
         \Illuminate\Support\Facades\Gate::define('viewApiDocs', function (?\App\Domain\Users\Models\User $user) {
             return true; // Simplistic for now. Restrict in production.
         });
+
+        \Illuminate\Support\Facades\Gate::policy(\App\Domain\Teams\Models\Team::class, \App\Policies\TeamPolicy::class);
+        \Illuminate\Support\Facades\Gate::policy(\App\Domain\Agents\Models\Agent::class, \App\Policies\AgentPolicy::class);
+        \Illuminate\Support\Facades\Gate::policy(\App\Domain\Calls\Models\CallLog::class, \App\Policies\CallLogPolicy::class);
     }
 }

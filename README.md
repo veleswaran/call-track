@@ -70,6 +70,9 @@ Note: Access to docs is gated by `Gate::define('viewApiDocs', ...)`. In this rep
 | `POST` | `/api/v1/admin/devices/{id}/assign-agent` | Assign agent to device | Admin (Sanctum) |
 | `POST` | `/api/v1/admin/devices/{id}/unassign-agent` | Unassign agent from device | Admin (Sanctum) |
 | `API` | `/api/v1/admin/users` | Admin User Management (resource) | Admin (Sanctum) |
+| `GET` | `/api/v1/admin/teams` | List all teams | Admin (Sanctum) |
+| `POST` | `/api/v1/admin/teams` | Create a new team | Admin (Sanctum) |
+| `POST` | `/api/v1/admin/teams/{id}/members` | Add agent to team (or assign manager) | Admin (Sanctum) |
 
 ## 📚 Documentation
 
@@ -143,6 +146,17 @@ Automatically fix code style issues to follow PSR-12 and Laravel best practices:
 - **Device Tokens**: Devices authenticate using long-lived `X-Device-Token` headers.
 - **Admin Access**: Standard Bearer token authentication via Sanctum.
 - **Two-Factor Authentication**: Admins can enable 2FA for enhanced account security.
+
+### Teams & Access Control
+
+The platform implements a strict hierarchical access model:
+
+- **Super Admin**: Full access to all data and settings.
+- **Admin**: Full organization management (users, teams, devices).
+- **Team Manager**: Can view agents and call logs **only** for teams they manage.
+- **Agent**: Can view **only** their own call logs.
+
+Access is enforced via Laravel Policies ensuring a manager cannot access data from teams they do not belong to.
 
 ## 🔗 Admin vs Device API — Auth and cURL recipes
 
@@ -275,6 +289,27 @@ curl --request POST \
     "device_id": 1,
     "name": "Ada Lovelace",
     "phone_number": "+15551234567"
+  }'
+```
+
+### Admin: Create Team & Assign Manager
+
+```bash
+# Create Team
+curl --request POST \
+  --url 'http://127.0.0.1:8000/api/v1/admin/teams' \
+  --header 'Content-Type: application/json' \
+  --header 'Authorization: Bearer YOUR_TKN' \
+  --data '{"name": "Sales Alpha"}'
+
+# Add Member (as Manager)
+curl --request POST \
+  --url 'http://127.0.0.1:8000/api/v1/admin/teams/1/members' \
+  --header 'Content-Type: application/json' \
+  --header 'Authorization: Bearer YOUR_TKN' \
+  --data '{
+    "agent_id": 5, 
+    "role": "MANAGER"
   }'
 ```
 

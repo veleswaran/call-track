@@ -16,14 +16,19 @@ final class DashboardController extends Controller
 {
     public function __construct(
         private readonly DashboardServiceContract $dashboardService,
+        private readonly \App\Domain\Auth\Actions\GetAgentAccessScopeAction $getAgentAccessScopeAction,
     ) {}
 
     /**
      * Get dashboard metrics
      */
-    public function index(): JsonResponse
+    public function index(\Illuminate\Http\Request $request): JsonResponse
     {
-        $metrics = $this->dashboardService->getMetrics();
+        /** @var \App\Domain\Users\Models\User $user */
+        $user = $request->user();
+        $allowedAgentIds = $this->getAgentAccessScopeAction->execute($user);
+
+        $metrics = $this->dashboardService->getMetrics($allowedAgentIds);
 
         return response()->json([
             'data' => new DashboardMetricsResource($metrics),
@@ -33,9 +38,13 @@ final class DashboardController extends Controller
     /**
      * Get dashboard chart data
      */
-    public function charts(): JsonResponse
+    public function charts(\Illuminate\Http\Request $request): JsonResponse
     {
-        $charts = $this->dashboardService->getCharts();
+        /** @var \App\Domain\Users\Models\User $user */
+        $user = $request->user();
+        $allowedAgentIds = $this->getAgentAccessScopeAction->execute($user);
+
+        $charts = $this->dashboardService->getCharts($allowedAgentIds);
 
         return response()->json([
             'data' => $charts->toArray(),

@@ -13,9 +13,15 @@ class ListDevicesAction
 {
     public function execute(ListDevicesDTO $dto): LengthAwarePaginator
     {
-        return Device::query()
+        $deviceQuery = Device::query()
             ->with('agent')
-            ->withExists('activeTokens')
+            ->withExists('activeTokens');
+
+        if ($dto->allowedAgentIds !== null && $dto->allowedAgentIds !== 'all') {
+            $deviceQuery->whereIn('agent_id', (array) $dto->allowedAgentIds);
+        }
+
+        return $deviceQuery
             ->when($dto->search, function (Builder $query, string $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")

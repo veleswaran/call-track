@@ -24,6 +24,10 @@ final readonly class ListCallLogsDTO
         public ?string $dateFrom = null,
         public ?string $dateTo = null,
         public ?string $search = null,
+        public ?\App\Domain\Users\Models\User $user = null,
+        public ?int $teamId = null,
+        /** @var int[]|null Null = full access, array = restricted to these agent IDs */
+        public ?array $allowedAgentIds = null,
         public ?int $simSlot = null,
     ) {}
 
@@ -63,6 +67,8 @@ final readonly class ListCallLogsDTO
             dateFrom: $dateFrom ? (string) $dateFrom : null,
             dateTo: $dateTo ? (string) $dateTo : null,
             search: $request->string('search')->toString() ?: null,
+            user: $request->user(),
+            teamId: $request->integer('team_id') ?: null,
             simSlot: $request->has('sim_slot') ? $request->integer('sim_slot') : null,
         );
     }

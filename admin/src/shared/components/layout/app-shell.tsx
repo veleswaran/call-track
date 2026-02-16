@@ -6,10 +6,11 @@ import { Header } from "./header";
 import { BottomNav } from "./bottom-nav";
 import { MobileMenu } from "./mobile-menu";
 import { useMobile } from "@shared/hooks/use-mobile";
+import { User } from "../../types";
 
 export interface AppShellProps {
     children: React.ReactNode;
-    userName?: string;
+    user?: User;
     onLogout?: () => void;
 }
 
@@ -18,7 +19,7 @@ export interface AppShellProps {
  * - Desktop: Sidebar navigation on left
  * - Mobile: Bottom navigation bar + hamburger menu for secondary nav
  */
-export function AppShell({ children, userName, onLogout }: AppShellProps) {
+export function AppShell({ children, user, onLogout }: AppShellProps) {
     const isMobile = useMobile();
     const [sidebarOpen, setSidebarOpen] = React.useState(true);
     const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
@@ -46,7 +47,7 @@ export function AppShell({ children, userName, onLogout }: AppShellProps) {
             <div className="flex flex-1 flex-col overflow-hidden">
                 <Header
                     onMenuClick={handleToggle}
-                    userName={userName}
+                    user={user}
                     onLogout={!isMobile ? onLogout : undefined}
                 />
                 {/* Main content - extra bottom padding on mobile for bottom nav */}

@@ -42,6 +42,7 @@ export default function CallLogsPage() {
         statuses: searchParams.getAll("statuses[]") as ("Connected" | "Missed" | "No Answer" | "Rejected" | "Blocked")[] | undefined,
         classifications: searchParams.getAll("classifications[]") as ("business" | "personal" | "ignored")[] | undefined,
         agents: searchParams.getAll("agents[]").map(Number).filter(n => !isNaN(n)),
+        team_id: searchParams.get("team_id") ? Number(searchParams.get("team_id")) : undefined,
     };
 
     // If arrays are empty from getAll, they should be undefined to avoid sending empty params to API if that's how hooks work

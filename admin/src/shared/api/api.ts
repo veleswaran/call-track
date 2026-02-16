@@ -145,6 +145,35 @@ export const api = {
         return response.json();
     },
 
+    async patch<T>(endpoint: string, data?: unknown): Promise<T> {
+        await this.getCsrfCookie();
+
+        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+            method: "PATCH",
+            credentials: "include",
+            headers: getHeaders(),
+            body: data ? JSON.stringify(data) : undefined,
+        });
+
+        if (!response.ok) {
+            let errorMessage = response.statusText;
+            let errorData = null;
+            try {
+                errorData = await response.json();
+                errorMessage = errorData.message || errorMessage;
+            } catch {
+                // Ignore JSON parse error
+            }
+            throw createApiError(errorMessage, response.status, errorData);
+        }
+
+        if (response.status === 204) {
+            return {} as T;
+        }
+
+        return response.json();
+    },
+
     async delete<T>(endpoint: string): Promise<T> {
         await this.getCsrfCookie();
 

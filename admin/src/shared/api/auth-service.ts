@@ -49,7 +49,9 @@ export const authService = {
      */
     async getCurrentUser(): Promise<User | null> {
         try {
-            return await api.get<User>("/api/user");
+            // API returns wrapped resource: { data: User }
+            const response = await api.get<{ data: User }>("/api/user");
+            return response.data;
         } catch {
             return null;
         }

@@ -9,8 +9,17 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class GetPaginatedUsersAction
 {
-    public function execute(int $perPage = 15): LengthAwarePaginator
+    public function execute(\App\Domain\Users\DTOs\ListUsersDTO $dto): LengthAwarePaginator
     {
-        return User::query()->latest()->paginate($perPage);
+        return User::query()
+            ->with(['agent']) // Eager load agent to avoid N+1
+            ->when($dto->search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                });
+            })
+            ->latest()
+            ->paginate($dto->perPage);
     }
 }

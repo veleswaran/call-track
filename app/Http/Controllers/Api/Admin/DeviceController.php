@@ -16,9 +16,17 @@ class DeviceController extends Controller
      */
     public function index(
         Request $request,
-        \App\Actions\Devices\ListDevicesAction $listAction
+        \App\Actions\Devices\ListDevicesAction $listAction,
+        \App\Domain\Auth\Actions\GetAgentAccessScopeAction $getAgentAccessScopeAction
     ): AnonymousResourceCollection {
-        $dto = \App\Domain\Devices\DTOs\ListDevicesDTO::fromRequest($request);
+        /** @var \App\Domain\Users\Models\User $user */
+        $user = $request->user();
+
+        // Resolve scope: 'all' or array of agent IDs
+        $scope = $getAgentAccessScopeAction->execute($user);
+
+        // Pass scope to DTO factory
+        $dto = \App\Domain\Devices\DTOs\ListDevicesDTO::fromRequest($request, $scope);
         $devices = $listAction->execute($dto);
 
         return DeviceResource::collection($devices);

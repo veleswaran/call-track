@@ -36,6 +36,7 @@ class DeviceResource extends JsonResource
                 'name' => $this->resource->agent->name,
             ]),
             'last_sync_at' => $this->last_heartbeat_at,
+            'metadata' => $this->metadata,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
