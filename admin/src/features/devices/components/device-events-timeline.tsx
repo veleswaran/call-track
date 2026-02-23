@@ -1,7 +1,7 @@
 "use client";
 
 import type { DeviceEvent } from "@shared/types";
-import { formatDistanceToNow } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import {
     XCircle,
     Shield,
@@ -145,12 +145,20 @@ export function DeviceEventsTimeline({
                                             </p>
                                         )}
                                     </div>
-                                    <span className="shrink-0 text-xs text-zinc-400">
-                                        {formatDistanceToNow(
-                                            new Date(event.occurred_at),
-                                            { addSuffix: true }
-                                        )}
-                                    </span>
+                                    <div className="shrink-0 text-right">
+                                        <span className="block text-xs text-zinc-500 dark:text-zinc-400">
+                                            {format(
+                                                new Date(event.occurred_at),
+                                                "MMM d, yyyy, h:mm a"
+                                            )}
+                                        </span>
+                                        <span className="block text-xs text-zinc-400 dark:text-zinc-500">
+                                            {formatDistanceToNow(
+                                                new Date(event.occurred_at),
+                                                { addSuffix: true }
+                                            )}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </div>

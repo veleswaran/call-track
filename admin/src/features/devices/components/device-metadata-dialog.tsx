@@ -14,9 +14,41 @@ interface DeviceMetadataDialogProps {
     device: Device;
 }
 
+/**
+ * Safely parses device metadata which may arrive as a parsed object or a raw JSON string.
+ * Returns a Record for key-value display, or null if it cannot be parsed into one.
+ */
+function parseMetadata(raw: unknown): Record<string, unknown> | null {
+    if (raw === null || raw === undefined) return null;
+
+    let parsed = raw;
+
+    // If it's a string, attempt JSON.parse
+    if (typeof parsed === "string") {
+        try {
+            parsed = JSON.parse(parsed);
+        } catch {
+            return null;
+        }
+    }
+
+    // Must be a plain object (not an array) to display as key-value pairs
+    if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) {
+        const obj = parsed as Record<string, unknown>;
+        return Object.keys(obj).length > 0 ? obj : null;
+    }
+
+    return null;
+}
+
+function formatMetadataValue(value: unknown): string {
+    if (value === null || value === undefined) return "—";
+    if (typeof value === "object") return JSON.stringify(value);
+    return String(value);
+}
+
 export function DeviceMetadataDialog({ device }: DeviceMetadataDialogProps) {
-    const metadata = device.metadata || {};
-    const hasMetadata = Object.keys(metadata).length > 0;
+    const metadata = parseMetadata(device.metadata);
 
     return (
         <Dialog>
@@ -38,7 +70,7 @@ export function DeviceMetadataDialog({ device }: DeviceMetadataDialogProps) {
                     </DialogDescription>
                 </DialogHeader>
                 <div className="max-h-[60vh] overflow-y-auto pr-4">
-                    {hasMetadata ? (
+                    {metadata ? (
                         <div className="grid gap-4 py-4">
                             {Object.entries(metadata).map(([key, value]) => (
                                 <div key={key} className="grid grid-cols-3 items-center gap-4">
@@ -46,11 +78,17 @@ export function DeviceMetadataDialog({ device }: DeviceMetadataDialogProps) {
                                         {key.replace(/_/g, ' ')}
                                     </span>
                                     <span className="col-span-2 text-sm break-all">
-                                        {String(value)}
+                                        {formatMetadataValue(value)}
                                     </span>
                                 </div>
                             ))}
                         </div>
+                    ) : device.metadata ? (
+                        <pre className="whitespace-pre-wrap break-all rounded-md bg-zinc-100 p-4 text-xs text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+                            {typeof device.metadata === "string"
+                                ? device.metadata
+                                : JSON.stringify(device.metadata, null, 2)}
+                        </pre>
                     ) : (
                         <div className="py-8 text-center text-muted-foreground">
                             No metadata available for this device.
