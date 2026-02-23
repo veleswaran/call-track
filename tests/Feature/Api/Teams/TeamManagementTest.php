@@ -130,4 +130,53 @@ class TeamManagementTest extends TestCase
             'role' => 'MANAGER',
         ]);
     }
+
+    public function test_admin_can_update_team_name()
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+
+        $team = Team::create(['name' => 'Old Name']);
+
+        $response = $this->actingAs($admin)->patchJson("/api/v1/admin/teams/{$team->id}", [
+            'name' => 'New Name',
+        ]);
+
+        $response->assertOk();
+        $response->assertJsonPath('data.name', 'New Name');
+        $response->assertJsonPath('message', 'Team updated successfully.');
+        $this->assertDatabaseHas('teams', ['id' => $team->id, 'name' => 'New Name']);
+    }
+
+    public function test_regular_user_cannot_update_team_name()
+    {
+        $user = User::factory()->create();
+        $user->assignRole('member');
+
+        $team = Team::create(['name' => 'Protected Team']);
+
+        $response = $this->actingAs($user)->patchJson("/api/v1/admin/teams/{$team->id}", [
+            'name' => 'Hacked Name',
+        ]);
+
+        $response->assertForbidden();
+        $this->assertDatabaseHas('teams', ['id' => $team->id, 'name' => 'Protected Team']);
+    }
+
+    public function test_update_team_name_validates_uniqueness()
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+
+        Team::create(['name' => 'Existing Team']);
+        $team = Team::create(['name' => 'Another Team']);
+
+        $response = $this->actingAs($admin)->patchJson("/api/v1/admin/teams/{$team->id}", [
+            'name' => 'Existing Team',
+        ]);
+
+        $response->assertUnprocessable();
+        $response->assertJsonValidationErrors('name');
+        $this->assertDatabaseHas('teams', ['id' => $team->id, 'name' => 'Another Team']);
+    }
 }
