@@ -179,34 +179,29 @@ describe("AppShell", () => {
             expect(screen.getByTestId("bottom-nav")).toBeInTheDocument();
         });
 
-        it("should open mobile menu when hamburger is clicked", async () => {
+        it("should render More button in bottom nav on mobile", () => {
+            renderWithProviders(<AppShell>Content</AppShell>);
+            expect(screen.getByTestId("bottom-nav-more")).toBeInTheDocument();
+        });
+
+        it("should show overflow items when More button is clicked", async () => {
             const user = userEvent.setup();
             renderWithProviders(<AppShell>Content</AppShell>);
 
-            expect(screen.queryByTestId("mobile-menu")).not.toBeInTheDocument();
-
-            await user.click(screen.getByTestId("menu-toggle"));
-            expect(screen.getByTestId("mobile-menu")).toBeInTheDocument();
+            await user.click(screen.getByTestId("bottom-nav-more"));
+            expect(screen.getByText("Teams")).toBeInTheDocument();
+            expect(screen.getByText("Users")).toBeInTheDocument();
+            expect(screen.getByText("Agents")).toBeInTheDocument();
+            expect(screen.getByText("Contacts")).toBeInTheDocument();
         });
 
-        it("should close mobile menu when close button is clicked", async () => {
-            const user = userEvent.setup();
-            renderWithProviders(<AppShell>Content</AppShell>);
-
-            await user.click(screen.getByTestId("menu-toggle"));
-            expect(screen.getByTestId("mobile-menu")).toBeInTheDocument();
-
-            await user.click(screen.getByTestId("mobile-menu-close"));
-            expect(screen.queryByTestId("mobile-menu")).not.toBeInTheDocument();
-        });
-
-        it("should have logout in mobile menu", async () => {
+        it("should have logout in bottom nav More menu", async () => {
             const user = userEvent.setup();
             const onLogout = vi.fn();
             renderWithProviders(<AppShell onLogout={onLogout}>Content</AppShell>);
 
-            await user.click(screen.getByTestId("menu-toggle"));
-            expect(screen.getByTestId("mobile-menu-logout")).toBeInTheDocument();
+            await user.click(screen.getByTestId("bottom-nav-more"));
+            expect(screen.getByTestId("bottom-nav-logout")).toBeInTheDocument();
         });
     });
 });

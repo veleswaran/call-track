@@ -55,89 +55,80 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
     }
 
     return (
-        <div className="flex flex-col gap-4 p-4 border rounded-lg bg-card shadow-sm">
-            <div className="flex flex-col gap-4 items-stretch">
-
-                {/* Date Range Picker */}
-                <div className={cn("grid gap-2 w-full")}>
-                    <Popover>
-                        <PopoverTrigger asChild>
-                            <Button
-                                id="date"
-                                variant={"outline"}
-                                className={cn(
-                                    "w-full sm:w-[260px] justify-start text-left font-normal",
-                                    !date && "text-muted-foreground"
-                                )}
-                            >
-                                <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
-                                {date?.from ? (
-                                    date.to ? (
-                                        <span className="truncate">
-                                            {format(date.from, "LLL dd, y")} -{" "}
-                                            {format(date.to, "LLL dd, y")}
-                                        </span>
-                                    ) : (
-                                        format(date.from, "LLL dd, y")
-                                    )
-                                ) : (
-                                    <span>Pick a date</span>
-                                )}
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                                initialFocus
-                                mode="range"
-                                defaultMonth={date?.from}
-                                selected={date}
-                                onSelect={setDate}
-                                numberOfMonths={2}
-                            />
-                        </PopoverContent>
-                    </Popover>
-                </div>
-
-                {/* Filters Row */}
-                <div className="flex flex-wrap gap-2 items-center w-full">
-
-                    <Select value={status} onValueChange={setStatus}>
-                        <SelectTrigger className="flex-1 min-w-[120px] max-w-[160px]">
-                            <SelectValue placeholder="All Statuses" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">All Statuses</SelectItem>
-                            <SelectItem value="CONNECTED">Connected</SelectItem>
-                            <SelectItem value="MISSED">Missed</SelectItem>
-                            <SelectItem value="NO_ANSWER">No Answer</SelectItem>
-                        </SelectContent>
-                    </Select>
-
-                    <Select value={type} onValueChange={setType}>
-                        <SelectTrigger className="flex-1 min-w-[120px] max-w-[160px]">
-                            <SelectValue placeholder="All Classes" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">All Classes</SelectItem>
-                            <SelectItem value="BUSINESS">Business</SelectItem>
-                            <SelectItem value="PERSONAL">Personal</SelectItem>
-                            <SelectItem value="IGNORED">Ignored</SelectItem>
-                        </SelectContent>
-                    </Select>
-
-                    <Button size="icon" variant="ghost" onClick={clearFilters} title="Reset Filters">
-                        <X className="h-4 w-4" />
-                    </Button>
-
+        <div className="flex flex-wrap items-center gap-3 p-4 border rounded-lg bg-card shadow-sm">
+            {/* Date Range Picker */}
+            <Popover>
+                <PopoverTrigger asChild>
                     <Button
-                        onClick={handleApplyFilters}
-                        className="ml-2 bg-blue-600 hover:bg-blue-700 text-white"
+                        id="date"
+                        variant={"outline"}
+                        className={cn(
+                            "w-[260px] justify-start text-left font-normal",
+                            !date && "text-muted-foreground"
+                        )}
                     >
-                        <Filter className="mr-2 h-4 w-4" />
-                        Filter
+                        <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
+                        {date?.from ? (
+                            date.to ? (
+                                <span className="truncate">
+                                    {format(date.from, "LLL dd, y")} -{" "}
+                                    {format(date.to, "LLL dd, y")}
+                                </span>
+                            ) : (
+                                format(date.from, "LLL dd, y")
+                            )
+                        ) : (
+                            <span>Pick a date</span>
+                        )}
                     </Button>
-                </div>
-            </div>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                        initialFocus
+                        mode="range"
+                        defaultMonth={date?.from}
+                        selected={date}
+                        onSelect={setDate}
+                        numberOfMonths={2}
+                    />
+                </PopoverContent>
+            </Popover>
+
+            <Select value={status} onValueChange={setStatus}>
+                <SelectTrigger className="w-[150px]">
+                    <SelectValue placeholder="All Statuses" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="all">All Statuses</SelectItem>
+                    <SelectItem value="CONNECTED">Connected</SelectItem>
+                    <SelectItem value="MISSED">Missed</SelectItem>
+                    <SelectItem value="NO_ANSWER">No Answer</SelectItem>
+                </SelectContent>
+            </Select>
+
+            <Select value={type} onValueChange={setType}>
+                <SelectTrigger className="w-[150px]">
+                    <SelectValue placeholder="All Classes" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="all">All Classes</SelectItem>
+                    <SelectItem value="BUSINESS">Business</SelectItem>
+                    <SelectItem value="PERSONAL">Personal</SelectItem>
+                    <SelectItem value="IGNORED">Ignored</SelectItem>
+                </SelectContent>
+            </Select>
+
+            <Button size="icon" variant="ghost" onClick={clearFilters} title="Reset Filters">
+                <X className="h-4 w-4" />
+            </Button>
+
+            <Button
+                onClick={handleApplyFilters}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+                <Filter className="mr-2 h-4 w-4" />
+                Filter
+            </Button>
         </div>
     )
 }

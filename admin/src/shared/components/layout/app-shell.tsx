@@ -4,7 +4,6 @@ import * as React from "react";
 import { SidebarNav } from "./sidebar-nav";
 import { Header } from "./header";
 import { BottomNav } from "./bottom-nav";
-import { MobileMenu } from "./mobile-menu";
 import { useMobile } from "@shared/hooks/use-mobile";
 import { User } from "../../types";
 
@@ -22,18 +21,9 @@ export interface AppShellProps {
 export function AppShell({ children, user, onLogout }: AppShellProps) {
     const isMobile = useMobile();
     const [sidebarOpen, setSidebarOpen] = React.useState(true);
-    const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
     const handleToggle = React.useCallback(() => {
-        if (isMobile) {
-            setMobileMenuOpen((prev) => !prev);
-        } else {
-            setSidebarOpen((prev) => !prev);
-        }
-    }, [isMobile]);
-
-    const handleCloseMobileMenu = React.useCallback(() => {
-        setMobileMenuOpen(false);
+        setSidebarOpen((prev) => !prev);
     }, []);
 
     return (
@@ -60,16 +50,7 @@ export function AppShell({ children, user, onLogout }: AppShellProps) {
             </div>
 
             {/* Mobile bottom navigation */}
-            {isMobile && <BottomNav />}
-
-            {/* Mobile slide-out menu for secondary nav */}
-            {isMobile && (
-                <MobileMenu
-                    open={mobileMenuOpen}
-                    onClose={handleCloseMobileMenu}
-                    onLogout={onLogout}
-                />
-            )}
+            {isMobile && <BottomNav onLogout={onLogout} />}
         </div>
     );
 }

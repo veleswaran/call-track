@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { BottomNav, navItems } from "./bottom-nav";
 
 // Mock Next.js navigation
@@ -19,14 +20,18 @@ describe("BottomNav", () => {
         expect(screen.getByTestId("bottom-nav")).toBeInTheDocument();
     });
 
-    it("should render all navigation items", () => {
+    it("should render primary navigation items", () => {
         render(<BottomNav />);
 
-        navItems.forEach((item) => {
-            expect(
-                screen.getByTestId(`bottom-nav-${item.name.toLowerCase()}`)
-            ).toBeInTheDocument();
-        });
+        expect(screen.getByTestId("bottom-nav-dashboard")).toBeInTheDocument();
+        expect(screen.getByTestId("bottom-nav-reports")).toBeInTheDocument();
+        expect(screen.getByTestId("bottom-nav-calls")).toBeInTheDocument();
+        expect(screen.getByTestId("bottom-nav-devices")).toBeInTheDocument();
+    });
+
+    it("should render More button", () => {
+        render(<BottomNav />);
+        expect(screen.getByTestId("bottom-nav-more")).toBeInTheDocument();
     });
 
     it("should have navigation role", () => {
@@ -73,24 +78,63 @@ describe("BottomNav", () => {
         expect(callsLink).not.toHaveAttribute("aria-current");
     });
 
-    it("should render correct link hrefs", () => {
+    it("should render correct link hrefs for primary items", () => {
         render(<BottomNav />);
 
-        navItems.forEach((item) => {
-            const link = screen.getByTestId(`bottom-nav-${item.name.toLowerCase()}`);
-            expect(link).toHaveAttribute("href", item.href);
-        });
+        expect(screen.getByTestId("bottom-nav-dashboard")).toHaveAttribute("href", "/");
+        expect(screen.getByTestId("bottom-nav-reports")).toHaveAttribute("href", "/reports");
+        expect(screen.getByTestId("bottom-nav-calls")).toHaveAttribute("href", "/call-logs");
+        expect(screen.getByTestId("bottom-nav-devices")).toHaveAttribute("href", "/devices");
     });
 
     it("should have md:hidden class for mobile-only display", () => {
         render(<BottomNav />);
         expect(screen.getByTestId("bottom-nav")).toHaveClass("md:hidden");
     });
+
+    it("should open More menu when More button is clicked", async () => {
+        const user = userEvent.setup();
+        render(<BottomNav />);
+
+        await user.click(screen.getByTestId("bottom-nav-more"));
+
+        // More menu items should now be visible
+        expect(screen.getByText("Teams")).toBeInTheDocument();
+        expect(screen.getByText("Users")).toBeInTheDocument();
+        expect(screen.getByText("Agents")).toBeInTheDocument();
+        expect(screen.getByText("Contacts")).toBeInTheDocument();
+    });
+
+    it("should render logout button in More menu when onLogout is provided", async () => {
+        const user = userEvent.setup();
+        render(<BottomNav onLogout={() => { }} />);
+
+        await user.click(screen.getByTestId("bottom-nav-more"));
+        expect(screen.getByTestId("bottom-nav-logout")).toBeInTheDocument();
+    });
+
+    it("should not render logout button when onLogout is not provided", async () => {
+        const user = userEvent.setup();
+        render(<BottomNav />);
+
+        await user.click(screen.getByTestId("bottom-nav-more"));
+        expect(screen.queryByTestId("bottom-nav-logout")).not.toBeInTheDocument();
+    });
+
+    it("should call onLogout when logout button is clicked", async () => {
+        const user = userEvent.setup();
+        const onLogout = vi.fn();
+        render(<BottomNav onLogout={onLogout} />);
+
+        await user.click(screen.getByTestId("bottom-nav-more"));
+        await user.click(screen.getByTestId("bottom-nav-logout"));
+        expect(onLogout).toHaveBeenCalledTimes(1);
+    });
 });
 
 describe("navItems", () => {
-    it("should have 5 navigation items", () => {
-        expect(navItems).toHaveLength(5);
+    it("should have 8 navigation items (4 primary + 4 overflow)", () => {
+        expect(navItems).toHaveLength(8);
     });
 
     it("should have Dashboard as first item", () => {

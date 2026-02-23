@@ -26,6 +26,8 @@ interface TeamServiceInterface
 
     public function getAllTeams(?\App\Domain\Users\Models\User $user = null): Collection;
 
+    public function updateTeam(Team $team, string $name): Team;
+
     public function getTeamWithDetails(int $id): Team;
 
     public function findTeam(int $id): Team;
