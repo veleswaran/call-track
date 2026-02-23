@@ -20,14 +20,18 @@ export function Header({ onMenuClick, user, onLogout }: HeaderProps) {
 
     return (
         <header className="flex h-16 items-center justify-between border-b border-zinc-200 bg-white px-4 dark:border-zinc-800 dark:bg-zinc-900 z-50">
-            {/* Left side - Menu toggle */}
+            {/* Left side - Logo on mobile, menu toggle on desktop */}
             <div className="flex items-center gap-4">
+                <span className="text-lg font-semibold text-zinc-900 dark:text-white md:hidden">
+                    CallTrack AI
+                </span>
                 <Button
                     variant="ghost"
                     size="icon"
                     onClick={onMenuClick}
                     aria-label="Toggle menu"
                     data-testid="menu-toggle"
+                    className="hidden md:inline-flex"
                 >
                     <Menu className="h-5 w-5" />
                 </Button>

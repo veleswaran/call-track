@@ -13,6 +13,7 @@ use App\Domain\Teams\Actions\GetTeamWithDetailsAction;
 use App\Domain\Teams\Actions\ListTeamsAction;
 use App\Domain\Teams\Actions\RemoveMemberFromTeamAction;
 use App\Domain\Teams\Actions\UpdateMemberRoleAction;
+use App\Domain\Teams\Actions\UpdateTeamAction;
 use App\Domain\Teams\DTOs\AddTeamMemberDTO;
 use App\Domain\Teams\DTOs\UpdateTeamMemberRoleDTO;
 use App\Domain\Teams\Models\Team;
@@ -28,7 +29,8 @@ class TeamService implements TeamServiceInterface
         protected UpdateMemberRoleAction $updateMemberRoleAction,
 
         protected ListTeamsAction $listTeamsAction,
-        protected GetTeamWithDetailsAction $getTeamWithDetailsAction
+        protected GetTeamWithDetailsAction $getTeamWithDetailsAction,
+        protected UpdateTeamAction $updateTeamAction
     ) {}
 
     public function createTeam(string $name): Team
@@ -69,6 +71,11 @@ class TeamService implements TeamServiceInterface
         $agent = Agent::findOrFail($dto->agentId);
 
         $this->updateMemberRoleAction->execute($team, $agent, $dto->role);
+    }
+
+    public function updateTeam(Team $team, string $name): Team
+    {
+        return $this->updateTeamAction->execute($team, $name);
     }
 
     public function getAllTeams(?\App\Domain\Users\Models\User $user = null): Collection

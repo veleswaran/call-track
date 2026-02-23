@@ -57,4 +57,14 @@ export const teamsApi = {
     ): Promise<void> {
         return api.patch(`/api/v1/admin/teams/${teamId}/members/${agentId}`, { role });
     },
+
+    /**
+     * Update a team's name
+     */
+    async updateTeam(
+        id: number,
+        data: { name: string }
+    ): Promise<ResourceResponse<Team>> {
+        return api.patch<ResourceResponse<Team>>(`/api/v1/admin/teams/${id}`, data);
+    },
 };

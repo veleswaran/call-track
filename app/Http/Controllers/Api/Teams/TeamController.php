@@ -10,6 +10,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\AddTeamMemberRequest;
 use App\Http\Requests\Admin\StoreTeamRequest;
 use App\Http\Requests\Admin\UpdateMemberRoleRequest;
+use App\Http\Requests\Admin\UpdateTeamRequest;
 use App\Http\Resources\TeamResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -53,6 +54,19 @@ class TeamController extends Controller
             'data' => new TeamResource($team),
             'message' => 'Team created successfully.',
         ], Response::HTTP_CREATED);
+    }
+
+    public function update(UpdateTeamRequest $request, string $team): JsonResponse
+    {
+        $teamModel = $this->teamService->findTeam((int) $team);
+        $this->authorize('update', $teamModel);
+
+        $updated = $this->teamService->updateTeam($teamModel, $request->validated()['name']);
+
+        return response()->json([
+            'data' => new TeamResource($updated),
+            'message' => 'Team updated successfully.',
+        ]);
     }
 
     public function addMember(AddTeamMemberRequest $request, string $team): JsonResponse
