@@ -83,7 +83,7 @@ export function DeviceMetadataDialog({ device }: DeviceMetadataDialogProps) {
                                 </div>
                             ))}
                         </div>
-                    ) : device.metadata ? (
+                    ) : (device.metadata && Object.keys(device.metadata).length > 0) ? (
                         <pre className="whitespace-pre-wrap break-all rounded-md bg-zinc-100 p-4 text-xs text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
                             {typeof device.metadata === "string"
                                 ? device.metadata
