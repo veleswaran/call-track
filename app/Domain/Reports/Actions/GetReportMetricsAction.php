@@ -91,11 +91,25 @@ final class GetReportMetricsAction
 
         // Apply user-selected agent filter (must be within allowed scope)
         if (! empty($filters->agentIds)) {
-            // If we already joined devices for RBAC, we don't need to re-join
+            // Join devices for agent_id filter if not already joined
             if ($filters->allowedAgentIds === null) {
                 $query->join('devices', 'call_logs.device_id', '=', 'devices.id');
             }
             $query->whereIn('devices.agent_id', $filters->agentIds);
+        }
+
+        // Apply team filter
+        if (! empty($filters->teamIds)) {
+            // Join devices if not already joined
+            if ($filters->allowedAgentIds === null && empty($filters->agentIds)) {
+                $query->join('devices', 'call_logs.device_id', '=', 'devices.id');
+            }
+
+            $query->whereIn('devices.agent_id', function ($q) use ($filters) {
+                $q->select('agent_id')
+                    ->from('team_members')
+                    ->whereIn('team_id', $filters->teamIds);
+            });
         }
 
         if (! empty($filters->types)) {

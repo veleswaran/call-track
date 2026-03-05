@@ -83,6 +83,32 @@ class TeamService implements TeamServiceInterface
         return $this->listTeamsAction->execute($user);
     }
 
+    public function getPaginatedTeams(?\App\Domain\Users\Models\User $user = null, int $perPage = 20): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    {
+        $query = Team::withCount([
+            'members',
+            'members as managers_count' => function ($query) {
+                $query->where('team_members.role', 'MANAGER');
+            },
+        ]);
+
+        if ($user && ! $user->hasRole(['super-admin', 'admin'])) {
+            if ($user->agent) {
+                /** @var \App\Domain\Agents\Models\Agent $agent */
+                $agent = $user->agent;
+                $query->whereHas('members', function ($q) use ($agent) {
+                    $q->where('agents.id', $agent->id)
+                        ->where('team_members.role', 'MANAGER');
+                });
+            } else {
+                // If it's empty, we still return a paginator, but empty
+                return Team::whereRaw('1=0')->paginate($perPage);
+            }
+        }
+
+        return $query->paginate($perPage);
+    }
+
     public function getTeamWithDetails(int $id): Team
     {
         return $this->getTeamWithDetailsAction->execute($id);

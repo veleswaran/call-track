@@ -44,6 +44,7 @@ final class ReportService implements ReportServiceInterface
             startDate: $filters->startDate ?? Carbon::now()->startOfWeek(),
             endDate: $filters->endDate ?? Carbon::now()->endOfWeek(),
             agentIds: $filters->agentIds,
+            teamIds: $filters->teamIds,
             statuses: $filters->statuses,
             types: $filters->types,
             search: $filters->search,

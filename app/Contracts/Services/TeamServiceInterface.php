@@ -26,6 +26,8 @@ interface TeamServiceInterface
 
     public function getAllTeams(?\App\Domain\Users\Models\User $user = null): Collection;
 
+    public function getPaginatedTeams(?\App\Domain\Users\Models\User $user = null, int $perPage = 20): \Illuminate\Contracts\Pagination\LengthAwarePaginator;
+
     public function updateTeam(Team $team, string $name): Team;
 
     public function getTeamWithDetails(int $id): Team;

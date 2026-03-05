@@ -22,15 +22,14 @@ class TeamController extends Controller
         protected TeamServiceInterface $teamService
     ) {}
 
-    public function index(Request $request): JsonResponse
+    public function index(Request $request): \Illuminate\Http\Resources\Json\AnonymousResourceCollection
     {
         $this->authorize('viewAny', Team::class);
 
-        $teams = $this->teamService->getAllTeams($request->user());
+        $perPage = (int) $request->input('per_page', 20);
+        $teams = $this->teamService->getPaginatedTeams($request->user(), $perPage);
 
-        return response()->json([
-            'data' => TeamResource::collection($teams),
-        ]);
+        return TeamResource::collection($teams);
     }
 
     public function show(string $team): JsonResponse

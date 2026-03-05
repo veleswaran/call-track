@@ -25,8 +25,11 @@ import { Input } from "@shared/components/ui/input";
 import { Label } from "@shared/components/ui/label";
 import { teamsApi } from "../api/teams-api";
 
+import { CallLogPagination } from "@features/call-logs/components/call-log-pagination";
+
 export function TeamList() {
-    const [page] = useState(1);
+    const [page, setPage] = useState(1);
+    const [perPage, setPerPage] = useState(25);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const queryClient = useQueryClient();
 
@@ -34,9 +37,17 @@ export function TeamList() {
     const isAdmin = user?.roles.some((role: string) => ['admin', 'super-admin'].includes(role));
 
     const { data: teamsData, isLoading } = useQuery({
-        queryKey: ["teams", page],
-        queryFn: () => teamsApi.getTeams({ page }),
+        queryKey: ["teams", page, perPage],
+        queryFn: () => teamsApi.getTeams({ page, per_page: perPage }),
     });
+
+    const teams = teamsData?.data ?? [];
+    const meta = teamsData?.meta;
+
+    const handlePagination = (newPage: number, newPerPage: number) => {
+        setPage(newPage);
+        setPerPage(newPerPage);
+    };
 
     return (
         <div className="space-y-4">
@@ -70,12 +81,12 @@ export function TeamList() {
                             <TableRow>
                                 <TableCell colSpan={5} className="text-center">Loading...</TableCell>
                             </TableRow>
-                        ) : teamsData?.data.length === 0 ? (
+                        ) : teams.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={5} className="text-center">No teams found.</TableCell>
                             </TableRow>
                         ) : (
-                            teamsData?.data.map((team) => (
+                            teams.map((team) => (
                                 <TableRow key={team.id}>
                                     <TableCell className="font-medium">{team.name}</TableCell>
                                     <TableCell>{team.managers_count || 0}</TableCell>
@@ -92,6 +103,17 @@ export function TeamList() {
                     </TableBody>
                 </Table>
             </div>
+
+            {meta && (
+                <div className="py-4 border-t">
+                    <CallLogPagination
+                        page={page}
+                        perPage={perPage}
+                        total={meta.total}
+                        onChange={handlePagination}
+                    />
+                </div>
+            )}
         </div>
     );
 }

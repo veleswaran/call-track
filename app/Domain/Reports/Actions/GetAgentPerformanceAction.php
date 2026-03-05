@@ -37,6 +37,15 @@ final class GetAgentPerformanceAction
             $query->whereIn('agents.id', $filters->agentIds);
         }
 
+        // Apply team filter
+        if (! empty($filters->teamIds)) {
+            $query->whereIn('agents.id', function ($q) use ($filters) {
+                $q->select('agent_id')
+                    ->from('team_members')
+                    ->whereIn('team_id', $filters->teamIds);
+            });
+        }
+
         // Filter by Classification (mapped from 'types' in DTO)
         if (! empty($filters->types)) {
             // Frontend sends BUSINESS/PERSONAL. Column in CallClassification is 'type'.

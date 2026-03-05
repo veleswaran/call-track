@@ -19,7 +19,9 @@ final class GetReportDataRequest extends FormRequest
             'start_date' => ['nullable', 'date'],
             'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
             'agent_ids' => ['nullable', 'array'],
-            'agent_ids.*' => ['integer', 'exists:users,id'], // Assuming agents are users
+            'agent_ids.*' => ['integer', 'exists:agents,id'], // Agents are from the 'agents' table
+            'team_ids' => ['nullable', 'array'],
+            'team_ids.*' => ['integer', 'exists:teams,id'],
             'statuses' => ['nullable', 'array'],
             'statuses.*' => ['string', 'in:MISSED,NO_ANSWER,CONNECTED'],
             'types' => ['nullable', 'array'],

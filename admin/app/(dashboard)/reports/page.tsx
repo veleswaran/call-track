@@ -13,11 +13,11 @@ import { api } from "@shared/api/api"
 export default function ReportsPage() {
     const [filters, setFilters] = useState<ReportFiltersData>({
         dateRange: {
-            from: new Date(new Date().setDate(new Date().getDate() - 7)), // Last 7 days default
+            from: new Date(new Date().setDate(new Date().getDate() - 30)), // Last 30 days default
             to: new Date(),
         },
         status: "all",
-        type: "BUSINESS"
+        type: "all"
     })
 
     const queryParams = {
@@ -25,6 +25,8 @@ export default function ReportsPage() {
         end_date: filters.dateRange?.to ? format(filters.dateRange.to, 'yyyy-MM-dd') : undefined,
         statuses: filters.status !== 'all' ? [filters.status] : undefined,
         types: filters.type !== 'all' ? [filters.type] : undefined,
+        agent_ids: filters.agentId ? [filters.agentId] : undefined,
+        team_ids: filters.teamId ? [filters.teamId] : undefined,
     }
 
     const getQueryString = (params: Record<string, string | number | (string | number)[] | undefined | null>) => {

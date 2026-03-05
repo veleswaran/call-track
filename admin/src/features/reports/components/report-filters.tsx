@@ -21,10 +21,16 @@ import {
     SelectValue,
 } from "@shared/components/ui/select"
 
+import { useQuery } from "@tanstack/react-query"
+import { api } from "@shared/api/api"
+import { Agent, Team } from "@shared/types"
+
 export interface ReportFiltersData {
     dateRange: DateRange | undefined
     status: string
     type: string
+    agentId?: string | null
+    teamId?: string | null
 }
 
 interface ReportFiltersProps {
@@ -32,26 +38,60 @@ interface ReportFiltersProps {
 }
 
 export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
-    // Default: Last 7 days
+    // Default: Last 30 days to ensure data is visible
     const defaultDateRange = {
-        from: new Date(new Date().setDate(new Date().getDate() - 7)),
+        from: new Date(new Date().setDate(new Date().getDate() - 30)),
         to: new Date(),
     };
 
     const [date, setDate] = useState<DateRange | undefined>(defaultDateRange)
     const [status, setStatus] = useState("all")
-    const [type, setType] = useState("BUSINESS")
+    const [type, setType] = useState("all")
+    const [agentId, setAgentId] = useState<string>("all")
+    const [teamId, setTeamId] = useState<string>("all")
+
+    // Fetch Agents
+    const agentsQuery = useQuery({
+        queryKey: ['agents', 'simple-list'],
+        queryFn: async () => {
+            const res = await api.get<{ data: Agent[] }>('/api/v1/admin/agents?per_page=100')
+            return res.data
+        }
+    })
+
+    // Fetch Teams
+    const teamsQuery = useQuery({
+        queryKey: ['teams', 'simple-list'],
+        queryFn: async () => {
+            const res = await api.get<{ data: Team[] }>('/api/v1/admin/teams')
+            return res.data
+        }
+    })
 
     const handleApplyFilters = () => {
-        onFilterChange({ dateRange: date, status, type })
+        onFilterChange({
+            dateRange: date,
+            status,
+            type,
+            agentId: agentId !== "all" ? agentId : null,
+            teamId: teamId !== "all" ? teamId : null
+        })
     }
 
     const clearFilters = () => {
         // Reset to defaults
         setDate(defaultDateRange);
         setStatus("all");
-        setType("BUSINESS");
-        onFilterChange({ dateRange: defaultDateRange, status: "all", type: "BUSINESS" });
+        setType("all");
+        setAgentId("all");
+        setTeamId("all");
+        onFilterChange({
+            dateRange: defaultDateRange,
+            status: "all",
+            type: "all",
+            agentId: null,
+            teamId: null
+        });
     }
 
     return (
@@ -103,6 +143,34 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
                     <SelectItem value="CONNECTED">Connected</SelectItem>
                     <SelectItem value="MISSED">Missed</SelectItem>
                     <SelectItem value="NO_ANSWER">No Answer</SelectItem>
+                </SelectContent>
+            </Select>
+
+            <Select value={teamId} onValueChange={setTeamId}>
+                <SelectTrigger className="w-[150px]">
+                    <SelectValue placeholder="All Teams" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="all">All Teams</SelectItem>
+                    {teamsQuery.data?.map((team) => (
+                        <SelectItem key={team.id} value={team.id.toString()}>
+                            {team.name}
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+
+            <Select value={agentId} onValueChange={setAgentId}>
+                <SelectTrigger className="w-[150px]">
+                    <SelectValue placeholder="All Agents" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="all">All Agents</SelectItem>
+                    {agentsQuery.data?.map((agent) => (
+                        <SelectItem key={agent.id} value={agent.id.toString()}>
+                            {agent.name}
+                        </SelectItem>
+                    ))}
                 </SelectContent>
             </Select>
 

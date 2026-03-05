@@ -170,6 +170,11 @@ export function AgentPerformanceTable({ data, filters }: AgentPerformanceTablePr
             params.append('statuses[]', statusValue);
         }
 
+        // Team Filter
+        if (filters.teamId && filters.teamId !== 'all') {
+            params.append('team_id', filters.teamId);
+        }
+
         return `/call-logs?${params.toString()}`;
     };
 

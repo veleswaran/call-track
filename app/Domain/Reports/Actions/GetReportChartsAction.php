@@ -42,8 +42,21 @@ final class GetReportChartsAction
         if (! empty($filters->agentIds)) {
             if (! $devicesJoined) {
                 $query->join('devices', 'call_logs.device_id', '=', 'devices.id');
+                $devicesJoined = true;
             }
             $query->whereIn('devices.agent_id', $filters->agentIds);
+        }
+
+        if (! empty($filters->teamIds)) {
+            if (! $devicesJoined) {
+                $query->join('devices', 'call_logs.device_id', '=', 'devices.id');
+                $devicesJoined = true;
+            }
+            $query->whereIn('devices.agent_id', function ($q) use ($filters) {
+                $q->select('agent_id')
+                    ->from('team_members')
+                    ->whereIn('team_id', $filters->teamIds);
+            });
         }
         if (! empty($filters->types)) {
             $query->whereIn('call_classifications.type', $filters->types);
