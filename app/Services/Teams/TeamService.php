@@ -11,8 +11,8 @@ use App\Domain\Teams\Actions\AssignTeamManagerAction;
 use App\Domain\Teams\Actions\CreateTeamAction;
 use App\Domain\Teams\Actions\DeleteTeamAction;
 use App\Domain\Teams\Actions\GetTeamWithDetailsAction;
-use App\Domain\Teams\Actions\ListTeamsAction;
 use App\Domain\Teams\Actions\ListPaginatedTeamsAction;
+use App\Domain\Teams\Actions\ListTeamsAction;
 use App\Domain\Teams\Actions\RemoveMemberFromTeamAction;
 use App\Domain\Teams\Actions\UpdateMemberRoleAction;
 use App\Domain\Teams\Actions\UpdateTeamAction;
@@ -35,8 +35,7 @@ class TeamService implements TeamServiceInterface
         protected GetTeamWithDetailsAction $getTeamWithDetailsAction,
         protected UpdateTeamAction $updateTeamAction,
         protected DeleteTeamAction $deleteTeamAction
-    ) {
-    }
+    ) {}
 
     public function createTeam(string $name): Team
     {

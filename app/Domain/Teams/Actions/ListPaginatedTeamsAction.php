@@ -23,7 +23,7 @@ class ListPaginatedTeamsAction
         ]);
 
         // Scoping: If user is provided and NOT an admin, filter by manager role
-        if ($user && !$user->hasRole(['super-admin', 'admin'])) {
+        if ($user && ! $user->hasRole(['super-admin', 'admin'])) {
             if ($user->agent) {
                 /** @var \App\Domain\Agents\Models\Agent $agent */
                 $agent = $user->agent;
