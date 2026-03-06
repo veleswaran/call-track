@@ -55,7 +55,7 @@ final class ReportController extends Controller
             startDate: $base->startDate,
             endDate: $base->endDate,
             agentIds: $base->agentIds,
-            statuses: $base->statuses,
+            outcomes: $base->outcomes,
             types: $base->types,
             search: $base->search,
             allowedAgentIds: $allowedAgentIds,

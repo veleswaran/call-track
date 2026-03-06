@@ -160,14 +160,14 @@ export function AgentPerformanceTable({ data, filters }: AgentPerformanceTablePr
             params.append('classifications[]', filters.type.toLowerCase());
         }
 
-        // Status
-        if (filters.status && filters.status !== 'all') {
-            let statusValue = filters.status;
-            if (filters.status === 'CONNECTED') statusValue = 'Connected';
-            if (filters.status === 'MISSED') statusValue = 'Missed';
-            if (filters.status === 'NO_ANSWER') statusValue = 'No Answer';
+        // Outcome
+        if (filters.outcome && filters.outcome !== 'all') {
+            let outcomeValue = filters.outcome;
+            if (filters.outcome === 'CONNECTED') outcomeValue = 'Connected';
+            if (filters.outcome === 'MISSED') outcomeValue = 'Missed';
+            if (filters.outcome === 'NO_ANSWER') outcomeValue = 'No Answer';
 
-            params.append('statuses[]', statusValue);
+            params.append('outcomes[]', outcomeValue);
         }
 
         return `/call-logs?${params.toString()}`;

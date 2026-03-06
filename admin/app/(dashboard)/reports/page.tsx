@@ -16,14 +16,14 @@ export default function ReportsPage() {
             from: new Date(new Date().setDate(new Date().getDate() - 7)), // Last 7 days default
             to: new Date(),
         },
-        status: "all",
+        outcome: "all",
         type: "BUSINESS"
     })
 
     const queryParams = {
         start_date: filters.dateRange?.from ? format(filters.dateRange.from, 'yyyy-MM-dd') : undefined,
         end_date: filters.dateRange?.to ? format(filters.dateRange.to, 'yyyy-MM-dd') : undefined,
-        statuses: filters.status !== 'all' ? [filters.status] : undefined,
+        outcomes: filters.outcome !== 'all' ? [filters.outcome] : undefined,
         types: filters.type !== 'all' ? [filters.type] : undefined,
     }
 

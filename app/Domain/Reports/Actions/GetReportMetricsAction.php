@@ -20,7 +20,7 @@ final class GetReportMetricsAction
         $stats = $baseQuery->select([
             DB::raw('COUNT(*) as total_calls'),
             DB::raw("SUM(CASE 
-                WHEN call_logs.direction = 'MISSED' THEN 1 
+                WHEN call_logs.direction IN ('MISSED', 'REJECTED', 'BLOCKED') OR (call_logs.direction = 'INCOMING' AND call_logs.duration = 0) THEN 1 
                 ELSE 0 
             END) as missed_calls"),
             DB::raw("SUM(CASE 
@@ -102,13 +102,17 @@ final class GetReportMetricsAction
             $query->whereIn('call_classifications.type', $filters->types);
         }
 
-        // Status filter: Complex because status is derived from direction/duration
-        if (! empty($filters->statuses)) {
+        // Outcome filter: Complex because outcome is derived from direction/duration
+        if (! empty($filters->outcomes)) {
             $query->where(function ($q) use ($filters) {
-                foreach ($filters->statuses as $status) {
-                    switch ($status) {
+                foreach ($filters->outcomes as $outcome) {
+                    switch ($outcome) {
                         case 'MISSED':
-                            $q->orWhere('call_logs.direction', 'MISSED');
+                            $q->orWhereIn('call_logs.direction', ['MISSED', 'REJECTED', 'BLOCKED'])
+                                ->orWhere(function ($sq) {
+                                    $sq->where('call_logs.direction', 'INCOMING')
+                                        ->where('call_logs.duration', 0);
+                                });
                             break;
                         case 'NO_ANSWER':
                             $q->orWhere(function ($sq) {

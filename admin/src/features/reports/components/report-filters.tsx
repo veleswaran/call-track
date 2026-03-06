@@ -23,7 +23,7 @@ import {
 
 export interface ReportFiltersData {
     dateRange: DateRange | undefined
-    status: string
+    outcome: string
     type: string
 }
 
@@ -39,19 +39,19 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
     };
 
     const [date, setDate] = useState<DateRange | undefined>(defaultDateRange)
-    const [status, setStatus] = useState("all")
+    const [outcome, setOutcome] = useState("all")
     const [type, setType] = useState("BUSINESS")
 
     const handleApplyFilters = () => {
-        onFilterChange({ dateRange: date, status, type })
+        onFilterChange({ dateRange: date, outcome, type })
     }
 
     const clearFilters = () => {
         // Reset to defaults
         setDate(defaultDateRange);
-        setStatus("all");
+        setOutcome("all");
         setType("BUSINESS");
-        onFilterChange({ dateRange: defaultDateRange, status: "all", type: "BUSINESS" });
+        onFilterChange({ dateRange: defaultDateRange, outcome: "all", type: "BUSINESS" });
     }
 
     return (
@@ -94,12 +94,12 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
                 </PopoverContent>
             </Popover>
 
-            <Select value={status} onValueChange={setStatus}>
+            <Select value={outcome} onValueChange={setOutcome}>
                 <SelectTrigger className="w-[150px]">
-                    <SelectValue placeholder="All Statuses" />
+                    <SelectValue placeholder="All Outcomes" />
                 </SelectTrigger>
                 <SelectContent>
-                    <SelectItem value="all">All Statuses</SelectItem>
+                    <SelectItem value="all">All Outcomes</SelectItem>
                     <SelectItem value="CONNECTED">Connected</SelectItem>
                     <SelectItem value="MISSED">Missed</SelectItem>
                     <SelectItem value="NO_ANSWER">No Answer</SelectItem>

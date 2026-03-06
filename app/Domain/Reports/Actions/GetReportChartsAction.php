@@ -50,12 +50,17 @@ final class GetReportChartsAction
         }
         // Helper to apply status filters if needed, but charts usually show ALL statuses unless specifically filtered.
         // For consistency, we should apply them.
-        if (! empty($filters->statuses)) {
+        // Filter by Call Outcomes
+        if (! empty($filters->outcomes)) {
             $query->where(function ($q) use ($filters) {
-                foreach ($filters->statuses as $status) {
-                    switch ($status) {
+                foreach ($filters->outcomes as $outcome) {
+                    switch ($outcome) {
                         case 'MISSED':
-                            $q->orWhere('call_logs.direction', 'MISSED');
+                            $q->orWhereIn('call_logs.direction', ['MISSED', 'REJECTED', 'BLOCKED'])
+                                ->orWhere(function ($sq) {
+                                    $sq->where('call_logs.direction', 'INCOMING')
+                                        ->where('call_logs.duration', 0);
+                                });
                             break;
                         case 'NO_ANSWER':
                             $q->orWhere(function ($sq) {
@@ -79,7 +84,7 @@ final class GetReportChartsAction
         $data = $this->getBaseQuery($filters)
             ->selectRaw("
                 DATE(call_logs.timestamp) as date,
-                SUM(CASE WHEN call_logs.direction = 'MISSED' THEN 1 ELSE 0 END) as missed,
+                SUM(CASE WHEN call_logs.direction IN ('MISSED', 'REJECTED', 'BLOCKED') OR (call_logs.direction = 'INCOMING' AND call_logs.duration = 0) THEN 1 ELSE 0 END) as missed,
                 SUM(CASE WHEN call_logs.direction = 'OUTGOING' AND call_logs.duration = 0 THEN 1 ELSE 0 END) as no_answer,
                 SUM(CASE WHEN call_logs.duration > 0 THEN 1 ELSE 0 END) as connected
             ")

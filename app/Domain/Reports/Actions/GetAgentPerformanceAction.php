@@ -43,17 +43,22 @@ final class GetAgentPerformanceAction
             $query->whereIn('call_classifications.type', array_map('strtoupper', $filters->types));
         }
 
-        // Filter by Statuses
-        if (! empty($filters->statuses)) {
+        // Filter by Call Outcomes
+        if (! empty($filters->outcomes)) {
             $query->where(function ($q) use ($filters) {
-                foreach ($filters->statuses as $status) {
-                    $q->orWhere(function ($sub) use ($status) {
-                        switch ($status) {
+                foreach ($filters->outcomes as $outcome) {
+                    $q->orWhere(function ($sub) use ($outcome) {
+                        switch ($outcome) {
                             case 'Connected':
                                 $sub->where('call_logs.duration', '>', 0);
                                 break;
                             case 'Missed':
-                                $sub->where('call_logs.direction', 'MISSED');
+                                $sub->where(function ($inner) {
+                                    $inner->whereIn('call_logs.direction', ['MISSED', 'REJECTED', 'BLOCKED'])
+                                        ->orWhere(function ($inc) {
+                                            $inc->where('call_logs.direction', 'INCOMING')->where('call_logs.duration', 0);
+                                        });
+                                });
                                 break;
                             case 'No Answer':
                                 $sub->where('call_logs.direction', 'OUTGOING')
@@ -72,7 +77,7 @@ final class GetAgentPerformanceAction
             'agents.employee_code',
             DB::raw('COUNT(call_logs.id) as total_calls'),
             DB::raw('SUM(CASE WHEN call_logs.duration > 0 THEN 1 ELSE 0 END) as connected'),
-            DB::raw("SUM(CASE WHEN call_logs.direction = 'MISSED' THEN 1 ELSE 0 END) as missed"),
+            DB::raw("SUM(CASE WHEN call_logs.direction IN ('MISSED', 'REJECTED', 'BLOCKED') OR (call_logs.direction = 'INCOMING' AND call_logs.duration = 0) THEN 1 ELSE 0 END) as missed"),
             DB::raw('AVG(call_logs.duration) as avg_duration'),
             DB::raw('SUM(call_logs.duration) as total_duration'),
         ])

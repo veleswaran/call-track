@@ -1,19 +1,19 @@
 export type CallType = "incoming" | "outgoing" | "missed" | "rejected" | "blocked" | "unknown";
-export type CallStatus = "Connected" | "No Answer" | "Missed" | "Rejected" | "Blocked";
+export type CallOutcome = "Connected" | "No Answer" | "Missed";
 
 /**
- * Derive human-friendly call status based on call_type and duration (seconds)
- * - missed => "Missed"
- * - rejected => "Rejected"
- * - blocked => "Blocked"
- * - incoming/outgoing with duration > 0 => "Connected"
- * - incoming/outgoing with duration = 0 => "No Answer"
+ * Derive unified call outcome from call_type (Android direction) and duration.
+ *
+ * Connected = duration > 0 (any direction)
+ * Missed = missed | rejected | blocked | (incoming with duration 0)
+ * No Answer = outgoing with duration 0
  */
-export function getCallStatus(call_type: CallType, duration: number): CallStatus {
-    if (call_type === "missed") return "Missed";
-    if (call_type === "rejected") return "Rejected";
-    if (call_type === "blocked") return "Blocked";
-    return duration > 0 ? "Connected" : "No Answer";
+export function getCallOutcome(call_type: CallType, duration: number): CallOutcome {
+    if (duration > 0) return "Connected";
+    if (call_type === "missed" || call_type === "rejected" || call_type === "blocked" || call_type === "incoming") {
+        return "Missed";
+    }
+    return "No Answer";
 }
 
-export default getCallStatus;
+export default getCallOutcome;
