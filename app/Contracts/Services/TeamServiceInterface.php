@@ -32,5 +32,7 @@ interface TeamServiceInterface
 
     public function getTeamWithDetails(int $id): Team;
 
+    public function deleteTeam(Team $team): void;
+
     public function findTeam(int $id): Team;
 }

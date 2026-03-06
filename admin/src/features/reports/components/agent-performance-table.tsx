@@ -22,7 +22,7 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { ReportFiltersData } from "./report-filters";
 
-interface AgentPerformance {
+export interface AgentPerformance {
     id: number
     agent: string
     employee_code: string

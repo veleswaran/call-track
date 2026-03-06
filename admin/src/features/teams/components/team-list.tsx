@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@features/auth/hooks/use-auth";
 import { Button } from "@shared/components/ui/button";
@@ -35,6 +35,14 @@ export function TeamList() {
 
     const { user } = useAuth();
     const isAdmin = user?.roles.some((role: string) => ['admin', 'super-admin'].includes(role));
+    const isSuperAdmin = user?.roles.includes('super-admin');
+
+    const deleteMutation = useMutation({
+        mutationFn: (id: number) => teamsApi.deleteTeam(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["teams"] });
+        },
+    });
 
     const { data: teamsData, isLoading } = useQuery({
         queryKey: ["teams", page, perPage],
@@ -92,10 +100,25 @@ export function TeamList() {
                                     <TableCell>{team.managers_count || 0}</TableCell>
                                     <TableCell>{team.members_count || 0}</TableCell>
                                     <TableCell>{new Date(team.created_at).toLocaleDateString()}</TableCell>
-                                    <TableCell className="text-right">
+                                    <TableCell className="text-right space-x-2">
                                         <Button variant="ghost" size="sm" asChild>
                                             <Link href={`/teams/${team.id}`}>View</Link>
                                         </Button>
+                                        {isSuperAdmin && (
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                                onClick={() => {
+                                                    if (confirm(`Are you sure you want to delete team "${team.name}"?`)) {
+                                                        deleteMutation.mutate(team.id);
+                                                    }
+                                                }}
+                                                disabled={deleteMutation.isPending}
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        )}
                                     </TableCell>
                                 </TableRow>
                             ))

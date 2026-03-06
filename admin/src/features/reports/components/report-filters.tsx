@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { CalendarIcon, Filter, X } from "lucide-react"
-import { format } from "date-fns"
+import { format, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isSameDay } from "date-fns"
 import { DateRange } from "react-day-picker"
 
 import { cn } from "@shared/utils"
@@ -49,6 +49,44 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
     const [type, setType] = useState("all")
     const [agentId, setAgentId] = useState<string>("all")
     const [teamId, setTeamId] = useState<string>("all")
+    const [quickDate, setQuickDate] = useState<string>("last_30_days")
+
+    const handleQuickDateChange = (value: string) => {
+        setQuickDate(value)
+        const today = new Date()
+        let newRange: DateRange | undefined = undefined
+
+        switch (value) {
+            case "today":
+                newRange = { from: today, to: today }
+                break
+            case "yesterday":
+                const yesterday = subDays(today, 1)
+                newRange = { from: yesterday, to: yesterday }
+                break
+            case "this_week":
+                newRange = { from: startOfWeek(today), to: endOfWeek(today) }
+                break
+            case "this_month":
+                newRange = { from: startOfMonth(today), to: endOfMonth(today) }
+                break
+            case "last_7_days":
+                newRange = { from: subDays(today, 7), to: today }
+                break
+            case "last_30_days":
+                newRange = { from: subDays(today, 30), to: today }
+                break
+            case "custom":
+                // Don't change the date range, let the user pick
+                return
+            default:
+                newRange = defaultDateRange
+        }
+
+        if (newRange) {
+            setDate(newRange)
+        }
+    }
 
     // Fetch Agents
     const agentsQuery = useQuery({
@@ -81,6 +119,7 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
     const clearFilters = () => {
         // Reset to defaults
         setDate(defaultDateRange);
+        setQuickDate("last_30_days");
         setStatus("all");
         setType("all");
         setAgentId("all");
@@ -96,6 +135,22 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
 
     return (
         <div className="flex flex-wrap items-center gap-3 p-4 border rounded-lg bg-card shadow-sm">
+            {/* Quick Date Select */}
+            <Select value={quickDate} onValueChange={handleQuickDateChange}>
+                <SelectTrigger className="w-[150px]">
+                    <SelectValue placeholder="Period" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="today">Today</SelectItem>
+                    <SelectItem value="yesterday">Yesterday</SelectItem>
+                    <SelectItem value="this_week">This Week</SelectItem>
+                    <SelectItem value="this_month">This Month</SelectItem>
+                    <SelectItem value="last_7_days">Last 7 Days</SelectItem>
+                    <SelectItem value="last_30_days">Last 30 Days</SelectItem>
+                    <SelectItem value="custom">Custom Range</SelectItem>
+                </SelectContent>
+            </Select>
+
             {/* Date Range Picker */}
             <Popover>
                 <PopoverTrigger asChild>
@@ -109,7 +164,7 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
                     >
                         <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
                         {date?.from ? (
-                            date.to ? (
+                            date.to && !isSameDay(date.from, date.to) ? (
                                 <span className="truncate">
                                     {format(date.from, "LLL dd, y")} -{" "}
                                     {format(date.to, "LLL dd, y")}
@@ -128,7 +183,10 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
                         mode="range"
                         defaultMonth={date?.from}
                         selected={date}
-                        onSelect={setDate}
+                        onSelect={(newDate) => {
+                            setDate(newDate)
+                            setQuickDate("custom")
+                        }}
                         numberOfMonths={2}
                     />
                 </PopoverContent>

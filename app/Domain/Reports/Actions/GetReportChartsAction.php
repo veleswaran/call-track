@@ -17,6 +17,8 @@ final class GetReportChartsAction
             'peak_call_hours' => $this->getPeakCallHours($filters),
             'caller_types' => $this->getCallerTypeBreakdown($filters),
             'call_direction_distribution' => $this->getCallDirectionDistribution($filters),
+            'agent_distribution' => $this->getAgentDistribution($filters),
+            'team_distribution' => $this->getTeamDistribution($filters),
         ];
     }
 
@@ -224,5 +226,102 @@ final class GetReportChartsAction
             ['name' => 'Incoming', 'value' => (int) ($stats->incoming ?? 0), 'fill' => '#3b82f6'], // Blue
             ['name' => 'Outgoing', 'value' => (int) ($stats->outgoing ?? 0), 'fill' => '#22c55e'], // Green
         ];
+    }
+
+    private function getAgentDistribution(ReportFilterDTO $filters): array
+    {
+        $query = \App\Domain\Agents\Models\Agent::query()
+            ->where('created_at', '<=', $filters->endDate);
+
+        // Only show agents who have call logs in this period
+        $query->whereHas('devices.callLogs', function ($q) use ($filters) {
+            $q->whereBetween('timestamp', [$filters->startDate, $filters->endDate]);
+        });
+
+        if ($filters->allowedAgentIds !== null) {
+            if (empty($filters->allowedAgentIds)) {
+                return [
+                    ['name' => 'Active', 'value' => 0, 'fill' => '#22c55e'],
+                    ['name' => 'Inactive', 'value' => 0, 'fill' => '#ef4444'],
+                ];
+            }
+            $query->whereIn('id', $filters->allowedAgentIds);
+        }
+
+        if (! empty($filters->agentIds)) {
+            $query->whereIn('id', $filters->agentIds);
+        }
+
+        if (! empty($filters->teamIds)) {
+            $query->whereIn('id', function ($q) use ($filters) {
+                $q->select('agent_id')
+                    ->from('team_members')
+                    ->whereIn('team_id', $filters->teamIds);
+            });
+        }
+
+        $stats = $query->selectRaw("
+                SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active,
+                SUM(CASE WHEN status = 'inactive' THEN 1 ELSE 0 END) as inactive
+            ")
+            ->toBase()
+            ->first();
+
+        return [
+            ['name' => 'Active', 'value' => (int) ($stats->active ?? 0), 'fill' => '#22c55e'], // Green
+            ['name' => 'Inactive', 'value' => (int) ($stats->inactive ?? 0), 'fill' => '#ef4444'], // Red
+        ];
+    }
+
+    private function getTeamDistribution(ReportFilterDTO $filters): array
+    {
+        // We want to count agents per team that match the overall scope/filters
+        $query = \App\Domain\Teams\Models\Team::query();
+
+        $query->withCount([
+            'members' => function ($q) use ($filters) {
+                $q->where('agents.created_at', '<=', $filters->endDate);
+
+                // Only count agents who have call logs in this period
+                $q->whereHas('devices.callLogs', function ($sub) use ($filters) {
+                    $sub->whereBetween('timestamp', [$filters->startDate, $filters->endDate]);
+                });
+
+                if ($filters->allowedAgentIds !== null) {
+                    $q->whereIn('agents.id', $filters->allowedAgentIds);
+                }
+                if (! empty($filters->agentIds)) {
+                    $q->whereIn('agents.id', $filters->agentIds);
+                }
+            },
+        ]);
+
+        // Filter the teams shown based on team selection if provided
+        if (! empty($filters->teamIds)) {
+            $query->whereIn('id', $filters->teamIds);
+        }
+
+        // Only show teams that have agents with call logs in this period
+        $query->whereHas('members', function ($q) use ($filters) {
+            $q->where('agents.created_at', '<=', $filters->endDate);
+
+            $q->whereHas('devices.callLogs', function ($sub) use ($filters) {
+                $sub->whereBetween('timestamp', [$filters->startDate, $filters->endDate]);
+            });
+
+            if ($filters->allowedAgentIds !== null) {
+                $q->whereIn('agents.id', $filters->allowedAgentIds);
+            }
+            if (! empty($filters->agentIds)) {
+                $q->whereIn('agents.id', $filters->agentIds);
+            }
+        });
+
+        $teams = $query->get();
+
+        return $teams->map(fn ($team) => [
+            'name' => $team->name,
+            'value' => (int) $team->members_count,
+        ])->filter(fn ($item) => $item['value'] > 0)->values()->toArray();
     }
 }

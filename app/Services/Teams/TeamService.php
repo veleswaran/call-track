@@ -9,6 +9,7 @@ use App\Domain\Agents\Models\Agent;
 use App\Domain\Teams\Actions\AddAgentToTeamAction;
 use App\Domain\Teams\Actions\AssignTeamManagerAction;
 use App\Domain\Teams\Actions\CreateTeamAction;
+use App\Domain\Teams\Actions\DeleteTeamAction;
 use App\Domain\Teams\Actions\GetTeamWithDetailsAction;
 use App\Domain\Teams\Actions\ListTeamsAction;
 use App\Domain\Teams\Actions\RemoveMemberFromTeamAction;
@@ -30,7 +31,8 @@ class TeamService implements TeamServiceInterface
 
         protected ListTeamsAction $listTeamsAction,
         protected GetTeamWithDetailsAction $getTeamWithDetailsAction,
-        protected UpdateTeamAction $updateTeamAction
+        protected UpdateTeamAction $updateTeamAction,
+        protected DeleteTeamAction $deleteTeamAction
     ) {}
 
     public function createTeam(string $name): Team
@@ -76,6 +78,11 @@ class TeamService implements TeamServiceInterface
     public function updateTeam(Team $team, string $name): Team
     {
         return $this->updateTeamAction->execute($team, $name);
+    }
+
+    public function deleteTeam(Team $team): void
+    {
+        $this->deleteTeamAction->execute($team);
     }
 
     public function getAllTeams(?\App\Domain\Users\Models\User $user = null): Collection

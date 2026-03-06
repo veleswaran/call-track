@@ -2,8 +2,9 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { ArrowLeft, Calendar, Users, Pencil, Check, X } from "lucide-react";
+import { ArrowLeft, Calendar, Users, Pencil, Check, X, Trash2 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@features/auth/hooks/use-auth";
 import { Button } from "@shared/components/ui/button";
 import { Input } from "@shared/components/ui/input";
@@ -26,6 +27,8 @@ export function TeamDetails({ teamId }: TeamDetailsProps) {
     const isAdmin = user?.roles.some((role: string) =>
         ["admin", "super-admin"].includes(role)
     );
+    const isSuperAdmin = user?.roles.includes("super-admin");
+    const router = useRouter();
 
     const [isEditing, setIsEditing] = useState(false);
     const [editName, setEditName] = useState("");
@@ -46,6 +49,14 @@ export function TeamDetails({ teamId }: TeamDetailsProps) {
             queryClient.invalidateQueries({ queryKey: ["team", teamId] });
             queryClient.invalidateQueries({ queryKey: ["teams"] });
             setIsEditing(false);
+        },
+    });
+
+    const deleteMutation = useMutation({
+        mutationFn: () => teamsApi.deleteTeam(teamId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["teams"] });
+            router.push("/teams");
         },
     });
 
@@ -140,6 +151,22 @@ export function TeamDetails({ teamId }: TeamDetailsProps) {
                                     className="h-7 w-7"
                                 >
                                     <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                                </Button>
+                            )}
+                            {isSuperAdmin && !isEditing && (
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => {
+                                        if (confirm(`Are you sure you want to delete team "${team.name}"?`)) {
+                                            deleteMutation.mutate();
+                                        }
+                                    }}
+                                    title="Delete team"
+                                    className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                    disabled={deleteMutation.isPending}
+                                >
+                                    <Trash2 className="h-3.5 w-3.5" />
                                 </Button>
                             )}
                         </div>

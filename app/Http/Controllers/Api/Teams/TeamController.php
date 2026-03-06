@@ -108,4 +108,16 @@ class TeamController extends Controller
             'message' => 'Member role updated successfully.',
         ]);
     }
+
+    public function destroy(string $team): JsonResponse
+    {
+        $teamModel = $this->teamService->findTeam((int) $team);
+        $this->authorize('delete', $teamModel);
+
+        $this->teamService->deleteTeam($teamModel);
+
+        return response()->json([
+            'message' => 'Team deleted successfully.',
+        ]);
+    }
 }
