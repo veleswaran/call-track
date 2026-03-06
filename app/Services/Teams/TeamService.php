@@ -12,6 +12,7 @@ use App\Domain\Teams\Actions\CreateTeamAction;
 use App\Domain\Teams\Actions\DeleteTeamAction;
 use App\Domain\Teams\Actions\GetTeamWithDetailsAction;
 use App\Domain\Teams\Actions\ListTeamsAction;
+use App\Domain\Teams\Actions\ListPaginatedTeamsAction;
 use App\Domain\Teams\Actions\RemoveMemberFromTeamAction;
 use App\Domain\Teams\Actions\UpdateMemberRoleAction;
 use App\Domain\Teams\Actions\UpdateTeamAction;
@@ -30,10 +31,12 @@ class TeamService implements TeamServiceInterface
         protected UpdateMemberRoleAction $updateMemberRoleAction,
 
         protected ListTeamsAction $listTeamsAction,
+        protected ListPaginatedTeamsAction $listPaginatedTeamsAction,
         protected GetTeamWithDetailsAction $getTeamWithDetailsAction,
         protected UpdateTeamAction $updateTeamAction,
         protected DeleteTeamAction $deleteTeamAction
-    ) {}
+    ) {
+    }
 
     public function createTeam(string $name): Team
     {
@@ -92,28 +95,7 @@ class TeamService implements TeamServiceInterface
 
     public function getPaginatedTeams(?\App\Domain\Users\Models\User $user = null, int $perPage = 20): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
-        $query = Team::withCount([
-            'members',
-            'members as managers_count' => function ($query) {
-                $query->where('team_members.role', 'MANAGER');
-            },
-        ]);
-
-        if ($user && ! $user->hasRole(['super-admin', 'admin'])) {
-            if ($user->agent) {
-                /** @var \App\Domain\Agents\Models\Agent $agent */
-                $agent = $user->agent;
-                $query->whereHas('members', function ($q) use ($agent) {
-                    $q->where('agents.id', $agent->id)
-                        ->where('team_members.role', 'MANAGER');
-                });
-            } else {
-                // If it's empty, we still return a paginator, but empty
-                return Team::whereRaw('1=0')->paginate($perPage);
-            }
-        }
-
-        return $query->paginate($perPage);
+        return $this->listPaginatedTeamsAction->execute($user, $perPage);
     }
 
     public function getTeamWithDetails(int $id): Team

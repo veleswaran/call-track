@@ -101,7 +101,7 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
     const teamsQuery = useQuery({
         queryKey: ['teams', 'simple-list'],
         queryFn: async () => {
-            const res = await api.get<{ data: Team[] }>('/api/v1/admin/teams')
+            const res = await api.get<{ data: Team[] }>('/api/v1/admin/teams?per_page=100')
             return res.data
         }
     })
