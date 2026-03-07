@@ -24,6 +24,7 @@ import {
 import { Input } from "@shared/components/ui/input";
 import { Label } from "@shared/components/ui/label";
 import { teamsApi } from "../api/teams-api";
+import { DeleteTeamDialog } from "./DeleteTeamDialog";
 
 import { CallLogPagination } from "@features/call-logs/components/call-log-pagination";
 
@@ -31,6 +32,7 @@ export function TeamList() {
     const [page, setPage] = useState(1);
     const [perPage, setPerPage] = useState(25);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [teamToDelete, setTeamToDelete] = useState<{ id: number; name: string } | null>(null);
     const queryClient = useQueryClient();
 
     const { user } = useAuth();
@@ -41,6 +43,7 @@ export function TeamList() {
         mutationFn: (id: number) => teamsApi.deleteTeam(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["teams"] });
+            setTeamToDelete(null);
         },
     });
 
@@ -109,11 +112,7 @@ export function TeamList() {
                                                 variant="ghost"
                                                 size="sm"
                                                 className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                                                onClick={() => {
-                                                    if (confirm(`Are you sure you want to delete team "${team.name}"?`)) {
-                                                        deleteMutation.mutate(team.id);
-                                                    }
-                                                }}
+                                                onClick={() => setTeamToDelete({ id: team.id, name: team.name })}
                                                 disabled={deleteMutation.isPending}
                                             >
                                                 <Trash2 className="h-4 w-4" />
@@ -137,6 +136,14 @@ export function TeamList() {
                     />
                 </div>
             )}
+
+            <DeleteTeamDialog
+                isOpen={!!teamToDelete}
+                onOpenChange={(open) => !open && setTeamToDelete(null)}
+                teamName={teamToDelete?.name ?? ""}
+                onConfirm={() => teamToDelete && deleteMutation.mutate(teamToDelete.id)}
+                isDeleting={deleteMutation.isPending}
+            />
         </div>
     );
 }

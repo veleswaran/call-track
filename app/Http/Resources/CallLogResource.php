@@ -37,7 +37,7 @@ class CallLogResource extends JsonResource
             'agent_name' => $agent?->name,
             'phone_number' => $this->phone_number, // Auto-decrypted by encrypted cast
             'call_type' => strtolower($this->direction),
-            'call_outcome' => $this->deriveCallOutcome(),
+            'call_outcome' => $this->call_outcome,
             'duration' => $this->duration,
             'timestamp' => $this->timestamp->format('Y-m-d H:i:s'),
             'phone_contact_name' => $this->phone_contact_name,
@@ -53,27 +53,5 @@ class CallLogResource extends JsonResource
             ] : null,
             'created_at' => $this->created_at,
         ];
-    }
-
-    /**
-     * Derive unified call outcome from direction and duration.
-     *
-     * Connected = duration > 0 (any direction)
-     * Missed = MISSED | REJECTED | BLOCKED | (INCOMING with duration 0)
-     * No Answer = OUTGOING with duration 0
-     */
-    private function deriveCallOutcome(): string
-    {
-        if ($this->duration > 0) {
-            return 'Connected';
-        }
-
-        $direction = strtoupper($this->direction);
-
-        if (in_array($direction, ['MISSED', 'REJECTED', 'BLOCKED', 'INCOMING'])) {
-            return 'Missed';
-        }
-
-        return 'No Answer';
     }
 }

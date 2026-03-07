@@ -25,8 +25,6 @@ vi.mock("./change-role-dialog", () => ({
 // Mock clipboard
 // Moved inside specific tests to avoid conflicts with userEvent
 
-window.confirm = vi.fn();
-
 describe("UserActions", () => {
     const mockUser = {
         id: 1,
@@ -101,7 +99,6 @@ describe("UserActions", () => {
 
     it("handles Reset 2FA confirmation", async () => {
         const user = userEvent.setup();
-        (window.confirm as Mock).mockReturnValue(true);
         const userWith2FA = { ...mockUser, two_factor_enabled: true };
         render(<UserActions user={userWith2FA} />);
 
@@ -109,7 +106,10 @@ describe("UserActions", () => {
         const resetBtn = await screen.findByText("Reset 2FA");
         await user.click(resetBtn);
 
-        expect(window.confirm).toHaveBeenCalled();
+        // Find and click the confirmation button in the dialog
+        const confirmBtn = await screen.findByRole("button", { name: "Reset" });
+        await user.click(confirmBtn);
+
         expect(mockReset2FA).toHaveBeenCalledWith(userWith2FA.id);
     });
 
@@ -137,14 +137,16 @@ describe("UserActions", () => {
 
     it("handles Delete User confirmation", async () => {
         const user = userEvent.setup();
-        (window.confirm as Mock).mockReturnValue(true);
         render(<UserActions user={mockUser} />);
 
         await user.click(screen.getByRole("button"));
         const deleteBtn = await screen.findByText("Delete User");
         await user.click(deleteBtn);
 
-        expect(window.confirm).toHaveBeenCalled();
+        // Find and click the confirmation button in the dialog
+        const confirmBtn = await screen.findByRole("button", { name: "Delete" });
+        await user.click(confirmBtn);
+
         expect(mockDeleteUser).toHaveBeenCalledWith(mockUser.id);
     });
 
@@ -204,5 +206,38 @@ describe("UserActions", () => {
         await user.click(changeRoleBtn);
 
         expect(await screen.findByTestId("change-role-dialog")).toBeInTheDocument();
+    });
+
+    it("handles Unlink Agent confirmation", async () => {
+        const user = userEvent.setup();
+        const mockUnlink = vi.fn();
+        (useUnlinkUserFromAgent as Mock).mockReturnValue({ mutate: mockUnlink, isPending: false });
+
+        const userWithAgent = {
+            ...mockUser,
+            agent: {
+                id: 10,
+                name: "Agent Smith",
+                employee_code: "EMP001",
+                status: "active" as const,
+                created_at: "2024-01-01",
+                updated_at: "2024-01-01"
+            }
+        };
+
+        render(<UserActions user={userWithAgent} />);
+
+        await user.click(screen.getByRole("button"));
+        const unlinkBtn = await screen.findByText("Unlink Agent");
+        await user.click(unlinkBtn);
+
+        // Check dialog content
+        expect(screen.getByText(/Are you sure you want to unlink this user from agent Agent Smith/)).toBeInTheDocument();
+
+        // Find and click the confirmation button in the dialog
+        const confirmBtn = await screen.findByRole("button", { name: "Unlink" });
+        await user.click(confirmBtn);
+
+        expect(mockUnlink).toHaveBeenCalledWith({ agentId: 10, userId: userWithAgent.id });
     });
 });

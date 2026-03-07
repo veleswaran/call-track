@@ -69,7 +69,7 @@ final class GetReportChartsAction
         if (! empty($filters->outcomes)) {
             $query->where(function ($q) use ($filters) {
                 foreach ($filters->outcomes as $outcome) {
-                    switch ($outcome) {
+                    switch (strtoupper($outcome)) {
                         case 'MISSED':
                             $q->orWhereIn('call_logs.direction', ['MISSED', 'REJECTED', 'BLOCKED'])
                                 ->orWhere(function ($sq) {

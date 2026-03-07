@@ -16,6 +16,7 @@ import {
 } from "@shared/components/ui/card";
 import { teamsApi } from "../api/teams-api";
 import { TeamMembersList } from "./team-members-list";
+import { DeleteTeamDialog } from "./DeleteTeamDialog";
 
 interface TeamDetailsProps {
     teamId: number;
@@ -32,6 +33,7 @@ export function TeamDetails({ teamId }: TeamDetailsProps) {
 
     const [isEditing, setIsEditing] = useState(false);
     const [editName, setEditName] = useState("");
+    const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
     const {
         data: teamRes,
@@ -157,11 +159,7 @@ export function TeamDetails({ teamId }: TeamDetailsProps) {
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    onClick={() => {
-                                        if (confirm(`Are you sure you want to delete team "${team.name}"?`)) {
-                                            deleteMutation.mutate();
-                                        }
-                                    }}
+                                    onClick={() => setIsDeleteOpen(true)}
                                     title="Delete team"
                                     className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
                                     disabled={deleteMutation.isPending}
@@ -218,6 +216,14 @@ export function TeamDetails({ teamId }: TeamDetailsProps) {
                 <h3 className="text-lg font-semibold">Team Members</h3>
                 <TeamMembersList teamId={team.id} />
             </div>
+
+            <DeleteTeamDialog
+                isOpen={isDeleteOpen}
+                onOpenChange={setIsDeleteOpen}
+                teamName={team.name}
+                onConfirm={() => deleteMutation.mutate()}
+                isDeleting={deleteMutation.isPending}
+            />
         </div>
     );
 }

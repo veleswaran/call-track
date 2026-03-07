@@ -17,6 +17,12 @@ final class BuildCallLogQueryAction
     public function execute(ListCallLogsDTO $dto): Builder
     {
         $query = CallLog::query()
+            ->select('call_logs.*')
+            ->addSelect(\Illuminate\Support\Facades\DB::raw("CASE 
+                WHEN call_logs.duration > 0 THEN 'Connected'
+                WHEN call_logs.direction IN ('MISSED', 'REJECTED', 'BLOCKED', 'INCOMING') THEN 'Missed'
+                ELSE 'No Answer'
+            END as call_outcome"))
             ->with(['classification', 'device', 'agent'])
             ->orderByDesc('timestamp');
 

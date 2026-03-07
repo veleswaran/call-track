@@ -196,9 +196,9 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
                 </SelectTrigger>
                 <SelectContent>
                     <SelectItem value="all">All Outcomes</SelectItem>
-                    <SelectItem value="CONNECTED">Connected</SelectItem>
-                    <SelectItem value="MISSED">Missed</SelectItem>
-                    <SelectItem value="NO_ANSWER">No Answer</SelectItem>
+                    <SelectItem value="Connected">Connected</SelectItem>
+                    <SelectItem value="Missed">Missed</SelectItem>
+                    <SelectItem value="No Answer">No Answer</SelectItem>
                 </SelectContent>
             </Select>
 

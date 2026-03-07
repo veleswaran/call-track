@@ -162,12 +162,7 @@ export function AgentPerformanceTable({ data, filters }: AgentPerformanceTablePr
 
         // Outcome
         if (filters.outcome && filters.outcome !== 'all') {
-            let outcomeValue = filters.outcome;
-            if (filters.outcome === 'CONNECTED') outcomeValue = 'Connected';
-            if (filters.outcome === 'MISSED') outcomeValue = 'Missed';
-            if (filters.outcome === 'NO_ANSWER') outcomeValue = 'No Answer';
-
-            params.append('outcomes[]', outcomeValue);
+            params.append('outcomes[]', filters.outcome);
         }
 
         // Team Filter
