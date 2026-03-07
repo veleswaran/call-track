@@ -23,7 +23,7 @@ import {
 
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@shared/api/api"
-import { Agent, Team } from "@shared/types"
+import { Agent, Team, PaginatedResponse } from "@shared/types"
 
 export interface ReportFiltersData {
     dateRange: DateRange | undefined
@@ -91,8 +91,8 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
     const agentsQuery = useQuery({
         queryKey: ['agents', 'simple-list'],
         queryFn: async () => {
-            const res = await api.get<{ data: Agent[] }>('/api/v1/admin/agents?per_page=100')
-            return res.data
+            const res = await api.get<PaginatedResponse<Agent>>('/api/v1/admin/agents?per_page=1000')
+            return res.data // This is Agent[]
         }
     })
 
@@ -100,8 +100,8 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
     const teamsQuery = useQuery({
         queryKey: ['teams', 'simple-list'],
         queryFn: async () => {
-            const res = await api.get<{ data: Team[] }>('/api/v1/admin/teams?per_page=100')
-            return res.data
+            const res = await api.get<PaginatedResponse<Team>>('/api/v1/admin/teams?per_page=1000')
+            return res.data // This is Team[]
         }
     })
 
@@ -208,7 +208,7 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
                 </SelectTrigger>
                 <SelectContent>
                     <SelectItem value="all">All Teams</SelectItem>
-                    {teamsQuery.data?.map((team) => (
+                    {teamsQuery.data?.map((team: Team) => (
                         <SelectItem key={team.id} value={team.id.toString()}>
                             {team.name}
                         </SelectItem>
@@ -222,7 +222,7 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
                 </SelectTrigger>
                 <SelectContent>
                     <SelectItem value="all">All Agents</SelectItem>
-                    {agentsQuery.data?.map((agent) => (
+                    {agentsQuery.data?.map((agent: Agent) => (
                         <SelectItem key={agent.id} value={agent.id.toString()}>
                             {agent.name}
                         </SelectItem>

@@ -77,8 +77,16 @@ class AppServiceProvider extends ServiceProvider
         );
 
         $this->app->bind(
-            \App\Contracts\Services\TeamServiceInterface::class,
-            \App\Services\Teams\TeamService::class
+            \App\Contracts\Services\Teams\TeamManagementServiceInterface::class,
+            \App\Services\Teams\TeamManagementService::class
+        );
+        $this->app->bind(
+            \App\Contracts\Services\Teams\TeamMemberServiceInterface::class,
+            \App\Services\Teams\TeamMemberService::class
+        );
+        $this->app->bind(
+            \App\Contracts\Services\Teams\TeamQueryServiceInterface::class,
+            \App\Services\Teams\TeamQueryService::class
         );
 
         $this->app->bind(
