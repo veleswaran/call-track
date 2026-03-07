@@ -19,6 +19,7 @@ import { useRevokeDeviceTokens } from "@features/devices/hooks/use-devices";
 import { Button } from "@shared/components/ui/button";
 import { LogOut } from "lucide-react";
 import { DeviceMetadataDialog } from "@features/devices/components/device-metadata-dialog";
+import { DevicePushNotificationDialog } from "@features/devices/components/device-push-notification-dialog";
 
 import { useAuth } from "@features/auth/hooks/use-auth";
 
@@ -148,16 +149,19 @@ export default function DevicesPage() {
                                                     />
                                                     <DeviceMetadataDialog device={device} />
                                                     {canManageDevices && (
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            onClick={() => handleRevoke(device.id, device.device_name ?? 'Unknown Device')}
-                                                            disabled={revokeDeviceTokens.isPending}
-                                                            className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10"
-                                                            title="Revoke Tokens"
-                                                        >
-                                                            <LogOut className="h-4 w-4" />
-                                                        </Button>
+                                                        <>
+                                                            <DevicePushNotificationDialog device={device} />
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() => handleRevoke(device.id, device.device_name ?? 'Unknown Device')}
+                                                                disabled={revokeDeviceTokens.isPending}
+                                                                className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10"
+                                                                title="Revoke Tokens"
+                                                            >
+                                                                <LogOut className="h-4 w-4" />
+                                                            </Button>
+                                                        </>
                                                     )}
                                                 </div>
                                             </TableCell>

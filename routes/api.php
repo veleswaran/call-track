@@ -17,6 +17,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/call-logs/sync', [\App\Http\Controllers\Api\CallLogController::class, 'store']);
         Route::post('/call-logs/{callHash}/classify', [\App\Http\Controllers\Api\DeviceCallClassificationController::class, 'classify']);
         Route::post('/device/events', [\App\Http\Controllers\Api\Device\DeviceEventController::class, 'store']);
+        Route::post('/device/fcm-token', [\App\Http\Controllers\Api\DeviceFcmTokenController::class, 'store']);
     });
 
     // Admin Routes
@@ -73,6 +74,12 @@ Route::prefix('v1')->group(function () {
         Route::delete('teams/{team}/members/{agent}', [\App\Http\Controllers\Api\Teams\TeamController::class, 'removeMember']);
         Route::patch('teams/{team}/members/{agent}', [\App\Http\Controllers\Api\Teams\TeamController::class, 'updateMemberRole']);
 
+        // System Settings
+        Route::get('/settings', [\App\Http\Controllers\Api\Admin\SystemSettingsController::class, 'index']);
+        Route::post('/settings', [\App\Http\Controllers\Api\Admin\SystemSettingsController::class, 'store']);
+
+        // Manual Push Notifications
+        Route::post('/devices/{device}/push', [\App\Http\Controllers\Api\Admin\DevicePushNotificationController::class, 'store']);
     });
 
     // 2FA Management (Session based)
