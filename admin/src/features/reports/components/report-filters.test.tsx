@@ -56,10 +56,10 @@ describe("ReportFilters", () => {
             wrapper: createWrapper(),
         })
 
-        expect(screen.getByText("All Statuses")).toBeInTheDocument()
+        expect(screen.getByText("All Outcomes")).toBeInTheDocument()
         expect(screen.getByText("All Teams")).toBeInTheDocument()
         expect(screen.getByText("All Agents")).toBeInTheDocument()
-        expect(screen.getByText("All Classes")).toBeInTheDocument()
+        expect(screen.getByText("Business")).toBeInTheDocument()
     })
 
     it("calls onFilterChange when filter button is clicked", async () => {
@@ -72,8 +72,8 @@ describe("ReportFilters", () => {
 
         expect(onFilterChange).toHaveBeenCalled()
         const callArgs = onFilterChange.mock.calls[0][0]
-        expect(callArgs.status).toBe("all")
-        expect(callArgs.type).toBe("all")
+        expect(callArgs.outcome).toBe("all")
+        expect(callArgs.type).toBe("BUSINESS")
         expect(callArgs.dateRange).toBeDefined()
     })
 
@@ -86,10 +86,10 @@ describe("ReportFilters", () => {
         fireEvent.click(clearButton)
 
         expect(onFilterChange).toHaveBeenCalledWith(expect.objectContaining({
-            status: "all",
-            type: "all",
-            agentId: null,
-            teamId: null
+            outcome: "all",
+            type: "BUSINESS",
+            agentIds: null,
+            teamIds: null
         }))
     })
 
@@ -98,8 +98,8 @@ describe("ReportFilters", () => {
             wrapper: createWrapper(),
         })
 
-        // Initially Last 30 Days should be there
-        expect(screen.getByText("Last 30 Days")).toBeInTheDocument()
+        // Initially Period trigger should show "Today"
+        expect(screen.getByText("Today")).toBeInTheDocument()
 
         // Testing handleQuickDateChange is hard with Radix Select in JSDOM
         // but we can test that it renders and is interactive

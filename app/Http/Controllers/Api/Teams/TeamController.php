@@ -25,8 +25,7 @@ final class TeamController extends Controller
         private readonly TeamManagementServiceInterface $teamManagementService,
         private readonly TeamMemberServiceInterface $teamMemberService,
         private readonly TeamQueryServiceInterface $teamQueryService,
-    ) {
-    }
+    ) {}
 
     public function index(Request $request): AnonymousResourceCollection
     {

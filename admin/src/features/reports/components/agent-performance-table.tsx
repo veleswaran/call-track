@@ -171,8 +171,8 @@ export function AgentPerformanceTable({ data, filters }: AgentPerformanceTablePr
         }
 
         // Team Filter
-        if (filters.teamId && filters.teamId !== 'all') {
-            params.append('team_id', filters.teamId);
+        if (filters.teamIds && filters.teamIds.length > 0) {
+            filters.teamIds.forEach(id => params.append('team_ids[]', id));
         }
 
         return `/call-logs?${params.toString()}`;

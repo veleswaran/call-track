@@ -17,8 +17,7 @@ final class ReportService implements ReportServiceInterface
         private readonly GetReportMetricsAction $getMetricsAction,
         private readonly GetReportChartsAction $getChartsAction,
         private readonly GetAgentPerformanceAction $getPerformanceAction,
-    ) {
-    }
+    ) {}
 
     public function getMetrics(ReportFilterDTO $filters): array
     {

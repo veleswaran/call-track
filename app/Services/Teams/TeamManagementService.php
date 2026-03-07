@@ -16,8 +16,7 @@ final class TeamManagementService implements TeamManagementServiceInterface
         private readonly CreateTeamAction $createTeamAction,
         private readonly UpdateTeamAction $updateTeamAction,
         private readonly DeleteTeamAction $deleteTeamAction,
-    ) {
-    }
+    ) {}
 
     public function createTeam(string $name): Team
     {

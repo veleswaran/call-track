@@ -91,8 +91,8 @@ final class GetReportMetricsAction
         }
 
         // Apply user-selected agent filter (must be within allowed scope)
-        if (!empty($filters->agentIds)) {
-            if (!$devicesJoined) {
+        if (! empty($filters->agentIds)) {
+            if (! $devicesJoined) {
                 $query->join('devices', 'call_logs.device_id', '=', 'devices.id');
                 $devicesJoined = true;
             }
@@ -100,8 +100,8 @@ final class GetReportMetricsAction
         }
 
         // Apply team filter
-        if (!empty($filters->teamIds)) {
-            if (!$devicesJoined) {
+        if (! empty($filters->teamIds)) {
+            if (! $devicesJoined) {
                 $query->join('devices', 'call_logs.device_id', '=', 'devices.id');
                 $devicesJoined = true;
             }
@@ -113,12 +113,12 @@ final class GetReportMetricsAction
             });
         }
 
-        if (!empty($filters->types)) {
+        if (! empty($filters->types)) {
             $query->whereIn('call_classifications.type', $filters->types);
         }
 
         // Outcome filter: Complex because outcome is derived from direction/duration
-        if (!empty($filters->outcomes)) {
+        if (! empty($filters->outcomes)) {
             $query->where(function ($q) use ($filters) {
                 foreach ($filters->outcomes as $outcome) {
                     switch ($outcome) {

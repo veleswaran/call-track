@@ -19,8 +19,7 @@ final class TeamQueryService implements TeamQueryServiceInterface
         private readonly ListTeamsAction $listTeamsAction,
         private readonly ListPaginatedTeamsAction $listPaginatedTeamsAction,
         private readonly GetTeamWithDetailsAction $getTeamWithDetailsAction,
-    ) {
-    }
+    ) {}
 
     public function getAllTeams(?User $user = null): Collection
     {

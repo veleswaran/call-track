@@ -30,8 +30,7 @@ class UserManagementService implements UserManagementServiceInterface
         protected AgentManagementServiceInterface $agentService,
         protected \App\Contracts\Services\Teams\TeamManagementServiceInterface $teamManagementService,
         protected \App\Contracts\Services\Teams\TeamMemberServiceInterface $teamMemberService,
-    ) {
-    }
+    ) {}
 
     public function getPaginatedUsers(\App\Domain\Users\DTOs\ListUsersDTO $dto): LengthAwarePaginator
     {
@@ -97,7 +96,7 @@ class UserManagementService implements UserManagementServiceInterface
                             $allowedRoles = ['admin', 'manager', 'member'];
                         }
 
-                        if (!in_array($roleName, $allowedRoles)) {
+                        if (! in_array($roleName, $allowedRoles)) {
                             throw new \Illuminate\Auth\Access\AuthorizationException("You are not authorized to assign the role {$roleName}.");
                         }
                     }

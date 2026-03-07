@@ -33,12 +33,12 @@ final class GetAgentPerformanceAction
         }
 
         // User-selected agent filter
-        if (!empty($filters->agentIds)) {
+        if (! empty($filters->agentIds)) {
             $query->whereIn('agents.id', $filters->agentIds);
         }
 
         // Apply team filter
-        if (!empty($filters->teamIds)) {
+        if (! empty($filters->teamIds)) {
             $query->whereIn('agents.id', function ($q) use ($filters) {
                 $q->select('agent_id')
                     ->from('team_members')
@@ -47,13 +47,13 @@ final class GetAgentPerformanceAction
         }
 
         // Filter by Classification (mapped from 'types' in DTO)
-        if (!empty($filters->types)) {
+        if (! empty($filters->types)) {
             // Frontend sends BUSINESS/PERSONAL. Column in CallClassification is 'type'.
             $query->whereIn('call_classifications.type', array_map('strtoupper', $filters->types));
         }
 
         // Filter by Call Outcomes
-        if (!empty($filters->outcomes)) {
+        if (! empty($filters->outcomes)) {
             $query->where(function ($q) use ($filters) {
                 foreach ($filters->outcomes as $outcome) {
                     $q->orWhere(function ($sub) use ($outcome) {
@@ -114,7 +114,7 @@ final class GetAgentPerformanceAction
             $result[] = [
                 'id' => $stat->id,
                 'agent' => $stat->name,
-                'employee_code' => 'EMP-' . str_pad((string) $stat->id, 3, '0', STR_PAD_LEFT), // Mock code
+                'employee_code' => 'EMP-'.str_pad((string) $stat->id, 3, '0', STR_PAD_LEFT), // Mock code
                 'total_calls' => $total,
                 'connected' => $connected,
                 'missed' => (int) $stat->missed,

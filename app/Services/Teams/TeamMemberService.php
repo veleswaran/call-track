@@ -21,8 +21,7 @@ final class TeamMemberService implements TeamMemberServiceInterface
         private readonly AssignTeamManagerAction $assignTeamManagerAction,
         private readonly RemoveMemberFromTeamAction $removeMemberFromTeamAction,
         private readonly UpdateMemberRoleAction $updateMemberRoleAction,
-    ) {
-    }
+    ) {}
 
     public function addMember(Team $team, AddTeamMemberDTO $dto): void
     {
