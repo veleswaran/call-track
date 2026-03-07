@@ -48,6 +48,7 @@ class Device extends Model
         'tracked_sim_slots',
         'battery_level',
         'last_heartbeat_at',
+        'fcm_token',
         'metadata',
     ];
 

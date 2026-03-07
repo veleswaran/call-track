@@ -1,0 +1,26 @@
+meta {
+  name: FCM Token Update
+  type: http
+  seq: 6
+}
+
+post {
+  url: http://localhost:8000/api/v1/device/fcm-token
+  body: json
+  auth: inherit
+}
+
+headers {
+  X-Device-Token: ZexSOg3Xe3M9cvVKi64CqmStu9UQKR0mt4y0KvCYY2tC3wBpnKHDbqlFA8XF
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "fcm_token": "string"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

@@ -27,6 +27,7 @@ class DeviceResource extends JsonResource
             'device_model' => $this->model,
             'os_version' => $this->os_version,
             'app_version' => $this->app_version,
+            'fcm_token' => $this->fcm_token,
             'tracked_sim_slots' => $this->tracked_sim_slots,
             'battery_level' => $this->battery_level,
             'status' => $this->active_tokens_exists ? 'active' : 'inactive',
