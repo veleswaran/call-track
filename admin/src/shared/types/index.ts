@@ -36,6 +36,7 @@ export interface CallLog {
     contact_name?: string | null;
     contact_notes?: string | null;
     call_type: "incoming" | "outgoing" | "missed" | "rejected" | "blocked" | "unknown";
+    call_outcome: "Connected" | "Missed" | "No Answer";
     duration: number;
     timestamp: string;
     sim_slot?: number | null;

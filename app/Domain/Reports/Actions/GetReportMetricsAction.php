@@ -20,7 +20,7 @@ final class GetReportMetricsAction
         $stats = $baseQuery->select([
             DB::raw('COUNT(*) as total_calls'),
             DB::raw("SUM(CASE 
-                WHEN call_logs.direction = 'MISSED' THEN 1 
+                WHEN call_logs.direction IN ('MISSED', 'REJECTED', 'BLOCKED') OR (call_logs.direction = 'INCOMING' AND call_logs.duration = 0) THEN 1 
                 ELSE 0 
             END) as missed_calls"),
             DB::raw("SUM(CASE 
@@ -76,33 +76,34 @@ final class GetReportMetricsAction
 
     private function applyFilters(\Illuminate\Database\Eloquent\Builder $query, ReportFilterDTO $filters): void
     {
+        $devicesJoined = false;
+
         // Apply RBAC scope first - this is the security constraint
         if ($filters->allowedAgentIds !== null) {
             if (empty($filters->allowedAgentIds)) {
-                // No access
                 $query->whereRaw('1 = 0');
 
                 return;
             }
-            // Join devices table for agent_id filter
             $query->join('devices', 'call_logs.device_id', '=', 'devices.id')
                 ->whereIn('devices.agent_id', $filters->allowedAgentIds);
+            $devicesJoined = true;
         }
 
         // Apply user-selected agent filter (must be within allowed scope)
-        if (! empty($filters->agentIds)) {
-            // Join devices for agent_id filter if not already joined
-            if ($filters->allowedAgentIds === null) {
+        if (!empty($filters->agentIds)) {
+            if (!$devicesJoined) {
                 $query->join('devices', 'call_logs.device_id', '=', 'devices.id');
+                $devicesJoined = true;
             }
             $query->whereIn('devices.agent_id', $filters->agentIds);
         }
 
         // Apply team filter
-        if (! empty($filters->teamIds)) {
-            // Join devices if not already joined
-            if ($filters->allowedAgentIds === null && empty($filters->agentIds)) {
+        if (!empty($filters->teamIds)) {
+            if (!$devicesJoined) {
                 $query->join('devices', 'call_logs.device_id', '=', 'devices.id');
+                $devicesJoined = true;
             }
 
             $query->whereIn('devices.agent_id', function ($q) use ($filters) {
@@ -112,17 +113,21 @@ final class GetReportMetricsAction
             });
         }
 
-        if (! empty($filters->types)) {
+        if (!empty($filters->types)) {
             $query->whereIn('call_classifications.type', $filters->types);
         }
 
-        // Status filter: Complex because status is derived from direction/duration
-        if (! empty($filters->statuses)) {
+        // Outcome filter: Complex because outcome is derived from direction/duration
+        if (!empty($filters->outcomes)) {
             $query->where(function ($q) use ($filters) {
-                foreach ($filters->statuses as $status) {
-                    switch ($status) {
+                foreach ($filters->outcomes as $outcome) {
+                    switch ($outcome) {
                         case 'MISSED':
-                            $q->orWhere('call_logs.direction', 'MISSED');
+                            $q->orWhereIn('call_logs.direction', ['MISSED', 'REJECTED', 'BLOCKED'])
+                                ->orWhere(function ($sq) {
+                                    $sq->where('call_logs.direction', 'INCOMING')
+                                        ->where('call_logs.duration', 0);
+                                });
                             break;
                         case 'NO_ANSWER':
                             $q->orWhere(function ($sq) {

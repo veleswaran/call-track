@@ -17,7 +17,8 @@ final class ReportService implements ReportServiceInterface
         private readonly GetReportMetricsAction $getMetricsAction,
         private readonly GetReportChartsAction $getChartsAction,
         private readonly GetAgentPerformanceAction $getPerformanceAction,
-    ) {}
+    ) {
+    }
 
     public function getMetrics(ReportFilterDTO $filters): array
     {
@@ -46,8 +47,10 @@ final class ReportService implements ReportServiceInterface
             agentIds: $filters->agentIds,
             teamIds: $filters->teamIds,
             statuses: $filters->statuses,
+            outcomes: $filters->outcomes,
             types: $filters->types,
             search: $filters->search,
+            allowedAgentIds: $filters->allowedAgentIds,
         );
     }
 }

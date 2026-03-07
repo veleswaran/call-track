@@ -27,10 +27,10 @@ import { Agent, Team } from "@shared/types"
 
 export interface ReportFiltersData {
     dateRange: DateRange | undefined
-    status: string
+    outcome: string
     type: string
-    agentId?: string | null
-    teamId?: string | null
+    agentIds?: string[] | null
+    teamIds?: string[] | null
 }
 
 interface ReportFiltersProps {
@@ -38,18 +38,18 @@ interface ReportFiltersProps {
 }
 
 export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
-    // Default: Last 30 days to ensure data is visible
+    // Default: Today and BUSINESS as per requirements
     const defaultDateRange = {
-        from: new Date(new Date().setDate(new Date().getDate() - 30)),
+        from: new Date(),
         to: new Date(),
     };
 
     const [date, setDate] = useState<DateRange | undefined>(defaultDateRange)
-    const [status, setStatus] = useState("all")
-    const [type, setType] = useState("all")
+    const [outcome, setOutcome] = useState("all")
+    const [type, setType] = useState("BUSINESS")
     const [agentId, setAgentId] = useState<string>("all")
     const [teamId, setTeamId] = useState<string>("all")
-    const [quickDate, setQuickDate] = useState<string>("last_30_days")
+    const [quickDate, setQuickDate] = useState<string>("today")
 
     const handleQuickDateChange = (value: string) => {
         setQuickDate(value)
@@ -77,7 +77,6 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
                 newRange = { from: subDays(today, 30), to: today }
                 break
             case "custom":
-                // Don't change the date range, let the user pick
                 return
             default:
                 newRange = defaultDateRange
@@ -88,7 +87,7 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
         }
     }
 
-    // Fetch Agents
+    // Fetch Agents with high per_page to get most of them for filters
     const agentsQuery = useQuery({
         queryKey: ['agents', 'simple-list'],
         queryFn: async () => {
@@ -97,7 +96,7 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
         }
     })
 
-    // Fetch Teams
+    // Fetch Teams with high per_page
     const teamsQuery = useQuery({
         queryKey: ['teams', 'simple-list'],
         queryFn: async () => {
@@ -109,27 +108,26 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
     const handleApplyFilters = () => {
         onFilterChange({
             dateRange: date,
-            status,
+            outcome,
             type,
-            agentId: agentId !== "all" ? agentId : null,
-            teamId: teamId !== "all" ? teamId : null
+            agentIds: agentId !== "all" ? [agentId] : null,
+            teamIds: teamId !== "all" ? [teamId] : null
         })
     }
 
     const clearFilters = () => {
-        // Reset to defaults
         setDate(defaultDateRange);
-        setQuickDate("last_30_days");
-        setStatus("all");
-        setType("all");
+        setQuickDate("today");
+        setOutcome("all");
+        setType("BUSINESS");
         setAgentId("all");
         setTeamId("all");
         onFilterChange({
             dateRange: defaultDateRange,
-            status: "all",
-            type: "all",
-            agentId: null,
-            teamId: null
+            outcome: "all",
+            type: "BUSINESS",
+            agentIds: null,
+            teamIds: null
         });
     }
 
@@ -192,12 +190,12 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
                 </PopoverContent>
             </Popover>
 
-            <Select value={status} onValueChange={setStatus}>
+            <Select value={outcome} onValueChange={setOutcome}>
                 <SelectTrigger className="w-[150px]">
-                    <SelectValue placeholder="All Statuses" />
+                    <SelectValue placeholder="All Outcomes" />
                 </SelectTrigger>
                 <SelectContent>
-                    <SelectItem value="all">All Statuses</SelectItem>
+                    <SelectItem value="all">All Outcomes</SelectItem>
                     <SelectItem value="CONNECTED">Connected</SelectItem>
                     <SelectItem value="MISSED">Missed</SelectItem>
                     <SelectItem value="NO_ANSWER">No Answer</SelectItem>

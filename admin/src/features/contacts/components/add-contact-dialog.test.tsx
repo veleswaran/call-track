@@ -37,6 +37,7 @@ const mockCallLog: CallLog = {
     contact_name: null,
     contact_notes: null,
     call_type: "incoming",
+    call_outcome: "Connected",
     duration: 120,
     timestamp: "2024-01-01T12:00:00Z",
     classification: null,

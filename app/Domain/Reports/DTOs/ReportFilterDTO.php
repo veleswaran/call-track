@@ -14,11 +14,13 @@ final class ReportFilterDTO
         public readonly ?array $agentIds = null,
         public readonly ?array $teamIds = null,
         public readonly ?array $statuses = null,
+        public readonly ?array $outcomes = null,
         public readonly ?array $types = null,
         public readonly ?string $search = null,
         /** @var int[]|null Null = full access, array = restricted agent IDs */
         public readonly ?array $allowedAgentIds = null,
-    ) {}
+    ) {
+    }
 
     public static function fromArray(array $data): self
     {
@@ -28,8 +30,10 @@ final class ReportFilterDTO
             agentIds: $data['agent_ids'] ?? null,
             teamIds: $data['team_ids'] ?? null,
             statuses: $data['statuses'] ?? null,
+            outcomes: $data['outcomes'] ?? null,
             types: $data['types'] ?? null,
             search: $data['search'] ?? null,
+            allowedAgentIds: $data['allowed_agent_ids'] ?? null,
         );
     }
 }
