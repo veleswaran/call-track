@@ -22,9 +22,10 @@ export const useUpdateSettingsMutation = () => {
                 description: "Settings updated successfully",
             });
         },
-        onError: (error: any) => {
+        onError: (error: unknown) => {
+            const err = error as { response?: { data?: { message?: string } } };
             toast.error("Error", {
-                description: error.response?.data?.message || "Failed to update settings",
+                description: err.response?.data?.message || "Failed to update settings",
             });
         }
     });

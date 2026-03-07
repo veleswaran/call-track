@@ -40,9 +40,10 @@ export function DevicePushNotificationDialog({ device }: DevicePushNotificationD
                     setTitle("");
                     setBody("");
                 },
-                onError: (error: any) => {
+                onError: (error: unknown) => {
+                    const err = error as { response?: { data?: { message?: string } } };
                     toast.error("Failed to send", {
-                        description: error?.response?.data?.message || "An error occurred",
+                        description: err?.response?.data?.message || "An error occurred",
                     });
                 }
             }

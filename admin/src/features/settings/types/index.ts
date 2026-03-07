@@ -5,5 +5,5 @@ export interface SettingsData {
 }
 
 export interface SettingsUpdatePayload {
-    settings: Record<string, any>;
+    settings: Record<string, unknown>;
 }

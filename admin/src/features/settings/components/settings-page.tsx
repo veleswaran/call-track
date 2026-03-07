@@ -25,6 +25,7 @@ export function SettingsPage() {
     type FormValues = z.infer<typeof formSchema>;
 
     const form = useForm<FormValues>({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         resolver: zodResolver(formSchema) as any,
         defaultValues: {
             heartbeat_threshold_minutes: 60,
@@ -84,7 +85,7 @@ export function SettingsPage() {
                                             <Input type="number" {...field} />
                                         </FormControl>
                                         <FormDescription>
-                                            Devices without a heartbeat for this long will receive a "wake up" push notification.
+                                            Devices without a heartbeat for this long will receive a &quot;wake up&quot; push notification.
                                         </FormDescription>
                                         <FormMessage />
                                     </FormItem>

@@ -54,16 +54,17 @@ export function BottomNav({ onLogout }: BottomNavProps) {
         return pathname.startsWith(href);
     };
 
-    const isItemAllowed = (item: any) => {
+    const isItemAllowed = (item: BottomNavItem) => {
         let isAllowed = true;
+        const navItem = item as { role?: string | string[], permission?: string };
 
-        if (item.role) {
-            const requiredRoles = Array.isArray(item.role) ? item.role : [item.role];
+        if (navItem.role) {
+            const requiredRoles = Array.isArray(navItem.role) ? navItem.role : [navItem.role];
             isAllowed = requiredRoles.some((r: string) => userRoles.includes(r));
         }
 
-        if (isAllowed && item.permission) {
-            isAllowed = userPermissions.includes(item.permission as string);
+        if (isAllowed && navItem.permission) {
+            isAllowed = userPermissions.includes(navItem.permission);
         }
 
         return isAllowed;
