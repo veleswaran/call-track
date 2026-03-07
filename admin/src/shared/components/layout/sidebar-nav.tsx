@@ -11,6 +11,7 @@ import {
     Smartphone,
     Users,
     Contact,
+    Settings,
     ChevronLeft,
     type LucideIcon,
 } from "lucide-react";
@@ -32,13 +33,14 @@ export interface NavItem {
  */
 export const defaultNavigation: NavItem[] = [
     { name: "Dashboard", href: "/", icon: LayoutDashboard },
-    { name: "Reports", href: "/reports", icon: BarChart},
+    { name: "Reports", href: "/reports", icon: BarChart },
     { name: "Call Logs", href: "/call-logs", icon: Phone }, // accessible by all logged in usually, or check permission
     { name: "Devices", href: "/devices", icon: Smartphone, permission: "manage devices" }, // or view devices? 'manage devices' is permission name.
     { name: "Users", href: "/users", icon: Users, permission: "manage users" },
     { name: "Teams", href: "/teams", icon: Users, permission: "manage team" },
     { name: "Agents", href: "/agents", icon: Users, permission: "manage team" }, // Managers manage team.
     { name: "Contacts", href: "/contacts", icon: Contact, role: ["admin", "super-admin"] }, // Strict Policy: Only Admin/Super
+    { name: "Settings", href: "/settings", icon: Settings, role: ["admin", "super-admin"] }, // Requires Admin config rights
 ];
 
 export interface SidebarNavProps {

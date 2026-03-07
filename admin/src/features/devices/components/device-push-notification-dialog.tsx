@@ -49,7 +49,7 @@ export function DevicePushNotificationDialog({ device }: DevicePushNotificationD
         );
     };
 
-    const hasFcmToken = !!device.fcm_token;
+    const hasFcmToken = !!device.has_fcm_token;
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>

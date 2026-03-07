@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Devices;
 
+use App\Actions\Devices\FindDeviceByIdAction;
 use App\Actions\Devices\FindStaleHeartbeatDevicesAction;
 use App\Actions\Devices\SendPushNotificationAction;
 use App\Actions\Devices\UpdateDeviceFcmTokenAction;
@@ -11,7 +12,6 @@ use App\Actions\Settings\GetSystemSettingAction;
 use App\Contracts\Services\FcmNotificationServiceInterface;
 use App\Domain\Devices\DTOs\StaleHeartbeatNotificationDTO;
 use App\Domain\Devices\DTOs\UpdateFcmTokenDTO;
-use App\Domain\Devices\Models\Device;
 
 class FcmNotificationService implements FcmNotificationServiceInterface
 {
@@ -19,7 +19,8 @@ class FcmNotificationService implements FcmNotificationServiceInterface
         protected UpdateDeviceFcmTokenAction $updateTokenAction,
         protected FindStaleHeartbeatDevicesAction $findStaleDevicesAction,
         protected SendPushNotificationAction $sendPushAction,
-        protected GetSystemSettingAction $getSettingAction
+        protected GetSystemSettingAction $getSettingAction,
+        protected FindDeviceByIdAction $findDeviceByIdAction
     ) {}
 
     public function notifyStaleDevices(): int
@@ -48,7 +49,7 @@ class FcmNotificationService implements FcmNotificationServiceInterface
 
     public function forceNotifyDevice(int $deviceId, string $title, string $body): void
     {
-        $device = Device::findOrFail($deviceId);
+        $device = $this->findDeviceByIdAction->execute($deviceId);
 
         $dto = new StaleHeartbeatNotificationDTO(
             device: $device,

@@ -4,7 +4,7 @@ import * as React from "react";
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Phone, Smartphone, Users, BarChart, Menu, Contact, X, LogOut } from "lucide-react";
+import { LayoutDashboard, Phone, Smartphone, Users, BarChart, Menu, Contact, Settings, X, LogOut } from "lucide-react";
 import { cn } from "@shared/utils";
 
 /**
@@ -14,17 +14,18 @@ const primaryNavItems = [
     { name: "Dashboard", href: "/", icon: LayoutDashboard },
     { name: "Reports", href: "/reports", icon: BarChart },
     { name: "Calls", href: "/call-logs", icon: Phone },
-    { name: "Devices", href: "/devices", icon: Smartphone },
+    { name: "Devices", href: "/devices", icon: Smartphone, permission: "manage devices" },
 ] as const;
 
 /**
  * Overflow navigation items shown in the "More" menu
  */
 const moreNavItems = [
-    { name: "Teams", href: "/teams", icon: Users },
-    { name: "Users", href: "/users", icon: Users },
-    { name: "Agents", href: "/agents", icon: Users },
-    { name: "Contacts", href: "/contacts", icon: Contact },
+    { name: "Teams", href: "/teams", icon: Users, permission: "manage team" },
+    { name: "Users", href: "/users", icon: Users, permission: "manage users" },
+    { name: "Agents", href: "/agents", icon: Users, permission: "manage team" },
+    { name: "Contacts", href: "/contacts", icon: Contact, role: ["admin", "super-admin"] },
+    { name: "Settings", href: "/settings", icon: Settings, role: ["admin", "super-admin"] },
 ] as const;
 
 export const navItems = [...primaryNavItems, ...moreNavItems];
@@ -35,14 +36,16 @@ export interface BottomNavProps {
     onLogout?: () => void;
 }
 
-/**
- * Mobile bottom navigation bar
- * Shows primary navigation links + a "More" hamburger menu
- * Only visible on mobile viewports (md:hidden)
- */
+import { useAuth } from "@/src/features/auth/hooks/use-auth";
+
+// ... existing code ...
+
 export function BottomNav({ onLogout }: BottomNavProps) {
     const pathname = usePathname();
     const [moreOpen, setMoreOpen] = useState(false);
+    const { user } = useAuth();
+    const userRoles: string[] = user?.roles || [];
+    const userPermissions: string[] = user?.permissions || [];
 
     const isActive = (href: string) => {
         if (href === "/") {
@@ -51,7 +54,25 @@ export function BottomNav({ onLogout }: BottomNavProps) {
         return pathname.startsWith(href);
     };
 
-    const isMoreActive = moreNavItems.some((item) => isActive(item.href));
+    const isItemAllowed = (item: any) => {
+        let isAllowed = true;
+
+        if (item.role) {
+            const requiredRoles = Array.isArray(item.role) ? item.role : [item.role];
+            isAllowed = requiredRoles.some((r: string) => userRoles.includes(r));
+        }
+
+        if (isAllowed && item.permission) {
+            isAllowed = userPermissions.includes(item.permission as string);
+        }
+
+        return isAllowed;
+    };
+
+    const allowedPrimaryNavItems = primaryNavItems.filter(isItemAllowed);
+    const allowedMoreNavItems = moreNavItems.filter(isItemAllowed);
+
+    const isMoreActive = allowedMoreNavItems.some((item) => isActive(item.href));
 
     return (
         <>
@@ -77,7 +98,7 @@ export function BottomNav({ onLogout }: BottomNavProps) {
                         </button>
                     </div>
                     <nav className="p-2 space-y-1">
-                        {moreNavItems.map((item) => {
+                        {allowedMoreNavItems.map((item) => {
                             const Icon = item.icon;
                             const active = isActive(item.href);
 
@@ -126,7 +147,7 @@ export function BottomNav({ onLogout }: BottomNavProps) {
                 aria-label="Primary navigation"
             >
                 <div className="flex h-16 items-center justify-around">
-                    {primaryNavItems.map((item) => {
+                    {allowedPrimaryNavItems.map((item) => {
                         const Icon = item.icon;
                         const active = isActive(item.href);
 

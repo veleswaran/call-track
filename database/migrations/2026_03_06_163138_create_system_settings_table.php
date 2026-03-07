@@ -19,26 +19,24 @@ return new class extends Migration
         });
 
         // Insert initial system settings
-        DB::table('system_settings')->insert([
+        $settings = [
             [
                 'key' => 'fcm_stale_title',
-                'value' => json_encode('CallTrack needs your attention'),
-                'created_at' => now(),
-                'updated_at' => now(),
+                'value' => 'CallTrack needs your attention',
             ],
             [
                 'key' => 'fcm_stale_body',
-                'value' => json_encode('Your device is going into sleep mode. Tap here to keep call tracking active.'),
-                'created_at' => now(),
-                'updated_at' => now(),
+                'value' => 'Your device is going into sleep mode. Tap here to keep call tracking active.',
             ],
             [
                 'key' => 'heartbeat_threshold_minutes',
-                'value' => json_encode(60),
-                'created_at' => now(),
-                'updated_at' => now(),
+                'value' => 60,
             ],
-        ]);
+        ];
+
+        foreach ($settings as $setting) {
+            \App\Domain\Settings\Models\SystemSetting::create($setting);
+        }
     }
 
     /**

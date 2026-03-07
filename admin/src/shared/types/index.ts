@@ -76,7 +76,7 @@ export interface Device {
     agent_id: number | null;
     agent: { id: number; name: string } | null;
     battery_level: number | null;
-    fcm_token?: string | null;
+    has_fcm_token?: boolean;
     tracked_sim_slots: number[] | null;
     last_sync_at: string | null;
     metadata?: Record<string, unknown> | null;

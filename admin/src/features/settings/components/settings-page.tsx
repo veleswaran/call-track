@@ -22,8 +22,10 @@ export function SettingsPage() {
     const { data: settings, isLoading } = useSettingsQuery();
     const updateSettings = useUpdateSettingsMutation();
 
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
+    type FormValues = z.infer<typeof formSchema>;
+
+    const form = useForm<FormValues>({
+        resolver: zodResolver(formSchema) as any,
         defaultValues: {
             heartbeat_threshold_minutes: 60,
             fcm_stale_title: "",

@@ -4,16 +4,17 @@ declare(strict_types=1);
 
 namespace App\Services\Settings;
 
+use App\Actions\Settings\GetAllSystemSettingsAction;
 use App\Actions\Settings\GetSystemSettingAction;
 use App\Actions\Settings\UpdateSystemSettingAction;
 use App\Contracts\Services\SettingsServiceInterface;
 use App\Domain\Settings\DTOs\UpdateSettingsDTO;
-use App\Domain\Settings\Models\SystemSetting;
 
 class SettingsService implements SettingsServiceInterface
 {
     public function __construct(
         protected GetSystemSettingAction $getAction,
+        protected GetAllSystemSettingsAction $getAllAction,
         protected UpdateSystemSettingAction $updateAction
     ) {}
 
@@ -24,7 +25,7 @@ class SettingsService implements SettingsServiceInterface
 
     public function getAll(): array
     {
-        $settings = SystemSetting::all();
+        $settings = $this->getAllAction->execute();
         $result = [];
 
         foreach ($settings as $setting) {

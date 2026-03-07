@@ -36,7 +36,6 @@ class SendPushNotificationAction
 
             return true;
         } catch (\Throwable $e) {
-            dump($e->getMessage());
             Log::error("Failed to send FCM push notification to device {$dto->device->id}", [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),

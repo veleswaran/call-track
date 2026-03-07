@@ -6,9 +6,10 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Contracts\Services\SettingsServiceInterface;
 use App\Domain\Settings\DTOs\UpdateSettingsDTO;
+use App\Domain\Settings\Models\SystemSetting;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\UpdateSystemSettingsRequest;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class SystemSettingsController extends Controller
 {
@@ -18,18 +19,16 @@ class SystemSettingsController extends Controller
 
     public function index(): JsonResponse
     {
+        $this->authorize('viewAny', SystemSetting::class);
+
         return response()->json([
             'data' => $this->settingsService->getAll(),
         ]);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(UpdateSystemSettingsRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'settings' => ['required', 'array'],
-        ]);
-
-        $dto = new UpdateSettingsDTO($validated['settings']);
+        $dto = new UpdateSettingsDTO($request->validated('settings'));
 
         $this->settingsService->update($dto);
 

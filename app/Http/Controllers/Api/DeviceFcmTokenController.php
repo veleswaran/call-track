@@ -7,8 +7,8 @@ namespace App\Http\Controllers\Api;
 use App\Contracts\Services\FcmNotificationServiceInterface;
 use App\Domain\Devices\DTOs\UpdateFcmTokenDTO;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\StoreDeviceFcmTokenRequest;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class DeviceFcmTokenController extends Controller
 {
@@ -16,18 +16,14 @@ class DeviceFcmTokenController extends Controller
         protected FcmNotificationServiceInterface $fcmService
     ) {}
 
-    public function store(Request $request): JsonResponse
+    public function store(StoreDeviceFcmTokenRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'fcm_token' => ['required', 'string'],
-        ]);
-
         /** @var \App\Domain\Devices\Models\Device $device */
         $device = $request->attributes->get('device');
 
         $dto = new UpdateFcmTokenDTO(
             deviceId: $device->id,
-            fcmToken: $validated['fcm_token']
+            fcmToken: $request->validated('fcm_token')
         );
 
         $this->fcmService->updateFcmToken($dto);
