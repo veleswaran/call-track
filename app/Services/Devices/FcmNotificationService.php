@@ -10,6 +10,7 @@ use App\Actions\Devices\SendPushNotificationAction;
 use App\Actions\Devices\UpdateDeviceFcmTokenAction;
 use App\Actions\Settings\GetSystemSettingAction;
 use App\Contracts\Services\FcmNotificationServiceInterface;
+use App\Domain\Devices\DTOs\SendPushNotificationDTO;
 use App\Domain\Devices\DTOs\StaleHeartbeatNotificationDTO;
 use App\Domain\Devices\DTOs\UpdateFcmTokenDTO;
 
@@ -47,9 +48,18 @@ class FcmNotificationService implements FcmNotificationServiceInterface
         return $sentCount;
     }
 
-    public function forceNotifyDevice(int $deviceId, string $title, string $body): void
+    /**
+     * Force send a custom push notification to a specific device.
+     * Falls back to system settings defaults when title/body are null.
+     */
+    public function forceNotifyDevice(SendPushNotificationDTO $pushDto): void
     {
-        $device = $this->findDeviceByIdAction->execute($deviceId);
+        $title = $pushDto->title
+            ?? (string) $this->getSettingAction->execute('fcm_stale_title', 'CallTrack needs your attention');
+        $body = $pushDto->body
+            ?? (string) $this->getSettingAction->execute('fcm_stale_body', 'Your device is going into sleep mode. Tap here to keep call tracking active.');
+
+        $device = $this->findDeviceByIdAction->execute($pushDto->deviceId);
 
         $dto = new StaleHeartbeatNotificationDTO(
             device: $device,

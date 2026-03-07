@@ -25,8 +25,7 @@ export function SettingsPage() {
     type FormValues = z.infer<typeof formSchema>;
 
     const form = useForm<FormValues>({
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        resolver: zodResolver(formSchema) as any,
+        resolver: zodResolver(formSchema),
         defaultValues: {
             heartbeat_threshold_minutes: 60,
             fcm_stale_title: "",

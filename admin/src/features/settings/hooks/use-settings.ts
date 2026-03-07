@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { settingsApi } from "../api/settings-api";
 import { SettingsUpdatePayload } from "../types";
 import { toast } from "sonner";
+import { getApiErrorMessage } from "@shared/utils/error";
 
 export const useSettingsQuery = () => {
     return useQuery({
@@ -23,9 +24,8 @@ export const useUpdateSettingsMutation = () => {
             });
         },
         onError: (error: unknown) => {
-            const err = error as { response?: { data?: { message?: string } } };
             toast.error("Error", {
-                description: err.response?.data?.message || "Failed to update settings",
+                description: getApiErrorMessage(error, "Failed to update settings"),
             });
         }
     });

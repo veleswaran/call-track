@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Services;
 
+use App\Domain\Devices\DTOs\SendPushNotificationDTO;
 use App\Domain\Devices\DTOs\UpdateFcmTokenDTO;
 
 interface FcmNotificationServiceInterface
@@ -17,8 +18,9 @@ interface FcmNotificationServiceInterface
 
     /**
      * Force send a custom push notification to a specific device.
+     * Falls back to system settings defaults when title/body are null.
      */
-    public function forceNotifyDevice(int $deviceId, string $title, string $body): void;
+    public function forceNotifyDevice(SendPushNotificationDTO $dto): void;
 
     /**
      * Update the FCM token for a specific device.

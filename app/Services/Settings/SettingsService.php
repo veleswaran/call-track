@@ -25,14 +25,7 @@ class SettingsService implements SettingsServiceInterface
 
     public function getAll(): array
     {
-        $settings = $this->getAllAction->execute();
-        $result = [];
-
-        foreach ($settings as $setting) {
-            $result[$setting->key] = $setting->value;
-        }
-
-        return $result;
+        return $this->getAllAction->execute()->pluck('value', 'key')->all();
     }
 
     public function update(UpdateSettingsDTO $dto): void

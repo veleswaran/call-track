@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -18,25 +19,30 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // Insert initial system settings
-        $settings = [
+        // Insert initial system settings using DB facade
+        // to avoid coupling the migration to the domain model layer.
+        $now = now();
+
+        DB::table('system_settings')->insert([
             [
                 'key' => 'fcm_stale_title',
-                'value' => 'CallTrack needs your attention',
+                'value' => json_encode('CallTrack needs your attention'),
+                'created_at' => $now,
+                'updated_at' => $now,
             ],
             [
                 'key' => 'fcm_stale_body',
-                'value' => 'Your device is going into sleep mode. Tap here to keep call tracking active.',
+                'value' => json_encode('Your device is going into sleep mode. Tap here to keep call tracking active.'),
+                'created_at' => $now,
+                'updated_at' => $now,
             ],
             [
                 'key' => 'heartbeat_threshold_minutes',
-                'value' => 60,
+                'value' => json_encode(60),
+                'created_at' => $now,
+                'updated_at' => $now,
             ],
-        ];
-
-        foreach ($settings as $setting) {
-            \App\Domain\Settings\Models\SystemSetting::create($setting);
-        }
+        ]);
     }
 
     /**

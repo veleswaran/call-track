@@ -6,6 +6,7 @@ import { Input } from "@shared/components/ui/input";
 import { Textarea } from "@shared/components/ui/textarea";
 import { Label } from "@shared/components/ui/label";
 import { toast } from "sonner";
+import { getApiErrorMessage } from "@shared/utils/error";
 import { Bell, Loader2 } from "lucide-react";
 import {
     Dialog,
@@ -41,9 +42,8 @@ export function DevicePushNotificationDialog({ device }: DevicePushNotificationD
                     setBody("");
                 },
                 onError: (error: unknown) => {
-                    const err = error as { response?: { data?: { message?: string } } };
                     toast.error("Failed to send", {
-                        description: err?.response?.data?.message || "An error occurred",
+                        description: getApiErrorMessage(error, "An error occurred"),
                     });
                 }
             }
