@@ -11,6 +11,10 @@ vi.mock("@features/devices/hooks/use-devices", () => ({
         mutate: mockRevokeDeviceTokens,
         isPending: false,
     }),
+    useSendPushNotification: () => ({
+        mutate: vi.fn(),
+        isPending: false,
+    }),
 }));
 
 // Mock Auth

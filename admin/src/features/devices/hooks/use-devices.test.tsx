@@ -143,3 +143,24 @@ describe("useGenerateDeviceCode", () => {
         expect(result.current.data).toEqual(mockResponse);
     });
 });
+
+describe("useSendPushNotification", () => {
+    it("should send push notification and invalidate details query", async () => {
+        const { useSendPushNotification } = await import("./use-devices");
+
+        vi.mocked(api.post).mockResolvedValueOnce({ message: "Notification sent" });
+
+        const { result } = renderHook(() => useSendPushNotification(1), {
+            wrapper: createWrapper(),
+        });
+
+        result.current.mutate({ title: "Test", body: "Test body" });
+
+        await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+        expect(api.post).toHaveBeenCalledWith("/api/v1/admin/devices/1/push", {
+            title: "Test",
+            body: "Test body",
+        });
+    });
+});

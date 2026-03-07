@@ -76,5 +76,27 @@ describe("dashboardKeys", () => {
     it("should have correct key structure", () => {
         expect(dashboardKeys.all).toEqual(["dashboard"]);
         expect(dashboardKeys.metrics()).toEqual(["dashboard", "metrics"]);
+        expect(dashboardKeys.charts()).toEqual(["dashboard", "charts"]);
+    });
+});
+
+describe("useDashboardCharts", () => {
+    it("should fetch dashboard charts", async () => {
+        const { useDashboardCharts } = await import("./use-dashboard");
+        const mockCharts = {
+            volume_trends: [{ day: "Mon", current: 10, previous: 5 }],
+            outcome_distribution: [{ name: "Connected", value: 50 }],
+        };
+
+        vi.mocked(api.get).mockResolvedValueOnce({ data: mockCharts });
+
+        const { result } = renderHook(() => useDashboardCharts(), {
+            wrapper: createWrapper(),
+        });
+
+        await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+        expect(api.get).toHaveBeenCalledWith("/api/v1/admin/dashboard/charts");
+        expect(result.current.data).toEqual(mockCharts);
     });
 });
