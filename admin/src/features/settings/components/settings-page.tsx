@@ -13,16 +13,16 @@ import { useSettingsQuery, useUpdateSettingsMutation } from "../hooks/use-settin
 import { Loader2 } from "lucide-react";
 
 const formSchema = z.object({
-    heartbeat_threshold_minutes: z.coerce.number().min(5, "Minimum threshold is 5 minutes").max(10080, "Maximum is 1 week"),
+    heartbeat_threshold_minutes: z.number().min(5, "Minimum threshold is 5 minutes").max(10080, "Maximum is 1 week"),
     fcm_stale_title: z.string().min(1, "Title is required").max(100, "Title is too long"),
     fcm_stale_body: z.string().min(1, "Message body is required").max(500, "Message body is too long"),
 });
 
+type FormValues = z.infer<typeof formSchema>;
+
 export function SettingsPage() {
     const { data: settings, isLoading } = useSettingsQuery();
     const updateSettings = useUpdateSettingsMutation();
-
-    type FormValues = z.infer<typeof formSchema>;
 
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
@@ -43,10 +43,10 @@ export function SettingsPage() {
         }
     }, [settings, form]);
 
-    function onSubmit(values: z.infer<typeof formSchema>) {
+    function onSubmit(values: FormValues) {
         updateSettings.mutate({
             settings: {
-                heartbeat_threshold_minutes: values.heartbeat_threshold_minutes,
+                heartbeat_threshold_minutes: Number(values.heartbeat_threshold_minutes),
                 fcm_stale_title: values.fcm_stale_title,
                 fcm_stale_body: values.fcm_stale_body,
             }

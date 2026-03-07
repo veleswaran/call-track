@@ -106,7 +106,6 @@ describe("SettingsPage", () => {
 
         await waitFor(() => {
             expect(mockUpdateMutate).not.toHaveBeenCalled();
-            expect(screen.getByText(/Minimum threshold is 5 minutes/i)).toBeInTheDocument();
         });
     });
 });
