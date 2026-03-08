@@ -11,6 +11,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->singleton(\Kreait\Firebase\Contract\Messaging::class, function ($app) {
+            $factory = (new \Kreait\Firebase\Factory)
+                ->withServiceAccount(config('firebase.credentials_path'));
+
+            return $factory->createMessaging();
+        });
+
         $this->app->bind(
             \App\Contracts\Services\CallLogQueryServiceContract::class,
             \App\Services\CallLogQueryService::class
@@ -90,6 +97,16 @@ class AppServiceProvider extends ServiceProvider
             \App\Contracts\Services\Users\UserRoleServiceInterface::class,
             \App\Services\Users\UserRoleService::class
         );
+
+        $this->app->bind(
+            \App\Contracts\Services\SettingsServiceInterface::class,
+            \App\Services\Settings\SettingsService::class
+        );
+
+        $this->app->bind(
+            \App\Contracts\Services\FcmNotificationServiceInterface::class,
+            \App\Services\Devices\FcmNotificationService::class
+        );
     }
 
     /**
@@ -104,5 +121,6 @@ class AppServiceProvider extends ServiceProvider
         \Illuminate\Support\Facades\Gate::policy(\App\Domain\Teams\Models\Team::class, \App\Policies\TeamPolicy::class);
         \Illuminate\Support\Facades\Gate::policy(\App\Domain\Agents\Models\Agent::class, \App\Policies\AgentPolicy::class);
         \Illuminate\Support\Facades\Gate::policy(\App\Domain\Calls\Models\CallLog::class, \App\Policies\CallLogPolicy::class);
+        \Illuminate\Support\Facades\Gate::policy(\App\Domain\Settings\Models\SystemSetting::class, \App\Policies\SystemSettingPolicy::class);
     }
 }

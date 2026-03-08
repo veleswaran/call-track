@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "802362381781",
+    "project_id": "calltrack-1d6b7",
+    "storage_bucket": "calltrack-1d6b7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:802362381781:android:05adb007b0273a3fd8595c",
+        "android_client_info": {
+          "package_name": "com.calltrack.calltrackapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA34ytdhLKfq07uMrYhWjK4LIfRxoF-j3E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

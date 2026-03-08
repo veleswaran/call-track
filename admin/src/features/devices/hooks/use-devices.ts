@@ -72,3 +72,20 @@ export function useGenerateDeviceCode() {
             api.post<{ data: GeneratedCode }>("/api/v1/admin/devices/codes", data),
     });
 }
+
+export interface SendPushNotificationParams {
+    title?: string;
+    body?: string;
+}
+
+export function useSendPushNotification(deviceId: number) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (data: SendPushNotificationParams) =>
+            api.post<{ message: string }>(`/api/v1/admin/devices/${deviceId}/push`, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: deviceKeys.detail(deviceId) });
+        },
+    });
+}

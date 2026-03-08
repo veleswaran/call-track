@@ -1,0 +1,233 @@
+
+ RUN  v3.2.4 /home/z0401@ad.ziffity.com/Documents/training/php/calltrack/admin
+      Coverage enabled with v8
+
+ ✓ src/features/contacts/components/delete-contact-dialog.test.tsx (3 tests) 400ms
+ ✓ src/features/call-logs/components/call-log-search.test.tsx (4 tests) 392ms
+ ✓ src/shared/components/layout/mobile-menu.test.tsx (16 tests) 433ms
+ ✓ src/features/users/hooks/use-users.test.tsx (7 tests) 439ms
+ ✓ src/features/contacts/components/edit-contact-dialog.test.tsx (3 tests) 538ms
+ ✓ src/features/call-logs/components/call-log-pagination.test.tsx (2 tests) 464ms
+   ✓ CallLogPagination > renders pagination controls  310ms
+ ✓ src/features/call-logs/components/edit-note-dialog.test.tsx (2 tests) 575ms
+   ✓ EditNoteDialog > updates note state and calls mutation on save with classification type  380ms
+ ✓ src/shared/components/layout/header.test.tsx (13 tests) 614ms
+ ✓ src/shared/components/layout/bottom-nav.test.tsx (17 tests) 652ms
+ ✓ src/features/settings/components/settings-page.test.tsx (4 tests) 705ms
+   ✓ SettingsPage > should validate and submit form correctly  457ms
+ ✓ src/shared/components/layout/sidebar-nav.test.tsx (13 tests) 843ms
+   ✓ SidebarNav > should render navigation links with correct href  348ms
+ ✓ src/features/contacts/components/add-contact-dialog.test.tsx (10 tests) 764ms
+ ✓ src/shared/components/layout/app-shell.test.tsx (15 tests) 891ms
+ ✓ src/features/devices/components/device-push-notification-dialog.test.tsx (3 tests) 816ms
+   ✓ DevicePushNotificationDialog > should successfully submit mutation and close dialog  530ms
+ ✓ src/features/profile/components/change-password-form.test.tsx (3 tests) 1135ms
+   ✓ ChangePasswordForm > renders the form correctly  320ms
+   ✓ ChangePasswordForm > validates password matching  393ms
+   ✓ ChangePasswordForm > calls mutation with correct data on valid submission  418ms
+ ✓ src/shared/components/async-select.test.tsx (6 tests) 1626ms
+   ✓ AsyncSelect > fetches options and allows selection  374ms
+   ✓ AsyncSelect > searches inputs with debounce  388ms
+   ✓ AsyncSelect > displays loading state  329ms
+   ✓ AsyncSelect > handles load errors gracefully  348ms
+ ✓ src/features/users/components/user-actions.test.tsx (12 tests) 1674ms
+ ✓ src/shared/components/ui/input.test.tsx (10 tests) 250ms
+ ✓ src/features/contacts/hooks/use-create-contact.test.tsx (3 tests) 313ms
+ ✓ src/features/agents/hooks/use-agents.test.tsx (5 tests) 214ms
+ ✓ src/features/devices/hooks/use-devices.test.tsx (6 tests) 275ms
+ ✓ src/features/call-logs/hooks/use-call-logs.test.tsx (5 tests) 276ms
+ ✓ src/features/contacts/hooks/use-contacts.test.tsx (4 tests) 208ms
+ ✓ src/features/devices/hooks/use-device-events.test.tsx (4 tests) 148ms
+ ✓ src/shared/components/ui/button.test.tsx (17 tests) 260ms
+ ✓ src/shared/components/ui/card.test.tsx (19 tests) 221ms
+ ✓ src/features/settings/hooks/use-settings.test.tsx (3 tests) 209ms
+ ✓ src/shared/components/ui/dialog.test.tsx (1 test) 200ms
+ ✓ src/shared/components/ui/dropdown-menu.test.tsx (1 test) 200ms
+ ✓ src/features/users/components/change-role-dialog.test.tsx (2 tests) 335ms
+ ✓ src/shared/components/ui/popover.test.tsx (1 test) 216ms
+ ✓ src/features/dashboard/hooks/use-dashboard.test.tsx (3 tests) 148ms
+ ✓ src/shared/components/ui/table.test.tsx (1 test) 149ms
+ ✓ src/features/call-logs/hooks/use-update-call-note.test.tsx (2 tests) 149ms
+ ✓ src/shared/api/api.test.ts (15 tests) 31ms
+ ✓ src/shared/components/ui/badge.test.tsx (2 tests) 67ms
+ ✓ src/shared/utils/utils.test.ts (8 tests) 19ms
+ ✓ src/features/contacts/hooks/use-update-contact.test.tsx (1 test) 90ms
+ ✓ src/shared/components/ui/label.test.tsx (1 test) 68ms
+ ✓ src/shared/components/ui/textarea.test.tsx (2 tests) 71ms
+ ✓ src/shared/api/auth-service.test.ts (11 tests) 17ms
+ ✓ src/shared/hooks/use-mobile.test.ts (6 tests) 51ms
+ ✓ src/features/contacts/hooks/use-delete-contact.test.tsx (1 test) 82ms
+ ✓ src/features/devices/utils/device-utils.test.ts (13 tests) 14ms
+ ✓ src/shared/hooks/use-debounce.test.ts (2 tests) 54ms
+ ✓ src/shared/components/providers.test.tsx (3 tests) 130ms
+ ✓ src/features/devices/components/devices-page.test.tsx (2 tests) 116ms
+ ✓ src/features/settings/api/settings-api.test.ts (2 tests) 6ms
+ ✓ src/shared/utils/date.test.ts (5 tests) 10ms
+ ✓ src/features/call-logs/utils/format-metadata.test.ts (10 tests) 6ms
+ ✓ src/shared/api/query-client.test.ts (4 tests) 5ms
+ ✓ src/shared/utils/time.test.ts (5 tests) 4ms
+ ✓ src/shared/utils/call.test.ts (3 tests) 5ms
+ ✓ src/shared/components/ui/calendar.test.tsx (2 tests) 214ms
+
+ Test Files  54 passed (54)
+      Tests  318 passed (318)
+   Start at  20:49:58
+   Duration  8.77s (transform 2.00s, setup 8.72s, collect 20.95s, tests 17.79s, environment 48.52s, prepare 10.54s)
+
+ % Coverage report from v8
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------|---------|----------|---------|---------|-------------------
+All files          |   40.39 |    80.89 |   79.63 |   40.39 |                   
+ app               |       0 |      100 |     100 |       0 |                   
+  layout.tsx       |       0 |      100 |     100 |       0 | 2-45              
+ app/(auth)/login  |       0 |      100 |     100 |       0 |                   
+  page.tsx         |       0 |      100 |     100 |       0 | 3-152             
+ app/(dashboard)   |       0 |      100 |     100 |       0 |                   
+  layout.tsx       |       0 |      100 |     100 |       0 | 3-28              
+  page.tsx         |       0 |      100 |     100 |       0 | 3-158             
+ ...hboard)/agents |       0 |      100 |     100 |       0 |                   
+  page.tsx         |       0 |      100 |     100 |       0 | 3-170             
+ ...ard)/call-logs |       0 |      100 |     100 |       0 |                   
+  page.tsx         |       0 |      100 |     100 |       0 | 3-260             
+ ...oard)/contacts |       0 |      100 |     100 |       0 |                   
+  page.tsx         |       0 |      100 |     100 |       0 | 6-38              
+ ...board)/devices |   81.33 |    35.29 |      25 |   81.33 |                   
+  page.tsx         |   81.33 |    35.29 |      25 |   81.33 | ...33,136,177-182 
+ ...board)/profile |       0 |      100 |     100 |       0 |                   
+  page.tsx         |       0 |      100 |     100 |       0 | 3-52              
+ ...board)/reports |       0 |      100 |     100 |       0 |                   
+  page.tsx         |       0 |      100 |     100 |       0 | 3-113             
+ ...oard)/settings |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-19              
+ ...shboard)/teams |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-9               
+ ...rd)/teams/[id] |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-15              
+ ...shboard)/users |       0 |      100 |     100 |       0 |                   
+  page.tsx         |       0 |      100 |     100 |       0 | 3-98              
+ public            |       0 |        0 |       0 |       0 |                   
+  sw.js            |       0 |        0 |       0 |       0 | 1-59              
+ ...nts/components |       0 |      100 |     100 |       0 |                   
+  ...entDialog.tsx |       0 |      100 |     100 |       0 | 3-127             
+  ...iceDialog.tsx |       0 |      100 |     100 |       0 | 3-152             
+  ...entDialog.tsx |       0 |      100 |     100 |       0 | 3-129             
+  ...serDialog.tsx |       0 |      100 |     100 |       0 | 3-124             
+ ...s/agents/hooks |   32.81 |      100 |      50 |   32.81 |                   
+  use-agents.ts    |   32.81 |      100 |      50 |   32.81 | ...51-162,167-180 
+ ...uth/components |       0 |      100 |     100 |       0 |                   
+  ...-settings.tsx |       0 |      100 |     100 |       0 | 3-189             
+ ...res/auth/hooks |   13.79 |      100 |       0 |   13.79 |                   
+  use-auth.ts      |   13.79 |      100 |       0 |   13.79 | 6-33              
+ ...ogs/components |   32.57 |       75 |   89.47 |   32.57 |                   
+  call-actions.tsx |       0 |      100 |     100 |       0 | 3-80              
+  ...on-dialog.tsx |       0 |      100 |     100 |       0 | 3-86              
+  ...g-filters.tsx |       0 |      100 |     100 |       0 | 3-282             
+  ...agination.tsx |   96.29 |    85.71 |   83.33 |   96.29 | 38,47-48          
+  ...og-search.tsx |   93.61 |       70 |     100 |   93.61 | 20-22             
+  ...te-dialog.tsx |     100 |     62.5 |      80 |     100 | 26-29,67          
+ ...all-logs/hooks |   78.04 |    89.47 |   91.66 |   78.04 |                   
+  use-call-logs.ts |    97.5 |    93.33 |     100 |    97.5 | 55                
+  ...ssify-call.ts |       0 |        0 |       0 |       0 | 1-20              
+  ...-call-note.ts |     100 |      100 |     100 |     100 |                   
+ ...all-logs/utils |     100 |     92.3 |     100 |     100 |                   
+  ...t-metadata.ts |     100 |     92.3 |     100 |     100 | 23                
+ ...cts/components |   52.33 |    75.86 |   76.47 |   52.33 |                   
+  ...ct-dialog.tsx |   82.71 |    92.85 |   83.33 |   82.71 | 31-45             
+  ...acts-list.tsx |       0 |      100 |     100 |       0 | 3-161             
+  ...ct-dialog.tsx |   94.28 |       60 |      75 |   94.28 | 23-24             
+  ...ct-dialog.tsx |   93.44 |    55.55 |   66.66 |   93.44 | 27-28,38-39       
+ ...contacts/hooks |   97.19 |    54.83 |    87.5 |   97.19 |                   
+  use-contacts.ts  |      95 |    33.33 |   71.42 |      95 | 81-86             
+  ...te-contact.ts |     100 |      100 |     100 |     100 |                   
+  ...te-contact.ts |     100 |      100 |     100 |     100 |                   
+  ...te-contact.ts |     100 |      100 |     100 |     100 |                   
+ ...ard/components |       0 |      100 |     100 |       0 |                   
+  ...comeChart.tsx |       0 |      100 |     100 |       0 | 3-85              
+  ...endsChart.tsx |       0 |      100 |     100 |       0 | 3-76              
+ ...ashboard/hooks |   63.63 |      100 |      60 |   63.63 |                   
+  use-dashboard.ts |   63.63 |      100 |      60 |   63.63 | 61-72             
+ ...ces/components |   27.59 |    54.54 |      75 |   27.59 |                   
+  ...ts-dialog.tsx |       0 |      100 |     100 |       0 | 3-56              
+  ...-timeline.tsx |       0 |      100 |     100 |       0 | 4-170             
+  ...eat-badge.tsx |     100 |      100 |     100 |     100 |                   
+  ...ta-dialog.tsx |      50 |    22.22 |   66.66 |      50 | ...48,74-85,87-91 
+  ...agination.tsx |    4.93 |      100 |       0 |    4.93 | 21-106            
+  ...on-dialog.tsx |   94.31 |    83.33 |   71.42 |   94.31 | 44-48             
+  ...de-dialog.tsx |       0 |      100 |     100 |       0 | 3-146             
+  ...tus-badge.tsx |    90.9 |    33.33 |     100 |    90.9 | 17                
+ .../devices/hooks |   85.52 |       88 |   94.44 |   85.52 |                   
+  ...ice-events.ts |     100 |       90 |     100 |     100 | 40                
+  use-devices.ts   |   79.62 |    86.66 |   92.85 |   79.62 | 45-56             
+ .../devices/utils |     100 |      100 |     100 |     100 |                   
+  device-utils.ts  |     100 |      100 |     100 |     100 |                   
+ ...ile/components |   84.11 |    85.71 |      75 |   84.11 |                   
+  ...word-form.tsx |   84.11 |    85.71 |      75 |   84.11 | 52-53,55-71       
+ .../profile/hooks |       0 |        0 |       0 |       0 |                   
+  ...e-password.ts |       0 |        0 |       0 |       0 | 1-16              
+ ...rts/components |       0 |       75 |      75 |       0 |                   
+  ...nce-table.tsx |       0 |      100 |     100 |       0 | 3-272             
+  ...rt-charts.tsx |       0 |      100 |     100 |       0 | 3-288             
+  ...t-filters.tsx |       0 |      100 |     100 |       0 | 3-134             
+  ...t-summary.tsx |       0 |        0 |       0 |       0 | 1-65              
+ ...s/settings/api |     100 |      100 |     100 |     100 |                   
+  settings-api.ts  |     100 |      100 |     100 |     100 |                   
+ ...ngs/components |     100 |       90 |     100 |     100 |                   
+  ...ings-page.tsx |     100 |       90 |     100 |     100 | 128               
+ ...settings/hooks |     100 |    85.71 |     100 |     100 |                   
+  use-settings.ts  |     100 |    85.71 |     100 |     100 | 28                
+ ...ures/teams/api |       0 |        0 |       0 |       0 |                   
+  teams-api.ts     |       0 |        0 |       0 |       0 | 1-70              
+ ...ams/components |       0 |      100 |     100 |       0 |                   
+  team-details.tsx |       0 |      100 |     100 |       0 | 3-196             
+  team-list.tsx    |       0 |      100 |     100 |       0 | 3-147             
+  ...bers-list.tsx |       0 |      100 |     100 |       0 | 3-256             
+ ...ers/components |   33.33 |    73.91 |   72.72 |   33.33 |                   
+  ...le-dialog.tsx |   95.83 |       50 |      50 |   95.83 | 42-43,55          
+  ...er-dialog.tsx |       0 |      100 |     100 |       0 | 3-330             
+  user-actions.tsx |   86.04 |    81.25 |   83.33 |   86.04 | ...,52-53,101-108 
+ ...es/users/hooks |   76.31 |    88.88 |   84.21 |   76.31 |                   
+  use-users.tsx    |   76.31 |    88.88 |   84.21 |   76.31 | ...53,70-71,77-89 
+ src/shared/api    |   73.39 |    74.46 |      68 |   73.39 |                   
+  api.ts           |   75.83 |    67.64 |   88.88 |   75.83 | ...75,191,199-200 
+  auth-service.ts  |     100 |      100 |     100 |     100 |                   
+  profile.ts       |       0 |        0 |       0 |       0 | 1-13              
+  query-client.ts  |     100 |      100 |     100 |     100 |                   
+  users.ts         |   31.03 |      100 |       0 |   31.03 | ...34,37-38,41-42 
+ ...red/components |    98.3 |    83.33 |     100 |    98.3 |                   
+  async-select.tsx |   98.11 |    82.14 |     100 |   98.11 | 72-73             
+  providers.tsx    |     100 |      100 |     100 |     100 |                   
+ ...omponents/auth |       0 |      100 |     100 |       0 |                   
+  auth-guard.tsx   |       0 |      100 |     100 |       0 | 3-52              
+ ...ponents/layout |    99.5 |    86.84 |   72.22 |    99.5 |                   
+  app-shell.tsx    |     100 |      100 |     100 |     100 |                   
+  bottom-nav.tsx   |   99.28 |    83.33 |   55.55 |   99.28 | 114               
+  header.tsx       |     100 |      100 |   66.66 |     100 |                   
+  mobile-menu.tsx  |   98.83 |    91.66 |     100 |   98.83 | 99                
+  sidebar-nav.tsx  |     100 |    80.95 |     100 |     100 | 64-65,108,116     
+ .../components/ui |   89.39 |    91.66 |     100 |   89.39 |                   
+  badge.tsx        |     100 |      100 |     100 |     100 |                   
+  button.tsx       |     100 |       50 |     100 |     100 | 45                
+  calendar.tsx     |   98.52 |       80 |     100 |   98.52 | 46                
+  card.tsx         |     100 |      100 |     100 |     100 |                   
+  checkbox.tsx     |       0 |      100 |     100 |       0 | 3-28              
+  dialog.tsx       |     100 |      100 |     100 |     100 |                   
+  ...down-menu.tsx |    76.4 |    66.66 |     100 |    76.4 | 27-39,47-55       
+  form.tsx         |   98.09 |    93.33 |     100 |   98.09 | 52-53             
+  input.tsx        |     100 |      100 |     100 |     100 |                   
+  label.tsx        |     100 |      100 |     100 |     100 |                   
+  popover.tsx      |     100 |      100 |     100 |     100 |                   
+  select.tsx       |   89.38 |      100 |     100 |   89.38 | 106-111,140-145   
+  sonner.tsx       |     100 |      100 |     100 |     100 |                   
+  table.tsx        |   88.88 |      100 |     100 |   88.88 | 42-50             
+  textarea.tsx     |     100 |      100 |     100 |     100 |                   
+  tooltip.tsx      |       0 |      100 |     100 |       0 | 3-28              
+ src/shared/hooks  |     100 |      100 |     100 |     100 |                   
+  use-debounce.ts  |     100 |      100 |     100 |     100 |                   
+  use-mobile.ts    |     100 |      100 |     100 |     100 |                   
+ src/shared/utils  |     100 |    91.66 |     100 |     100 |                   
+  call.ts          |     100 |    77.77 |     100 |     100 | 14-15             
+  date.ts          |     100 |      100 |     100 |     100 |                   
+  index.ts         |     100 |      100 |     100 |     100 |                   
+  time.ts          |     100 |      100 |     100 |     100 |                   
+-------------------|---------|----------|---------|---------|-------------------

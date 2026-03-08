@@ -3,6 +3,16 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { BottomNav, navItems } from "./bottom-nav";
 
+// Mock Auth
+vi.mock("@/src/features/auth/hooks/use-auth", () => ({
+    useAuth: vi.fn(() => ({
+        user: {
+            roles: ["admin"],
+            permissions: ["manage devices", "manage team", "manage users"]
+        }
+    }))
+}));
+
 // Mock Next.js navigation
 vi.mock("next/navigation", () => ({
     usePathname: vi.fn(() => "/"),
@@ -103,6 +113,7 @@ describe("BottomNav", () => {
         expect(screen.getByText("Users")).toBeInTheDocument();
         expect(screen.getByText("Agents")).toBeInTheDocument();
         expect(screen.getByText("Contacts")).toBeInTheDocument();
+        expect(screen.getByText("Settings")).toBeInTheDocument();
     });
 
     it("should render logout button in More menu when onLogout is provided", async () => {
@@ -133,8 +144,8 @@ describe("BottomNav", () => {
 });
 
 describe("navItems", () => {
-    it("should have 8 navigation items (4 primary + 4 overflow)", () => {
-        expect(navItems).toHaveLength(8);
+    it("should have 9 navigation items (4 primary + 5 overflow)", () => {
+        expect(navItems).toHaveLength(9);
     });
 
     it("should have Dashboard as first item", () => {
