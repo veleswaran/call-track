@@ -37,25 +37,39 @@ final class GetAgentPerformanceAction
             $query->whereIn('agents.id', $filters->agentIds);
         }
 
+        // Apply team filter
+        if (! empty($filters->teamIds)) {
+            $query->whereIn('agents.id', function ($q) use ($filters) {
+                $q->select('agent_id')
+                    ->from('team_members')
+                    ->whereIn('team_id', $filters->teamIds);
+            });
+        }
+
         // Filter by Classification (mapped from 'types' in DTO)
         if (! empty($filters->types)) {
             // Frontend sends BUSINESS/PERSONAL. Column in CallClassification is 'type'.
             $query->whereIn('call_classifications.type', array_map('strtoupper', $filters->types));
         }
 
-        // Filter by Statuses
-        if (! empty($filters->statuses)) {
+        // Filter by Call Outcomes
+        if (! empty($filters->outcomes)) {
             $query->where(function ($q) use ($filters) {
-                foreach ($filters->statuses as $status) {
-                    $q->orWhere(function ($sub) use ($status) {
-                        switch ($status) {
-                            case 'Connected':
+                foreach ($filters->outcomes as $outcome) {
+                    $q->orWhere(function ($sub) use ($outcome) {
+                        switch (strtoupper($outcome)) {
+                            case 'CONNECTED':
                                 $sub->where('call_logs.duration', '>', 0);
                                 break;
-                            case 'Missed':
-                                $sub->where('call_logs.direction', 'MISSED');
+                            case 'MISSED':
+                                $sub->where(function ($inner) {
+                                    $inner->whereIn('call_logs.direction', ['MISSED', 'REJECTED', 'BLOCKED'])
+                                        ->orWhere(function ($inc) {
+                                            $inc->where('call_logs.direction', 'INCOMING')->where('call_logs.duration', 0);
+                                        });
+                                });
                                 break;
-                            case 'No Answer':
+                            case 'NO_ANSWER':
                                 $sub->where('call_logs.direction', 'OUTGOING')
                                     ->where('call_logs.duration', 0);
                                 break;
@@ -72,7 +86,7 @@ final class GetAgentPerformanceAction
             'agents.employee_code',
             DB::raw('COUNT(call_logs.id) as total_calls'),
             DB::raw('SUM(CASE WHEN call_logs.duration > 0 THEN 1 ELSE 0 END) as connected'),
-            DB::raw("SUM(CASE WHEN call_logs.direction = 'MISSED' THEN 1 ELSE 0 END) as missed"),
+            DB::raw("SUM(CASE WHEN call_logs.direction IN ('MISSED', 'REJECTED', 'BLOCKED') OR (call_logs.direction = 'INCOMING' AND call_logs.duration = 0) THEN 1 ELSE 0 END) as missed"),
             DB::raw('AVG(call_logs.duration) as avg_duration'),
             DB::raw('SUM(call_logs.duration) as total_duration'),
         ])

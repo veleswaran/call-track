@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Services\Users;
 
 use App\Contracts\Services\AgentManagementServiceInterface;
-use App\Contracts\Services\TeamServiceInterface;
 use App\Contracts\Services\UserManagementServiceInterface;
 use App\Domain\Agents\DTOs\AgentData;
 use App\Domain\Agents\Models\Agent;
@@ -29,7 +28,8 @@ class UserManagementService implements UserManagementServiceInterface
         protected LinkUserToAgentAction $linkUserToAgentAction,
         protected UnlinkUserFromAgentAction $unlinkUserFromAgentAction,
         protected AgentManagementServiceInterface $agentService,
-        protected TeamServiceInterface $teamService,
+        protected \App\Contracts\Services\Teams\TeamManagementServiceInterface $teamManagementService,
+        protected \App\Contracts\Services\Teams\TeamMemberServiceInterface $teamMemberService,
     ) {}
 
     public function getPaginatedUsers(\App\Domain\Users\DTOs\ListUsersDTO $dto): LengthAwarePaginator
@@ -105,12 +105,12 @@ class UserManagementService implements UserManagementServiceInterface
                 }
 
                 if ($dto->isTeam && $dto->teamId) {
-                    $teamModel = $this->teamService->findTeam($dto->teamId);
+                    $teamModel = $this->teamManagementService->findTeam($dto->teamId);
 
                     // Map user role 'manager' to Team role 'MANAGER'
                     $teamRole = $roleName === 'manager' ? 'MANAGER' : 'MEMBER';
 
-                    $this->teamService->addMember(
+                    $this->teamMemberService->addMember(
                         $teamModel,
                         new AddTeamMemberDTO(
                             teamId: $teamModel->id,

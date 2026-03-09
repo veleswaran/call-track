@@ -67,4 +67,11 @@ export const teamsApi = {
     ): Promise<ResourceResponse<Team>> {
         return api.patch<ResourceResponse<Team>>(`/api/v1/admin/teams/${id}`, data);
     },
+
+    /**
+     * Delete a team
+     */
+    async deleteTeam(id: number): Promise<void> {
+        return api.delete(`/api/v1/admin/teams/${id}`);
+    },
 };

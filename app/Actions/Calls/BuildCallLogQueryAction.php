@@ -17,6 +17,14 @@ final class BuildCallLogQueryAction
     public function execute(ListCallLogsDTO $dto): Builder
     {
         $query = CallLog::query()
+            ->select('call_logs.*')
+            ->addSelect(\Illuminate\Support\Facades\DB::raw("CASE 
+                WHEN call_logs.duration > 0 THEN 'Connected'
+                WHEN call_logs.direction IN ('MISSED', 'REJECTED', 'BLOCKED') THEN 'Missed'
+                WHEN call_logs.direction = 'INCOMING' AND call_logs.duration = 0 THEN 'Missed'
+                WHEN call_logs.direction = 'OUTGOING' AND call_logs.duration = 0 THEN 'No Answer'
+                ELSE 'Unknown'
+            END as call_outcome"))
             ->with(['classification', 'device', 'agent'])
             ->orderByDesc('timestamp');
 
@@ -51,17 +59,23 @@ final class BuildCallLogQueryAction
             });
         }
 
-        // Filter by Statuses (Connected, Missed, No Answer)
-        if (! empty($dto->statuses)) {
+        // Filter by Call Outcomes (Connected, Missed, No Answer)
+        if (! empty($dto->outcomes)) {
             $query->where(function (Builder $q) use ($dto) {
-                foreach ($dto->statuses as $status) {
-                    $q->orWhere(function (Builder $sub) use ($status) {
-                        switch ($status) {
+                foreach ($dto->outcomes as $outcome) {
+                    $q->orWhere(function (Builder $sub) use ($outcome) {
+                        switch ($outcome) {
                             case 'Connected':
                                 $sub->where('duration', '>', 0);
                                 break;
                             case 'Missed':
-                                $sub->where('direction', 'MISSED');
+                                // MISSED, REJECTED, BLOCKED direction OR INCOMING with 0 duration
+                                $sub->where(function (Builder $inner) {
+                                    $inner->whereIn('direction', ['MISSED', 'REJECTED', 'BLOCKED'])
+                                        ->orWhere(function (Builder $inc) {
+                                            $inc->where('direction', 'INCOMING')->where('duration', 0);
+                                        });
+                                });
                                 break;
                             case 'No Answer':
                                 $sub->where('direction', 'OUTGOING')->where('duration', 0);

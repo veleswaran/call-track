@@ -13,7 +13,6 @@ import { format } from "date-fns";
 import { PhoneIncoming, PhoneOutgoing, PhoneMissed, HelpCircle, PhoneOff, Ban } from "lucide-react";
 import { CallActions } from "@features/call-logs/components/call-actions";
 import { formatDuration } from "@shared/utils/time";
-import { getCallStatus } from "@shared/utils/call";
 import { formatClassificationMetadata } from "@features/call-logs/utils/format-metadata";
 import { useState } from "react";
 import { CallLogSearch } from "@features/call-logs/components/call-log-search";
@@ -39,7 +38,7 @@ export default function CallLogsPage() {
         start_date: searchParams.get("start_date") || undefined,
         end_date: searchParams.get("end_date") || undefined,
         types: searchParams.getAll("types[]") as ("incoming" | "outgoing" | "missed" | "rejected" | "blocked" | "unknown")[] | undefined,
-        statuses: searchParams.getAll("statuses[]") as ("Connected" | "Missed" | "No Answer" | "Rejected" | "Blocked")[] | undefined,
+        outcomes: searchParams.getAll("outcomes[]") as ("Connected" | "Missed" | "No Answer")[] | undefined,
         classifications: searchParams.getAll("classifications[]") as ("business" | "personal" | "ignored")[] | undefined,
         agents: searchParams.getAll("agents[]").map(Number).filter(n => !isNaN(n)),
         team_id: searchParams.get("team_id") ? Number(searchParams.get("team_id")) : undefined,
@@ -48,7 +47,7 @@ export default function CallLogsPage() {
     // If arrays are empty from getAll, they should be undefined to avoid sending empty params to API if that's how hooks work
     // However, getAll returns [] if not found. Let's clean them up.
     if (initialFilters.types?.length === 0) delete initialFilters.types;
-    if (initialFilters.statuses?.length === 0) delete initialFilters.statuses;
+    if (initialFilters.outcomes?.length === 0) delete initialFilters.outcomes;
     if (initialFilters.classifications?.length === 0) delete initialFilters.classifications;
     if (initialFilters.agents?.length === 0) delete initialFilters.agents;
 
@@ -93,7 +92,7 @@ export default function CallLogsPage() {
                                 <TableHead>SIM</TableHead>
                                 <TableHead>Agent</TableHead>
                                 <TableHead>Duration</TableHead>
-                                <TableHead>Status</TableHead>
+                                <TableHead>Call Type</TableHead>
                                 <TableHead>Time</TableHead>
                                 <TableHead>Notes</TableHead>
                                 <TableHead>Type</TableHead>
@@ -121,7 +120,6 @@ export default function CallLogsPage() {
                                 </TableRow>
                             ) : (
                                 callLogs.map((log) => {
-                                    const status = getCallStatus(log.call_type, log.duration);
 
                                     return (
                                         <TableRow key={log.id}>
@@ -180,17 +178,19 @@ export default function CallLogsPage() {
                                             </TableCell>
                                             <TableCell>
                                                 <span
-                                                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${status === "Connected"
-                                                        ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
-                                                        : status === "No Answer"
-                                                            ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
-                                                            : status === "Rejected"
-                                                                ? "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300"
-                                                                : status === "Blocked"
-                                                                    ? "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
-                                                                    : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"}`}
+                                                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${log.call_type === "incoming"
+                                                        ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
+                                                        : log.call_type === "outgoing"
+                                                            ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+                                                            : log.call_type === "missed"
+                                                                ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
+                                                                : log.call_type === "rejected"
+                                                                    ? "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300"
+                                                                    : log.call_type === "blocked"
+                                                                        ? "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
+                                                                        : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"}`}
                                                 >
-                                                    {status}
+                                                    {log.call_type}
                                                 </span>
                                             </TableCell>
                                             <TableCell>

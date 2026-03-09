@@ -37,6 +37,7 @@ class CallLogResource extends JsonResource
             'agent_name' => $agent?->name,
             'phone_number' => $this->phone_number, // Auto-decrypted by encrypted cast
             'call_type' => strtolower($this->direction),
+            'call_outcome' => $this->call_outcome,
             'duration' => $this->duration,
             'timestamp' => $this->timestamp->format('Y-m-d H:i:s'),
             'phone_contact_name' => $this->phone_contact_name,

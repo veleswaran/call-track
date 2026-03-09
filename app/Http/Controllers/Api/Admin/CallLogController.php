@@ -40,7 +40,7 @@ class CallLogController extends Controller
             agentIds: $dto->agentIds,
             callTypes: $dto->callTypes,
             classifications: $dto->classifications,
-            statuses: $dto->statuses,
+            outcomes: $dto->outcomes,
             dateFrom: $dto->dateFrom,
             dateTo: $dto->dateTo,
             search: $dto->search,

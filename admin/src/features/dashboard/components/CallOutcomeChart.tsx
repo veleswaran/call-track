@@ -75,8 +75,23 @@ export function CallOutcomeChart({
                                 />
                             ))}
                         </Pie>
-                        <Tooltip />
-                        <Legend />
+                        <Tooltip
+                            contentStyle={{
+                                backgroundColor: "var(--popover)",
+                                borderColor: "var(--border)",
+                                borderRadius: "8px",
+                                color: "var(--popover-foreground)",
+                            }}
+                            itemStyle={{
+                                color: "var(--popover-foreground)",
+                            }}
+                        />
+                        <Legend
+                            wrapperStyle={{
+                                paddingTop: "20px",
+                                color: "var(--foreground)",
+                            }}
+                        />
                     </PieChart>
                 </ResponsiveContainer>
             </div>

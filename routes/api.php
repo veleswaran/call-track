@@ -69,6 +69,7 @@ Route::prefix('v1')->group(function () {
         Route::post('teams', [\App\Http\Controllers\Api\Teams\TeamController::class, 'store']);
         Route::get('teams/{team}', [\App\Http\Controllers\Api\Teams\TeamController::class, 'show']);
         Route::patch('teams/{team}', [\App\Http\Controllers\Api\Teams\TeamController::class, 'update']);
+        Route::delete('teams/{team}', [\App\Http\Controllers\Api\Teams\TeamController::class, 'destroy']);
         Route::post('teams/{team}/members', [\App\Http\Controllers\Api\Teams\TeamController::class, 'addMember']);
         Route::delete('teams/{team}/members/{agent}', [\App\Http\Controllers\Api\Teams\TeamController::class, 'removeMember']);
         Route::patch('teams/{team}/members/{agent}', [\App\Http\Controllers\Api\Teams\TeamController::class, 'updateMemberRole']);
