@@ -258,8 +258,8 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
                             onChange({
                                 ...filters,
                                 page: 1,
-                                start_date: range?.from?.toISOString(),
-                                end_date: range?.to?.toISOString(),
+                                start_date: range?.from ? format(range.from, 'yyyy-MM-dd') : undefined,
+                                end_date: range?.to ? format(range.to, 'yyyy-MM-dd') : undefined,
                             });
                         }}
                         numberOfMonths={2}

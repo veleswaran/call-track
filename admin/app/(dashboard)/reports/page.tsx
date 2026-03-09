@@ -17,7 +17,7 @@ export default function ReportsPage() {
             to: new Date(),
         },
         outcome: "all",
-        type: "BUSINESS",
+        type: "all",
         agentIds: null,
         teamIds: null
     })

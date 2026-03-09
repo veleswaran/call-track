@@ -59,7 +59,7 @@ describe("ReportFilters", () => {
         expect(screen.getByText("All Outcomes")).toBeInTheDocument()
         expect(screen.getByText("All Teams")).toBeInTheDocument()
         expect(screen.getByText("All Agents")).toBeInTheDocument()
-        expect(screen.getByText("Business")).toBeInTheDocument()
+        expect(screen.getByText("All Classes")).toBeInTheDocument()
     })
 
     it("calls onFilterChange when filter button is clicked", async () => {
@@ -73,7 +73,7 @@ describe("ReportFilters", () => {
         expect(onFilterChange).toHaveBeenCalled()
         const callArgs = onFilterChange.mock.calls[0][0]
         expect(callArgs.outcome).toBe("all")
-        expect(callArgs.type).toBe("BUSINESS")
+        expect(callArgs.type).toBe("all")
         expect(callArgs.dateRange).toBeDefined()
     })
 
@@ -87,7 +87,7 @@ describe("ReportFilters", () => {
 
         expect(onFilterChange).toHaveBeenCalledWith(expect.objectContaining({
             outcome: "all",
-            type: "BUSINESS",
+            type: "all",
             agentIds: null,
             teamIds: null
         }))

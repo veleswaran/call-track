@@ -21,7 +21,10 @@ final class GetAgentPerformanceAction
             ->join('devices', 'agents.id', '=', 'devices.agent_id')
             ->join('call_logs', 'devices.id', '=', 'call_logs.device_id')
             ->leftJoin('call_classifications', 'call_logs.id', '=', 'call_classifications.call_log_id')
-            ->whereBetween('call_logs.timestamp', [$filters->startDate, $filters->endDate]);
+            ->whereBetween('call_logs.timestamp', [
+                $filters->startDate->copy()->startOfDay(),
+                $filters->endDate->copy()->endOfDay(),
+            ]);
 
         // RBAC scope - security constraint
         if ($filters->allowedAgentIds !== null) {

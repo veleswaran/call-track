@@ -46,7 +46,7 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
 
     const [date, setDate] = useState<DateRange | undefined>(defaultDateRange)
     const [outcome, setOutcome] = useState("all")
-    const [type, setType] = useState("BUSINESS")
+    const [type, setType] = useState("all")
     const [agentId, setAgentId] = useState<string>("all")
     const [teamId, setTeamId] = useState<string>("all")
     const [quickDate, setQuickDate] = useState<string>("today")
@@ -119,13 +119,13 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
         setDate(defaultDateRange);
         setQuickDate("today");
         setOutcome("all");
-        setType("BUSINESS");
+        setType("all");
         setAgentId("all");
         setTeamId("all");
         onFilterChange({
             dateRange: defaultDateRange,
             outcome: "all",
-            type: "BUSINESS",
+            type: "all",
             agentIds: null,
             teamIds: null
         });

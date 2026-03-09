@@ -26,7 +26,10 @@ final class GetReportChartsAction
     {
         $query = \App\Domain\Calls\Models\CallLog::query()
             ->leftJoin('call_classifications', 'call_logs.id', '=', 'call_classifications.call_log_id')
-            ->whereBetween('call_logs.timestamp', [$filters->startDate, $filters->endDate]);
+            ->whereBetween('call_logs.timestamp', [
+                $filters->startDate->copy()->startOfDay(),
+                $filters->endDate->copy()->endOfDay(),
+            ]);
 
         // Apply RBAC scope first
         $devicesJoined = false;
@@ -108,11 +111,11 @@ final class GetReportChartsAction
             ->toBase()
             ->get();
 
-        // Fill missing dates
+        // Fill missing dates — DatePeriod end is exclusive, so add 1 day to include the end date
         $period = new \DatePeriod(
             $filters->startDate->copy()->startOfDay(),
             new \DateInterval('P1D'),
-            $filters->endDate->copy()->endOfDay()
+            $filters->endDate->copy()->startOfDay()->addDay()
         );
 
         $result = [];
