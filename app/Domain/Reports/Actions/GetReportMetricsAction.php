@@ -12,8 +12,14 @@ final class GetReportMetricsAction
     public function execute(ReportFilterDTO $filters): array
     {
         $baseQuery = \App\Domain\Calls\Models\CallLog::query()
-            ->leftJoin('call_classifications', 'call_logs.id', '=', 'call_classifications.call_log_id')
-            ->whereBetween('call_logs.timestamp', [$filters->startDate, $filters->endDate]);
+            ->leftJoin('call_classifications', 'call_logs.id', '=', 'call_classifications.call_log_id');
+
+        if ($filters->startDate && $filters->endDate) {
+            $baseQuery->whereBetween('call_logs.timestamp', [
+                $filters->startDate->copy()->startOfDay(),
+                $filters->endDate->copy()->endOfDay(),
+            ]);
+        }
 
         $this->applyFilters($baseQuery, $filters);
 

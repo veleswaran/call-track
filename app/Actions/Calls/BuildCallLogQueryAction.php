@@ -88,7 +88,7 @@ final class BuildCallLogQueryAction
 
         // Date Filters
         if ($dto->dateFrom !== null) {
-            $query->where('timestamp', '>=', Carbon::parse($dto->dateFrom));
+            $query->where('timestamp', '>=', Carbon::parse($dto->dateFrom)->startOfDay());
         }
 
         if ($dto->dateTo !== null) {
