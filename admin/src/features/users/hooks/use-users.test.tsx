@@ -1,5 +1,5 @@
 import { renderHook, waitFor } from "@testing-library/react";
-import { useUsers, useCreateUser, useDeleteUser, useResetTwoFactor, useUpdateUserRole } from "./use-users";
+import { useUsers, useCreateUser, useDeleteUser, useResetTwoFactor, useUpdateUserRole, useUnlinkUserFromAgent } from "./use-users";
 import { usersApi } from "@shared/api/users";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { vi, describe, it, expect, beforeEach, Mock } from "vitest";
@@ -125,5 +125,57 @@ describe("useUsers Hooks", () => {
 
         await waitFor(() => expect(result.current.isError).toBe(true));
         expect(toast.error).toHaveBeenCalledWith("You are not authorized to change this user's role.");
+    });
+
+    it("unlinks user from agent successfully", async () => {
+        (usersApi.unlinkUserFromAgent as Mock).mockResolvedValue(undefined);
+
+        const { result } = renderHook(() => useUnlinkUserFromAgent(), {
+            wrapper: createWrapper(),
+        });
+
+        result.current.mutate({ agentId: 1, userId: 2 });
+
+        await waitFor(() => expect(result.current.isSuccess).toBe(true));
+        expect(toast.success).toHaveBeenCalledWith("User unlinked from agent successfully");
+    });
+
+    it("handles unlink user error", async () => {
+        (usersApi.unlinkUserFromAgent as Mock).mockRejectedValue(new Error("Unlink failed"));
+
+        const { result } = renderHook(() => useUnlinkUserFromAgent(), {
+            wrapper: createWrapper(),
+        });
+
+        result.current.mutate({ agentId: 1, userId: 2 });
+
+        await waitFor(() => expect(result.current.isError).toBe(true));
+        expect(toast.error).toHaveBeenCalledWith("Unlink failed");
+    });
+
+    it("handles delete user error", async () => {
+        (usersApi.deleteUser as Mock).mockRejectedValue(new Error("Delete failed"));
+
+        const { result } = renderHook(() => useDeleteUser(), {
+            wrapper: createWrapper(),
+        });
+
+        result.current.mutate(1);
+
+        await waitFor(() => expect(result.current.isError).toBe(true));
+        expect(toast.error).toHaveBeenCalledWith("Delete failed");
+    });
+
+    it("handles reset 2FA error", async () => {
+        (usersApi.resetTwoFactor as Mock).mockRejectedValue(new Error("Reset failed"));
+
+        const { result } = renderHook(() => useResetTwoFactor(), {
+            wrapper: createWrapper(),
+        });
+
+        result.current.mutate(1);
+
+        await waitFor(() => expect(result.current.isError).toBe(true));
+        expect(toast.error).toHaveBeenCalledWith("Reset failed");
     });
 });

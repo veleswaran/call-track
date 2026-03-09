@@ -17,14 +17,14 @@ class ContactController extends Controller
         private readonly ContactManagementServiceInterface $contactService,
     ) {}
 
-    public function index(Request $request): JsonResponse
+    public function index(Request $request): \Illuminate\Http\Resources\Json\AnonymousResourceCollection
     {
         $this->authorize('viewAny', \App\Domain\Calls\Models\Contact::class);
 
         $dto = \App\Domain\Contacts\DTOs\ListContactsDTO::fromRequest($request);
         $contacts = $this->contactService->getPaginatedContacts($dto);
 
-        return response()->json(\App\Http\Resources\ContactResource::collection($contacts)->response()->getData());
+        return \App\Http\Resources\ContactResource::collection($contacts);
     }
 
     public function store(StoreContactRequest $request): JsonResponse

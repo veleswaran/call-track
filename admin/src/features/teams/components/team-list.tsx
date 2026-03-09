@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@features/auth/hooks/use-auth";
 import { Button } from "@shared/components/ui/button";
@@ -24,19 +24,41 @@ import {
 import { Input } from "@shared/components/ui/input";
 import { Label } from "@shared/components/ui/label";
 import { teamsApi } from "../api/teams-api";
+import { DeleteTeamDialog } from "./DeleteTeamDialog";
+
+import { CallLogPagination } from "@features/call-logs/components/call-log-pagination";
 
 export function TeamList() {
-    const [page] = useState(1);
+    const [page, setPage] = useState(1);
+    const [perPage, setPerPage] = useState(25);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [teamToDelete, setTeamToDelete] = useState<{ id: number; name: string } | null>(null);
     const queryClient = useQueryClient();
 
     const { user } = useAuth();
     const isAdmin = user?.roles.some((role: string) => ['admin', 'super-admin'].includes(role));
+    const isSuperAdmin = user?.roles.includes('super-admin');
+
+    const deleteMutation = useMutation({
+        mutationFn: (id: number) => teamsApi.deleteTeam(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["teams"] });
+            setTeamToDelete(null);
+        },
+    });
 
     const { data: teamsData, isLoading } = useQuery({
-        queryKey: ["teams", page],
-        queryFn: () => teamsApi.getTeams({ page }),
+        queryKey: ["teams", page, perPage],
+        queryFn: () => teamsApi.getTeams({ page, per_page: perPage }),
     });
+
+    const teams = teamsData?.data ?? [];
+    const meta = teamsData?.meta;
+
+    const handlePagination = (newPage: number, newPerPage: number) => {
+        setPage(newPage);
+        setPerPage(newPerPage);
+    };
 
     return (
         <div className="space-y-4">
@@ -70,21 +92,32 @@ export function TeamList() {
                             <TableRow>
                                 <TableCell colSpan={5} className="text-center">Loading...</TableCell>
                             </TableRow>
-                        ) : teamsData?.data.length === 0 ? (
+                        ) : teams.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={5} className="text-center">No teams found.</TableCell>
                             </TableRow>
                         ) : (
-                            teamsData?.data.map((team) => (
+                            teams.map((team) => (
                                 <TableRow key={team.id}>
                                     <TableCell className="font-medium">{team.name}</TableCell>
                                     <TableCell>{team.managers_count || 0}</TableCell>
                                     <TableCell>{team.members_count || 0}</TableCell>
                                     <TableCell>{new Date(team.created_at).toLocaleDateString()}</TableCell>
-                                    <TableCell className="text-right">
+                                    <TableCell className="text-right space-x-2">
                                         <Button variant="ghost" size="sm" asChild>
                                             <Link href={`/teams/${team.id}`}>View</Link>
                                         </Button>
+                                        {isSuperAdmin && (
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                                onClick={() => setTeamToDelete({ id: team.id, name: team.name })}
+                                                disabled={deleteMutation.isPending}
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        )}
                                     </TableCell>
                                 </TableRow>
                             ))
@@ -92,6 +125,25 @@ export function TeamList() {
                     </TableBody>
                 </Table>
             </div>
+
+            {meta && (
+                <div className="py-4 border-t">
+                    <CallLogPagination
+                        page={page}
+                        perPage={perPage}
+                        total={meta.total}
+                        onChange={handlePagination}
+                    />
+                </div>
+            )}
+
+            <DeleteTeamDialog
+                isOpen={!!teamToDelete}
+                onOpenChange={(open) => !open && setTeamToDelete(null)}
+                teamName={teamToDelete?.name ?? ""}
+                onConfirm={() => teamToDelete && deleteMutation.mutate(teamToDelete.id)}
+                isDeleting={deleteMutation.isPending}
+            />
         </div>
     );
 }

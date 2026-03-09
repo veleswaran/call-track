@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Teams;
 
-use App\Contracts\Services\TeamServiceInterface;
+use App\Contracts\Services\Teams\TeamManagementServiceInterface;
+use App\Contracts\Services\Teams\TeamMemberServiceInterface;
+use App\Contracts\Services\Teams\TeamQueryServiceInterface;
 use App\Domain\Teams\Models\Team;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\AddTeamMemberRequest;
@@ -14,28 +16,30 @@ use App\Http\Requests\Admin\UpdateTeamRequest;
 use App\Http\Resources\TeamResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 
-class TeamController extends Controller
+final class TeamController extends Controller
 {
     public function __construct(
-        protected TeamServiceInterface $teamService
+        private readonly TeamManagementServiceInterface $teamManagementService,
+        private readonly TeamMemberServiceInterface $teamMemberService,
+        private readonly TeamQueryServiceInterface $teamQueryService,
     ) {}
 
-    public function index(Request $request): JsonResponse
+    public function index(Request $request): AnonymousResourceCollection
     {
         $this->authorize('viewAny', Team::class);
 
-        $teams = $this->teamService->getAllTeams($request->user());
+        $perPage = (int) $request->input('per_page', 20);
+        $teams = $this->teamQueryService->getPaginatedTeams($request->user(), $perPage);
 
-        return response()->json([
-            'data' => TeamResource::collection($teams),
-        ]);
+        return TeamResource::collection($teams);
     }
 
     public function show(string $team): JsonResponse
     {
-        $teamModel = $this->teamService->getTeamWithDetails((int) $team);
+        $teamModel = $this->teamQueryService->getTeamWithDetails((int) $team);
 
         $this->authorize('view', $teamModel);
 
@@ -48,7 +52,7 @@ class TeamController extends Controller
     {
         $this->authorize('create', Team::class);
 
-        $team = $this->teamService->createTeam($request->validated()['name']);
+        $team = $this->teamManagementService->createTeam($request->validated()['name']);
 
         return response()->json([
             'data' => new TeamResource($team),
@@ -58,10 +62,10 @@ class TeamController extends Controller
 
     public function update(UpdateTeamRequest $request, string $team): JsonResponse
     {
-        $teamModel = $this->teamService->findTeam((int) $team);
+        $teamModel = $this->teamManagementService->findTeam((int) $team);
         $this->authorize('update', $teamModel);
 
-        $updated = $this->teamService->updateTeam($teamModel, $request->validated()['name']);
+        $updated = $this->teamManagementService->updateTeam($teamModel, $request->validated()['name']);
 
         return response()->json([
             'data' => new TeamResource($updated),
@@ -71,12 +75,12 @@ class TeamController extends Controller
 
     public function addMember(AddTeamMemberRequest $request, string $team): JsonResponse
     {
-        $teamModel = $this->teamService->findTeam((int) $team);
+        $teamModel = $this->teamManagementService->findTeam((int) $team);
         $this->authorize('update', $teamModel);
 
         $dto = $request->toDTO($teamModel->id);
 
-        $this->teamService->addMember($teamModel, $dto);
+        $this->teamMemberService->addMember($teamModel, $dto);
 
         return response()->json([
             'message' => 'Agent added to team successfully.',
@@ -85,10 +89,10 @@ class TeamController extends Controller
 
     public function removeMember(string $team, string $agent): JsonResponse
     {
-        $teamModel = $this->teamService->findTeam((int) $team);
+        $teamModel = $this->teamManagementService->findTeam((int) $team);
         $this->authorize('update', $teamModel);
 
-        $this->teamService->removeMember($teamModel, (int) $agent);
+        $this->teamMemberService->removeMember($teamModel, (int) $agent);
 
         return response()->json([
             'message' => 'Member removed from team successfully.',
@@ -97,16 +101,28 @@ class TeamController extends Controller
 
     public function updateMemberRole(UpdateMemberRoleRequest $request, string $team, string $agent): JsonResponse
     {
-        $teamModel = $this->teamService->findTeam((int) $team);
+        $teamModel = $this->teamManagementService->findTeam((int) $team);
         $this->authorize('update', $teamModel);
 
-        $this->teamService->updateMemberRole(
+        $this->teamMemberService->updateMemberRole(
             $teamModel,
             $request->toDTO($teamModel->id, (int) $agent)
         );
 
         return response()->json([
             'message' => 'Member role updated successfully.',
+        ]);
+    }
+
+    public function destroy(string $team): JsonResponse
+    {
+        $teamModel = $this->teamManagementService->findTeam((int) $team);
+        $this->authorize('delete', $teamModel);
+
+        $this->teamManagementService->deleteTeam($teamModel);
+
+        return response()->json([
+            'message' => 'Team deleted successfully.',
         ]);
     }
 }

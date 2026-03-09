@@ -17,6 +17,7 @@ import {
 } from "@shared/components/ui/table";
 import { Button } from "@shared/components/ui/button";
 import { User, Pencil, Smartphone, Link as LinkIcon } from "lucide-react";
+import { CallLogPagination } from "@features/call-logs/components/call-log-pagination";
 import type { Agent } from "@shared/types";
 
 /**
@@ -24,13 +25,17 @@ import type { Agent } from "@shared/types";
  */
 export default function AgentsPage() {
     const { user } = useAuth();
-    const { data, isLoading, isError } = useAgents({ page: 1, per_page: 20 });
+    const [page, setPage] = useState(1);
+    const [perPage, setPerPage] = useState(25);
+
+    const { data, isLoading, isError } = useAgents({ page, per_page: perPage });
     const [editingAgent, setEditingAgent] = useState<Agent | null>(null);
     const [assigningAgent, setAssigningAgent] = useState<Agent | null>(null);
     const [linkingAgent, setLinkingAgent] = useState<Agent | null>(null);
 
     const isAdmin = user?.roles.some((role: string) => ['admin', 'super-admin'].includes(role));
     const agents = data?.data ?? [];
+    const meta = data?.meta;
 
     return (
         <div className="space-y-6">
@@ -138,6 +143,20 @@ export default function AgentsPage() {
                     </TableBody>
                 </Table>
             </div>
+
+            {meta && (
+                <div className="py-4 border-t border-zinc-200 dark:border-zinc-800">
+                    <CallLogPagination
+                        page={page}
+                        perPage={perPage}
+                        total={meta.total}
+                        onChange={(p, pp) => {
+                            setPage(p);
+                            setPerPage(pp);
+                        }}
+                    />
+                </div>
+            )}
 
             {/* Edit Dialog */}
             {editingAgent && (

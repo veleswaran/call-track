@@ -16,6 +16,7 @@ import { MoreHorizontal, Trash, ShieldAlert, Unlink } from "lucide-react";
 import { useDeleteUser, useResetTwoFactor, useUnlinkUserFromAgent } from "../hooks/use-users";
 import { User } from "@shared/types";
 import { useAuth } from "@features/auth/hooks/use-auth";
+import { ConfirmDialog } from "@shared/components/dialogs/ConfirmDialog";
 
 interface UserActionsProps {
     user: User;
@@ -27,25 +28,22 @@ export function UserActions({ user }: UserActionsProps) {
     const { mutate: reset2FA, isPending: isResetting } = useResetTwoFactor();
     const { mutate: unlinkUser, isPending: isUnlinking } = useUnlinkUserFromAgent();
     const [showRoleDialog, setShowRoleDialog] = useState(false);
+    const [confirmAction, setConfirmAction] = useState<{
+        type: "delete" | "reset2fa" | "unlink";
+        isOpen: boolean;
+    }>({ type: "delete", isOpen: false });
 
     const isSelf = currentUser?.id === user.id;
 
-    const handleDelete = () => {
-        if (confirm("Are you sure you want to delete this user?")) {
+    const handleConfirm = () => {
+        if (confirmAction.type === "delete") {
             deleteUser(user.id);
-        }
-    };
-
-    const handleReset2FA = () => {
-        if (confirm("Are you sure you want to reset 2FA for this user?")) {
+        } else if (confirmAction.type === "reset2fa") {
             reset2FA(user.id);
-        }
-    };
-
-    const handleUnlink = () => {
-        if (user.agent?.id && confirm(`Are you sure you want to unlink this user from agent ${user.agent.name}?`)) {
+        } else if (confirmAction.type === "unlink" && user.agent?.id) {
             unlinkUser({ agentId: user.agent.id, userId: user.id });
         }
+        setConfirmAction({ ...confirmAction, isOpen: false });
     };
 
     const canUnlinkAgent = user.agent &&
@@ -71,7 +69,7 @@ export function UserActions({ user }: UserActionsProps) {
                     <DropdownMenuSeparator />
                     {user.two_factor_enabled && (
                         <DropdownMenuItem
-                            onClick={handleReset2FA}
+                            onClick={() => setConfirmAction({ type: "reset2fa", isOpen: true })}
                             disabled={isResetting}
                             className="text-orange-600 focus:text-orange-600"
                         >
@@ -99,7 +97,7 @@ export function UserActions({ user }: UserActionsProps) {
                     {/* Unlink User from Agent Logic */}
                     {canUnlinkAgent && (
                         <DropdownMenuItem
-                            onClick={handleUnlink}
+                            onClick={() => setConfirmAction({ type: "unlink", isOpen: true })}
                             disabled={isUnlinking}
                             className="text-amber-600 focus:text-amber-600"
                         >
@@ -113,7 +111,7 @@ export function UserActions({ user }: UserActionsProps) {
                     {/* Strict RBAC: Only Super Admin can delete */}
                     {!isSelf && currentUser?.permissions?.includes("delete records") && (
                         <DropdownMenuItem
-                            onClick={handleDelete}
+                            onClick={() => setConfirmAction({ type: "delete", isOpen: true })}
                             disabled={isDeleting}
                             className="text-red-600 focus:text-red-600"
                         >
@@ -128,6 +126,27 @@ export function UserActions({ user }: UserActionsProps) {
                 user={user}
                 open={showRoleDialog}
                 onOpenChange={setShowRoleDialog}
+            />
+
+            <ConfirmDialog
+                isOpen={confirmAction.isOpen}
+                onOpenChange={(open) => setConfirmAction({ ...confirmAction, isOpen: open })}
+                title={
+                    confirmAction.type === "delete" ? "Delete User" :
+                        confirmAction.type === "reset2fa" ? "Reset 2FA" : "Unlink Agent"
+                }
+                description={
+                    confirmAction.type === "delete" ? "Are you sure you want to delete this user? This action cannot be undone." :
+                        confirmAction.type === "reset2fa" ? "Are you sure you want to reset 2FA for this user?" :
+                            `Are you sure you want to unlink this user from agent ${user.agent?.name}?`
+                }
+                confirmText={
+                    confirmAction.type === "delete" ? "Delete" :
+                        confirmAction.type === "reset2fa" ? "Reset" : "Unlink"
+                }
+                variant={confirmAction.type === "delete" ? "destructive" : "default"}
+                onConfirm={handleConfirm}
+                isLoading={isDeleting || isResetting || isUnlinking}
             />
         </>
     );

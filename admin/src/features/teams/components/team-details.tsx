@@ -2,8 +2,9 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { ArrowLeft, Calendar, Users, Pencil, Check, X } from "lucide-react";
+import { ArrowLeft, Calendar, Users, Pencil, Check, X, Trash2 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@features/auth/hooks/use-auth";
 import { Button } from "@shared/components/ui/button";
 import { Input } from "@shared/components/ui/input";
@@ -15,6 +16,7 @@ import {
 } from "@shared/components/ui/card";
 import { teamsApi } from "../api/teams-api";
 import { TeamMembersList } from "./team-members-list";
+import { DeleteTeamDialog } from "./DeleteTeamDialog";
 
 interface TeamDetailsProps {
     teamId: number;
@@ -26,9 +28,12 @@ export function TeamDetails({ teamId }: TeamDetailsProps) {
     const isAdmin = user?.roles.some((role: string) =>
         ["admin", "super-admin"].includes(role)
     );
+    const isSuperAdmin = user?.roles.includes("super-admin");
+    const router = useRouter();
 
     const [isEditing, setIsEditing] = useState(false);
     const [editName, setEditName] = useState("");
+    const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
     const {
         data: teamRes,
@@ -46,6 +51,14 @@ export function TeamDetails({ teamId }: TeamDetailsProps) {
             queryClient.invalidateQueries({ queryKey: ["team", teamId] });
             queryClient.invalidateQueries({ queryKey: ["teams"] });
             setIsEditing(false);
+        },
+    });
+
+    const deleteMutation = useMutation({
+        mutationFn: () => teamsApi.deleteTeam(teamId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["teams"] });
+            router.push("/teams");
         },
     });
 
@@ -142,6 +155,18 @@ export function TeamDetails({ teamId }: TeamDetailsProps) {
                                     <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
                                 </Button>
                             )}
+                            {isSuperAdmin && !isEditing && (
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setIsDeleteOpen(true)}
+                                    title="Delete team"
+                                    className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                    disabled={deleteMutation.isPending}
+                                >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                            )}
                         </div>
                     )}
                     {updateMutation.isError && (
@@ -191,6 +216,14 @@ export function TeamDetails({ teamId }: TeamDetailsProps) {
                 <h3 className="text-lg font-semibold">Team Members</h3>
                 <TeamMembersList teamId={team.id} />
             </div>
+
+            <DeleteTeamDialog
+                isOpen={isDeleteOpen}
+                onOpenChange={setIsDeleteOpen}
+                teamName={team.name}
+                onConfirm={() => deleteMutation.mutate()}
+                isDeleting={deleteMutation.isPending}
+            />
         </div>
     );
 }

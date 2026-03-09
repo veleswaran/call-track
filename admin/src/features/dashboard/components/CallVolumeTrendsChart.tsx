@@ -50,9 +50,13 @@ export function CallVolumeTrendsChart({
                         />
                         <Tooltip
                             contentStyle={{
-                                backgroundColor: "var(--color-zinc-50)",
-                                borderColor: "var(--color-zinc-200)",
+                                backgroundColor: "var(--popover)",
+                                borderColor: "var(--border)",
                                 borderRadius: "8px",
+                                color: "var(--popover-foreground)",
+                            }}
+                            itemStyle={{
+                                color: "var(--popover-foreground)",
                             }}
                         />
                         <Legend />

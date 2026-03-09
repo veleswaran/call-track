@@ -40,7 +40,7 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
         filters.sim_slot !== undefined ||
         (filters.agents && filters.agents.length > 0) ||
         (filters.types && filters.types.length > 0) ||
-        (filters.statuses && filters.statuses.length > 0) ||
+        (filters.outcomes && filters.outcomes.length > 0) ||
         (filters.classifications && filters.classifications.length > 0) ||
         filters.team_id;
 
@@ -61,7 +61,7 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
     };
 
     // Helper for single-select dropdowns that map to array filters
-    const updateArrayFilter = (key: 'types' | 'classifications' | 'statuses', value: string) => {
+    const updateArrayFilter = (key: 'types' | 'classifications' | 'outcomes', value: string) => {
         onChange({
             ...filters,
             page: 1,
@@ -178,14 +178,14 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
             )}
 
             <Select
-                value={filters.statuses?.[0] ?? "all"}
-                onValueChange={(val) => updateArrayFilter("statuses", val)}
+                value={filters.outcomes?.[0] ?? "all"}
+                onValueChange={(val) => updateArrayFilter("outcomes", val)}
             >
-                <SelectTrigger className="w-[140px]">
-                    <SelectValue placeholder="Status" />
+                <SelectTrigger className="w-[160px]">
+                    <SelectValue placeholder="Call Outcome" />
                 </SelectTrigger>
                 <SelectContent>
-                    <SelectItem value="all">All Statuses</SelectItem>
+                    <SelectItem value="all">All Outcomes</SelectItem>
                     <SelectItem value="Connected">Connected</SelectItem>
                     <SelectItem value="Missed">Missed</SelectItem>
                     <SelectItem value="No Answer">No Answer</SelectItem>
@@ -258,8 +258,8 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
                             onChange({
                                 ...filters,
                                 page: 1,
-                                start_date: range?.from?.toISOString(),
-                                end_date: range?.to?.toISOString(),
+                                start_date: range?.from ? format(range.from, 'yyyy-MM-dd') : undefined,
+                                end_date: range?.to ? format(range.to, 'yyyy-MM-dd') : undefined,
                             });
                         }}
                         numberOfMonths={2}

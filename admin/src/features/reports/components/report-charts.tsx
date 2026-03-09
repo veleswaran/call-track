@@ -30,6 +30,8 @@ interface ReportChartsProps {
         peak_call_hours: PeakHourPoint[]
         caller_types: ChartDataPoint[]
         call_direction_distribution: ChartDataPoint[]
+        agent_distribution: ChartDataPoint[]
+        team_distribution: ChartDataPoint[]
     }
 }
 
@@ -275,6 +277,109 @@ export function ReportCharts({ data }: ReportChartsProps) {
                                 className="text-xs fill-gray-500 uppercase"
                             >
                                 Calls
+                            </text>
+                            <Tooltip />
+                            <Legend verticalAlign="bottom" align="center" layout="horizontal" wrapperStyle={{ paddingTop: '16px' }} />
+                        </PieChart>
+                    </ResponsiveContainer>
+                </CardContent>
+            </Card>
+
+            {/* Total Agents Breakdown */}
+            <Card className="col-span-full md:col-span-1 lg:col-span-3">
+                <CardHeader>
+                    <CardTitle>Total Agents</CardTitle>
+                    <CardDescription>Active vs Inactive Agents</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <ResponsiveContainer width="100%" height={280}>
+                        <PieChart>
+                            <Pie
+                                data={data.agent_distribution}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={60}
+                                outerRadius={80}
+                                paddingAngle={5}
+                                dataKey="value"
+                                nameKey="name"
+                                labelLine={false}
+                                label={({ value }) => {
+                                    const total = data.agent_distribution.reduce((acc, curr) => acc + curr.value, 0);
+                                    return total > 0 ? `${((value / total) * 100).toFixed(0)}%` : '0%';
+                                }}
+                            >
+                                {data.agent_distribution?.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={entry.fill || COLORS[index % COLORS.length]} />
+                                ))}
+                            </Pie>
+                            <text
+                                x="50%"
+                                y="40%"
+                                textAnchor="middle"
+                                dominantBaseline="central"
+                                className="text-xl font-semibold fill-gray-900"
+                            >
+                                {data.agent_distribution?.reduce((sum, item) => sum + item.value, 0)}
+                            </text>
+                            <text
+                                x="50%"
+                                y="50%"
+                                textAnchor="middle"
+                                dominantBaseline="central"
+                                className="text-xs fill-gray-500 uppercase"
+                            >
+                                Agents
+                            </text>
+                            <Tooltip />
+                            <Legend verticalAlign="bottom" align="center" layout="horizontal" wrapperStyle={{ paddingTop: '16px' }} />
+                        </PieChart>
+                    </ResponsiveContainer>
+                </CardContent>
+            </Card>
+
+            {/* Team Distribution */}
+            <Card className="col-span-full md:col-span-1 lg:col-span-4">
+                <CardHeader>
+                    <CardTitle>Team Distribution</CardTitle>
+                    <CardDescription>Agents per Team</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <ResponsiveContainer width="100%" height={280}>
+                        <PieChart>
+                            <Pie
+                                data={data.team_distribution}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={60}
+                                outerRadius={80}
+                                paddingAngle={5}
+                                dataKey="value"
+                                nameKey="name"
+                                labelLine={false}
+                                label={({ value, name }) => `${name}: ${value}`}
+                            >
+                                {data.team_distribution?.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={entry.fill || COLORS[index % COLORS.length]} />
+                                ))}
+                            </Pie>
+                            <text
+                                x="50%"
+                                y="40%"
+                                textAnchor="middle"
+                                dominantBaseline="central"
+                                className="text-xl font-semibold fill-gray-900"
+                            >
+                                {data.team_distribution?.reduce((sum, item) => sum + item.value, 0)}
+                            </text>
+                            <text
+                                x="50%"
+                                y="50%"
+                                textAnchor="middle"
+                                dominantBaseline="central"
+                                className="text-xs fill-gray-500 uppercase"
+                            >
+                                In Teams
                             </text>
                             <Tooltip />
                             <Legend verticalAlign="bottom" align="center" layout="horizontal" wrapperStyle={{ paddingTop: '16px' }} />
