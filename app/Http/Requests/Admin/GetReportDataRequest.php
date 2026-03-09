@@ -25,7 +25,7 @@ final class GetReportDataRequest extends FormRequest
             'statuses' => ['nullable', 'array'],
             'statuses.*' => ['string', 'in:MISSED,NO_ANSWER,CONNECTED'],
             'outcomes' => ['nullable', 'array'],
-            'outcomes.*' => ['string', 'in:MISSED,NO_ANSWER,CONNECTED'],
+            'outcomes.*' => ['string', 'in:Connected,Missed,No Answer'],
             'types' => ['nullable', 'array'],
             'types.*' => ['string', 'in:BUSINESS,PERSONAL,IGNORED'], // Based on ReportFilterDTO logic
             'search' => ['nullable', 'string', 'max:255'],

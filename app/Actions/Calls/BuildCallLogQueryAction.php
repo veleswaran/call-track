@@ -20,8 +20,10 @@ final class BuildCallLogQueryAction
             ->select('call_logs.*')
             ->addSelect(\Illuminate\Support\Facades\DB::raw("CASE 
                 WHEN call_logs.duration > 0 THEN 'Connected'
-                WHEN call_logs.direction IN ('MISSED', 'REJECTED', 'BLOCKED', 'INCOMING') THEN 'Missed'
-                ELSE 'No Answer'
+                WHEN call_logs.direction IN ('MISSED', 'REJECTED', 'BLOCKED') THEN 'Missed'
+                WHEN call_logs.direction = 'INCOMING' AND call_logs.duration = 0 THEN 'Missed'
+                WHEN call_logs.direction = 'OUTGOING' AND call_logs.duration = 0 THEN 'No Answer'
+                ELSE 'Unknown'
             END as call_outcome"))
             ->with(['classification', 'device', 'agent'])
             ->orderByDesc('timestamp');
