@@ -24,6 +24,7 @@ import {
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@shared/api/api"
 import { Agent, Team, PaginatedResponse } from "@shared/types"
+import { AsyncSelect } from "@shared/components/async-select"
 
 export interface ReportFiltersData {
     dateRange: DateRange | undefined
@@ -47,7 +48,7 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
     const [date, setDate] = useState<DateRange | undefined>(defaultDateRange)
     const [outcome, setOutcome] = useState("all")
     const [type, setType] = useState("BUSINESS")
-    const [agentId, setAgentId] = useState<string>("all")
+    const [agentId, setAgentId] = useState<string>("")
     const [teamId, setTeamId] = useState<string>("all")
     const [quickDate, setQuickDate] = useState<string>("today")
 
@@ -110,7 +111,7 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
             dateRange: date,
             outcome,
             type,
-            agentIds: agentId !== "all" ? [agentId] : null,
+            agentIds: agentId && agentId !== "all" ? [agentId] : null,
             teamIds: teamId !== "all" ? [teamId] : null
         })
     }
@@ -120,7 +121,7 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
         setQuickDate("today");
         setOutcome("all");
         setType("BUSINESS");
-        setAgentId("all");
+        setAgentId("");
         setTeamId("all");
         onFilterChange({
             dateRange: defaultDateRange,
@@ -216,19 +217,21 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
                 </SelectContent>
             </Select>
 
-            <Select value={agentId} onValueChange={setAgentId}>
-                <SelectTrigger className="w-[150px]">
-                    <SelectValue placeholder="All Agents" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="all">All Agents</SelectItem>
-                    {agentsQuery.data?.map((agent: Agent) => (
-                        <SelectItem key={agent.id} value={agent.id.toString()}>
-                            {agent.name}
-                        </SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
+            <AsyncSelect
+                value={agentId}
+                onChange={setAgentId}
+                loadOptions={async (search) => {
+                    const res = await api.get<PaginatedResponse<Agent>>(`/api/v1/admin/agents?search=${search}&per_page=100`)
+                    const options = res.data.map((agent: Agent) => ({
+                        label: agent.name,
+                        value: agent.id.toString()
+                    }))
+                    return [{ label: "All Agents", value: "all" }, ...options]
+                }}
+                placeholder="All Agents"
+                label="Agent"
+                className="w-[180px]"
+            />
 
             <Select value={type} onValueChange={setType}>
                 <SelectTrigger className="w-[150px]">

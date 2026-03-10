@@ -44,7 +44,30 @@ final class GetReportMetricsAction
 
         $total = $stats->total_calls ?? 0;
 
+        // Scoped Agent Count
+        $agentQuery = \App\Domain\Agents\Models\Agent::query();
+        if ($filters->allowedAgentIds !== null) {
+            $agentQuery->whereIn('id', $filters->allowedAgentIds);
+        }
+        if (! empty($filters->agentIds)) {
+            $agentQuery->whereIn('id', $filters->agentIds);
+        }
+        if (! empty($filters->teamIds)) {
+            $agentQuery->whereIn('id', function ($q) use ($filters) {
+                $q->select('agent_id')
+                    ->from('team_members')
+                    ->whereIn('team_id', $filters->teamIds);
+            });
+        }
+        $totalAgents = $agentQuery->count();
+
         return [
+            [
+                'label' => 'Total Agents',
+                'value' => number_format($totalAgents),
+                'icon' => 'users',
+                'color' => 'text-blue-500',
+            ],
             [
                 'label' => 'Total Calls',
                 'value' => number_format($total),

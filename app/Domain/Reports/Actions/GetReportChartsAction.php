@@ -245,13 +245,9 @@ final class GetReportChartsAction
 
     private function getAgentDistribution(ReportFilterDTO $filters): array
     {
-        $query = \App\Domain\Agents\Models\Agent::query()
-            ->where('created_at', '<=', $filters->endDate);
+        $query = \App\Domain\Agents\Models\Agent::query();
 
         // Only show agents who have call logs in this period
-        $query->whereHas('devices.callLogs', function ($q) use ($filters) {
-            $q->whereBetween('timestamp', [$filters->startDate, $filters->endDate]);
-        });
 
         if ($filters->allowedAgentIds !== null) {
             if (empty($filters->allowedAgentIds)) {
@@ -295,12 +291,8 @@ final class GetReportChartsAction
 
         $query->withCount([
             'members' => function ($q) use ($filters) {
-                $q->where('agents.created_at', '<=', $filters->endDate);
-
+                // Remove created_at filter to show all members
                 // Only count agents who have call logs in this period
-                $q->whereHas('devices.callLogs', function ($sub) use ($filters) {
-                    $sub->whereBetween('timestamp', [$filters->startDate, $filters->endDate]);
-                });
 
                 if ($filters->allowedAgentIds !== null) {
                     $q->whereIn('agents.id', $filters->allowedAgentIds);
@@ -316,13 +308,8 @@ final class GetReportChartsAction
             $query->whereIn('id', $filters->teamIds);
         }
 
-        // Only show teams that have agents with call logs in this period
+        // Only show teams that have agents in this period
         $query->whereHas('members', function ($q) use ($filters) {
-            $q->where('agents.created_at', '<=', $filters->endDate);
-
-            $q->whereHas('devices.callLogs', function ($sub) use ($filters) {
-                $sub->whereBetween('timestamp', [$filters->startDate, $filters->endDate]);
-            });
 
             if ($filters->allowedAgentIds !== null) {
                 $q->whereIn('agents.id', $filters->allowedAgentIds);

@@ -13,8 +13,8 @@ describe("ReportSummary", () => {
         const { container } = render(<ReportSummary metrics={[]} isLoading={true} />)
         // The wrapper div should have the grid classes
         expect(container.firstChild).toHaveClass("grid")
-        // Should render 5 skeleton cards as per code
-        expect(container.querySelectorAll(".animate-pulse")).toHaveLength(5)
+        // Should render 6 skeleton cards as per code
+        expect(container.querySelectorAll(".animate-pulse")).toHaveLength(6)
     })
 
     it("renders metrics correctly", () => {

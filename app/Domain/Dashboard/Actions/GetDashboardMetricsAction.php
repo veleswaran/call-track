@@ -16,26 +16,37 @@ use Illuminate\Support\Facades\DB;
 final class GetDashboardMetricsAction
 {
     /**
-     * Execute the action to get aggregated dashboard metrics for current week
-     * with comparison to previous week
+     * Execute the action to get aggregated dashboard metrics for a period
+     * with comparison to the previous period of the same length
      *
      * @param  int[]|null  $allowedAgentIds  Null = full access, array = restricted agent IDs
      */
-    public function execute(?array $allowedAgentIds = null): DashboardMetricsDTO
+    public function execute(?array $allowedAgentIds = null, ?Carbon $startDate = null, ?Carbon $endDate = null): DashboardMetricsDTO
     {
         // Use Asia/Kolkata timezone to match database timestamp storage
         $tz = 'Asia/Kolkata';
-        $currentWeekStart = Carbon::now($tz)->startOfWeek();
-        $currentWeekEnd = Carbon::now($tz)->endOfWeek();
-        $previousWeekStart = Carbon::now($tz)->subWeek()->startOfWeek();
-        $previousWeekEnd = Carbon::now($tz)->subWeek()->endOfWeek();
 
-        // Get current week metrics
-        $currentStats = $this->getCallStats($currentWeekStart, $currentWeekEnd, $allowedAgentIds);
+        if ($startDate && $endDate) {
+            $currentStart = $startDate->copy()->startOfDay();
+            $currentEnd = $endDate->copy()->endOfDay();
+
+            // Comparison period is the preceding period of the same length
+            $diffInDays = $currentStart->diffInDays($currentEnd) + 1;
+            $previousStart = $currentStart->copy()->subDays($diffInDays);
+            $previousEnd = $currentEnd->copy()->subDays($diffInDays);
+        } else {
+            $currentStart = Carbon::now($tz)->startOfWeek();
+            $currentEnd = Carbon::now($tz)->endOfWeek();
+            $previousStart = Carbon::now($tz)->subWeek()->startOfWeek();
+            $previousEnd = Carbon::now($tz)->subWeek()->endOfWeek();
+        }
+
+        // Get current period metrics
+        $currentStats = $this->getCallStats($currentStart, $currentEnd, $allowedAgentIds);
         $currentMissedCalls = $currentStats->missed_calls ?? 0;
 
-        // Get previous week metrics for comparison
-        $previousStats = $this->getCallStats($previousWeekStart, $previousWeekEnd, $allowedAgentIds);
+        // Get previous period metrics for comparison
+        $previousStats = $this->getCallStats($previousStart, $previousEnd, $allowedAgentIds);
         $previousMissedCalls = $previousStats->missed_calls ?? 0;
 
         // Device and agent counts (scoped)
@@ -50,7 +61,7 @@ final class GetDashboardMetricsAction
         // Active devices: Devices that have synced calls in the current period
         $activeDevicesQuery = DB::table('call_logs')
             ->join('devices', 'call_logs.device_id', '=', 'devices.id')
-            ->whereBetween('call_logs.timestamp', [$currentWeekStart, $currentWeekEnd]);
+            ->whereBetween('call_logs.timestamp', [$currentStart, $currentEnd]);
 
         if ($allowedAgentIds !== null) {
             $activeDevicesQuery->whereIn('devices.agent_id', $allowedAgentIds);

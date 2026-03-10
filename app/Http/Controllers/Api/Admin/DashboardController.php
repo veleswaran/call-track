@@ -6,7 +6,9 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Contracts\Services\DashboardServiceContract;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\GetDashboardDataRequest;
 use App\Http\Resources\DashboardMetricsResource;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 
 /**
@@ -22,13 +24,16 @@ final class DashboardController extends Controller
     /**
      * Get dashboard metrics
      */
-    public function index(\Illuminate\Http\Request $request): JsonResponse
+    public function index(GetDashboardDataRequest $request): JsonResponse
     {
         /** @var \App\Domain\Users\Models\User $user */
         $user = $request->user();
         $allowedAgentIds = $this->getAgentAccessScopeAction->execute($user);
 
-        $metrics = $this->dashboardService->getMetrics($allowedAgentIds);
+        $startDate = $request->filled('start_date') ? Carbon::parse($request->string('start_date')->toString()) : null;
+        $endDate = $request->filled('end_date') ? Carbon::parse($request->string('end_date')->toString()) : null;
+
+        $metrics = $this->dashboardService->getMetrics($allowedAgentIds, $startDate, $endDate);
 
         return response()->json([
             'data' => new DashboardMetricsResource($metrics),
@@ -38,13 +43,16 @@ final class DashboardController extends Controller
     /**
      * Get dashboard chart data
      */
-    public function charts(\Illuminate\Http\Request $request): JsonResponse
+    public function charts(GetDashboardDataRequest $request): JsonResponse
     {
         /** @var \App\Domain\Users\Models\User $user */
         $user = $request->user();
         $allowedAgentIds = $this->getAgentAccessScopeAction->execute($user);
 
-        $charts = $this->dashboardService->getCharts($allowedAgentIds);
+        $startDate = $request->filled('start_date') ? Carbon::parse($request->string('start_date')->toString()) : null;
+        $endDate = $request->filled('end_date') ? Carbon::parse($request->string('end_date')->toString()) : null;
+
+        $charts = $this->dashboardService->getCharts($allowedAgentIds, $startDate, $endDate);
 
         return response()->json([
             'data' => $charts->toArray(),

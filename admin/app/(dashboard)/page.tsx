@@ -6,10 +6,15 @@ import {
     CardHeader,
     CardTitle,
 } from "@shared/components/ui/card";
-import { Phone, Clock, Timer, TrendingUp, TrendingDown, PhoneMissed } from "lucide-react";
+import { Button } from "@shared/components/ui/button";
+import { Phone, Clock, Timer, TrendingUp, TrendingDown, PhoneMissed, ArrowRight } from "lucide-react";
 import { useDashboardMetrics, useDashboardCharts } from "@features/dashboard/hooks/use-dashboard";
 import { CallVolumeTrendsChart } from "@features/dashboard/components/CallVolumeTrendsChart";
 import { CallOutcomeChart } from "@features/dashboard/components/CallOutcomeChart";
+import { DashboardFilters, DashboardFiltersData } from "@features/dashboard/components/DashboardFilters";
+import { startOfWeek, endOfWeek, format } from "date-fns";
+import Link from "next/link";
+import { useState } from "react";
 
 /**
  * Comparison indicator component showing percentage change
@@ -29,7 +34,7 @@ function ComparisonIndicator({ value }: { value: number | null }) {
         <div className={`flex items-center gap-1 text-xs ${colorClass}`}>
             <Icon className="h-3 w-3" />
             <span>{Math.abs(value)}%</span>
-            <span className="text-zinc-500 dark:text-zinc-400">vs last week</span>
+            <span className="text-zinc-500 dark:text-zinc-400">vs previous period</span>
         </div>
     );
 }
@@ -89,11 +94,21 @@ function formatDuration(seconds: number): string {
 }
 
 /**
- * Dashboard page - displays key metrics for current week with comparison and charts
+ * Dashboard page - displays key metrics with date filtering and comparison
  */
 export default function DashboardPage() {
-    const { data: metrics, isLoading: metricsLoading } = useDashboardMetrics();
-    const { data: charts, isLoading: chartsLoading } = useDashboardCharts();
+    const [filters, setFilters] = useState<DashboardFiltersData>({
+        dateRange: {
+            from: startOfWeek(new Date()),
+            to: endOfWeek(new Date()),
+        }
+    });
+
+    const startDate = filters.dateRange?.from ? format(filters.dateRange.from, 'yyyy-MM-dd') : undefined;
+    const endDate = filters.dateRange?.to ? format(filters.dateRange.to, 'yyyy-MM-dd') : undefined;
+
+    const { data: metrics, isLoading: metricsLoading } = useDashboardMetrics(startDate, endDate);
+    const { data: charts, isLoading: chartsLoading } = useDashboardCharts(startDate, endDate);
 
     const totalCalls = metrics?.total_calls ?? 0;
     const missedCalls = metrics?.missed_calls ?? 0;
@@ -103,12 +118,23 @@ export default function DashboardPage() {
     return (
         <div className="space-y-6">
             {/* Page Header */}
-            <div>
-                <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-                <p className="text-zinc-500 dark:text-zinc-400">
-                    This week&apos;s call tracking metrics
-                </p>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+                    <p className="text-zinc-500 dark:text-zinc-400">
+                        Overview of call tracking performance
+                    </p>
+                </div>
+                <Link
+                    href="/reports#agent-performance"
+                    className="flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
+                >
+                    Agent Performance Report
+                    <ArrowRight className="h-4 w-4" />
+                </Link>
             </div>
+
+            <DashboardFilters onFilterChange={setFilters} />
 
             {/* Metrics Grid */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -152,6 +178,17 @@ export default function DashboardPage() {
                     data={charts?.outcome_distribution ?? []}
                     isLoading={chartsLoading}
                 />
+            </div>
+
+            <div className="flex justify-center py-8">
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                    className="text-muted-foreground hover:text-foreground"
+                >
+                    Scroll to Top
+                </Button>
             </div>
         </div>
     );
