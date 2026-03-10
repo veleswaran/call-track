@@ -107,6 +107,22 @@ class IngestCallLogsAction
         // Dispatch analytics job for the device
         ProcessCallLogAnalytics::dispatch($dto->device->id);
 
+        // Process escalations for the logs
+        $allHashes = array_column($records, 'call_hash');
+        $allLogs = CallLog::where('device_id', $dto->device->id)
+            ->whereIn('call_hash', $allHashes)
+            ->get();
+
+        foreach ($allLogs as $callLog) {
+            $direction = strtoupper((string) $callLog->direction);
+
+            if (in_array($direction, ['MISSED', 'REJECTED', 'BLOCKED']) || ($direction === 'INCOMING' && $callLog->duration === 0)) {
+                \App\Jobs\MissedCalls\ProcessMissedCallEscalationJob::dispatch($callLog->id);
+            } elseif ($direction === 'OUTGOING' && $callLog->duration > 0) {
+                \App\Jobs\MissedCalls\AttemptEscalationResolutionJob::dispatch($callLog->id);
+            }
+        }
+
         return [
             'ingested' => count($records),
             'skipped' => $skippedCount,

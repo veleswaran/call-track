@@ -42,6 +42,12 @@ return new class extends Migration
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
+            [
+                'key' => 'escalation_sla_hours',
+                'value' => json_encode(2),
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
         ]);
     }
 

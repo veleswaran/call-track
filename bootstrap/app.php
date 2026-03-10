@@ -13,6 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withSchedule(function (\Illuminate\Console\Scheduling\Schedule $schedule): void {
         $schedule->command('devices:notify-stale')->everyFifteenMinutes();
+        $schedule->job(new \App\Jobs\MissedCalls\EvaluateEscalationSlasJob)->everyFifteenMinutes();
     })
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->api(prepend: [
