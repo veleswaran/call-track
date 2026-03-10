@@ -1,37 +1,4 @@
----
-stepsCompleted:
-  - step-01-init
-  - step-02-discovery
-  - step-02b-vision
-  - step-02c-executive-summary
-  - step-03-success
-  - step-04-journeys
-  - step-05-domain
-  - step-06-innovation
-  - step-07-project-type
-  - step-08-scoping
-  - step-09-functional
-  - step-10-nonfunctional
-  - step-11-polish
-classification:
-  projectType: web_app
-  domain: general
-  complexity: medium
-  projectContext: brownfield
-inputDocuments:
-  - /home/z0401@ad.ziffity.com/Documents/training/php/calltrack/docs/brd.md
-  - /home/z0401@ad.ziffity.com/Documents/training/php/calltrack/_bmad-output/planning-artifacts/product-brief-calltrack-2026-03-09.md
-  - /home/z0401@ad.ziffity.com/Documents/training/php/calltrack/docs/ARCHITECTURE_QUICK_START.md
-  - /home/z0401@ad.ziffity.com/Documents/training/php/calltrack/docs/DEVELOPMENT_FLOW.md
-  - /home/z0401@ad.ziffity.com/Documents/training/php/calltrack/docs/WHY_THIS_ARCHITECTURE.md
-workflowType: 'prd'
----
-
 # Product Requirements Document - calltrack
-
-**Author:** vignesh
-**Date:** 2026-03-10
-
 ## Executive Summary
 
 CallTrack AI acts as an immutable system of record for out-of-band sales and marketing phone channels. Built for Android-based field teams, it passively ingests all telephony activity without agent intervention. By separating governance data from raw ingestion, the platform ensures absolute visibility into team performance and guarantees that missed business calls never slip through the cracks. It provides administrators with a lightweight, filterable dashboard of escalation-eligible calls—categorized by team, agent, and date—and serves as a highly-auditable, API-ready data source for downstream CRM consumption.
