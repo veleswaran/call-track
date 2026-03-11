@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Contracts\Services\DashboardServiceContract;
+use App\Domain\Dashboard\DTOs\DashboardFilterDTO;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\GetDashboardDataRequest;
 use App\Http\Resources\DashboardMetricsResource;
-use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 
 /**
@@ -30,10 +30,8 @@ final class DashboardController extends Controller
         $user = $request->user();
         $allowedAgentIds = $this->getAgentAccessScopeAction->execute($user);
 
-        $startDate = $request->filled('start_date') ? Carbon::parse($request->string('start_date')->toString()) : null;
-        $endDate = $request->filled('end_date') ? Carbon::parse($request->string('end_date')->toString()) : null;
-
-        $metrics = $this->dashboardService->getMetrics($allowedAgentIds, $startDate, $endDate);
+        $filter = DashboardFilterDTO::fromRequest($request, $allowedAgentIds);
+        $metrics = $this->dashboardService->getMetrics($filter);
 
         return response()->json([
             'data' => new DashboardMetricsResource($metrics),
@@ -49,10 +47,8 @@ final class DashboardController extends Controller
         $user = $request->user();
         $allowedAgentIds = $this->getAgentAccessScopeAction->execute($user);
 
-        $startDate = $request->filled('start_date') ? Carbon::parse($request->string('start_date')->toString()) : null;
-        $endDate = $request->filled('end_date') ? Carbon::parse($request->string('end_date')->toString()) : null;
-
-        $charts = $this->dashboardService->getCharts($allowedAgentIds, $startDate, $endDate);
+        $filter = DashboardFilterDTO::fromRequest($request, $allowedAgentIds);
+        $charts = $this->dashboardService->getCharts($filter);
 
         return response()->json([
             'data' => $charts->toArray(),

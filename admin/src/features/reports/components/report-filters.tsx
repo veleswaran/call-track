@@ -88,20 +88,11 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
         }
     }
 
-    // Fetch Agents with high per_page to get most of them for filters
-    const agentsQuery = useQuery({
-        queryKey: ['agents', 'simple-list'],
-        queryFn: async () => {
-            const res = await api.get<PaginatedResponse<Agent>>('/api/v1/admin/agents?per_page=1000')
-            return res.data // This is Agent[]
-        }
-    })
-
     // Fetch Teams with high per_page
     const teamsQuery = useQuery({
         queryKey: ['teams', 'simple-list'],
         queryFn: async () => {
-            const res = await api.get<PaginatedResponse<Team>>('/api/v1/admin/teams?per_page=1000')
+            const res = await api.get<PaginatedResponse<Team>>('/api/v1/admin/teams?per_page=100')
             return res.data // This is Team[]
         }
     })

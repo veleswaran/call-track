@@ -34,7 +34,7 @@ function ComparisonIndicator({ value }: { value: number | null }) {
         <div className={`flex items-center gap-1 text-xs ${colorClass}`}>
             <Icon className="h-3 w-3" />
             <span>{Math.abs(value)}%</span>
-            <span className="text-zinc-500 dark:text-zinc-400">vs previous period</span>
+            <span className="text-zinc-500 dark:text-zinc-400">vs last week</span>
         </div>
     );
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Dashboard\Actions;
 
 use App\Domain\Agents\Models\Agent;
+use App\Domain\Dashboard\DTOs\DashboardFilterDTO;
 use App\Domain\Dashboard\DTOs\DashboardMetricsDTO;
 use App\Domain\Devices\Models\Device;
 use Carbon\Carbon;
@@ -18,17 +19,15 @@ final class GetDashboardMetricsAction
     /**
      * Execute the action to get aggregated dashboard metrics for a period
      * with comparison to the previous period of the same length
-     *
-     * @param  int[]|null  $allowedAgentIds  Null = full access, array = restricted agent IDs
      */
-    public function execute(?array $allowedAgentIds = null, ?Carbon $startDate = null, ?Carbon $endDate = null): DashboardMetricsDTO
+    public function execute(DashboardFilterDTO $filter): DashboardMetricsDTO
     {
         // Use Asia/Kolkata timezone to match database timestamp storage
         $tz = 'Asia/Kolkata';
 
-        if ($startDate && $endDate) {
-            $currentStart = $startDate->copy()->startOfDay();
-            $currentEnd = $endDate->copy()->endOfDay();
+        if ($filter->startDate && $filter->endDate) {
+            $currentStart = $filter->startDate->copy()->startOfDay();
+            $currentEnd = $filter->endDate->copy()->endOfDay();
 
             // Comparison period is the preceding period of the same length
             $diffInDays = $currentStart->diffInDays($currentEnd) + 1;
@@ -42,17 +41,17 @@ final class GetDashboardMetricsAction
         }
 
         // Get current period metrics
-        $currentStats = $this->getCallStats($currentStart, $currentEnd, $allowedAgentIds);
+        $currentStats = $this->getCallStats($currentStart, $currentEnd, $filter->allowedAgentIds);
         $currentMissedCalls = $currentStats->missed_calls ?? 0;
 
         // Get previous period metrics for comparison
-        $previousStats = $this->getCallStats($previousStart, $previousEnd, $allowedAgentIds);
+        $previousStats = $this->getCallStats($previousStart, $previousEnd, $filter->allowedAgentIds);
         $previousMissedCalls = $previousStats->missed_calls ?? 0;
 
         // Device and agent counts (scoped)
-        if ($allowedAgentIds !== null) {
-            $totalDevices = Device::whereIn('agent_id', $allowedAgentIds)->count();
-            $totalAgents = count($allowedAgentIds);
+        if ($filter->allowedAgentIds !== null) {
+            $totalDevices = Device::whereIn('agent_id', $filter->allowedAgentIds)->count();
+            $totalAgents = count($filter->allowedAgentIds);
         } else {
             $totalDevices = Device::count();
             $totalAgents = Agent::count();
@@ -63,8 +62,8 @@ final class GetDashboardMetricsAction
             ->join('devices', 'call_logs.device_id', '=', 'devices.id')
             ->whereBetween('call_logs.timestamp', [$currentStart, $currentEnd]);
 
-        if ($allowedAgentIds !== null) {
-            $activeDevicesQuery->whereIn('devices.agent_id', $allowedAgentIds);
+        if ($filter->allowedAgentIds !== null) {
+            $activeDevicesQuery->whereIn('devices.agent_id', $filter->allowedAgentIds);
         }
 
         $activeDevices = $activeDevicesQuery
