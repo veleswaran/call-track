@@ -14,7 +14,8 @@ use Illuminate\Http\JsonResponse;
 class EscalationInsightController extends Controller
 {
     public function __construct(
-        private EscalationServiceContract $escalationService
+        private EscalationServiceContract $escalationService,
+        private \App\Domain\Auth\Actions\GetAgentAccessScopeAction $getAgentAccessScopeAction
     ) {}
 
     /**
@@ -22,7 +23,11 @@ class EscalationInsightController extends Controller
      */
     public function index(GetEscalationInsightsRequest $request): JsonResponse
     {
-        $dto = EscalationFilterDTO::fromRequest($request);
+        /** @var \App\Domain\Users\Models\User $user */
+        $user = $request->user();
+        $allowedAgentIds = $this->getAgentAccessScopeAction->execute($user);
+
+        $dto = EscalationFilterDTO::fromRequest($request, $allowedAgentIds);
 
         $escalations = $this->escalationService->getEscalationInsights($dto);
         $summary = $this->escalationService->getEscalationSummary($dto);

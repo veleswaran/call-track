@@ -9,12 +9,7 @@ use Illuminate\Support\Carbon;
 
 class CalculateSlaDeadlineAction
 {
-    private GetSystemSettingAction $getSystemSettingAction;
-
-    public function __construct(GetSystemSettingAction $getSystemSettingAction)
-    {
-        $this->getSystemSettingAction = $getSystemSettingAction;
-    }
+    public function __construct(private readonly GetSystemSettingAction $getSystemSettingAction) {}
 
     public function execute(Carbon $callTimestamp): Carbon
     {

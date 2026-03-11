@@ -9,12 +9,7 @@ use App\Domain\Calls\Models\CallEscalation;
 
 class GetEscalationSummaryAction
 {
-    private GetEscalationInsightsAction $insightsAction;
-
-    public function __construct(GetEscalationInsightsAction $insightsAction)
-    {
-        $this->insightsAction = $insightsAction;
-    }
+    public function __construct(private readonly GetEscalationInsightsAction $insightsAction) {}
 
     public function execute(EscalationFilterDTO $dto): array
     {
@@ -26,9 +21,14 @@ class GetEscalationSummaryAction
 
         $baseQuery = $this->insightsAction->applyFilters($baseQuery, $summaryDto);
 
-        $pending = (clone $baseQuery)->where('status', 'pending')->count();
-        $unattended = (clone $baseQuery)->where('status', 'unattended')->count();
-        $resolved = (clone $baseQuery)->where('status', 'resolved')->count();
+        $statusCounts = (clone $baseQuery)
+            ->selectRaw('status, count(*) as count')
+            ->groupBy('status')
+            ->pluck('count', 'status');
+
+        $pending = $statusCounts->get('pending', 0);
+        $unattended = $statusCounts->get('unattended', 0);
+        $resolved = $statusCounts->get('resolved', 0);
 
         $total = $pending + $unattended + $resolved;
 

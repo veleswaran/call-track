@@ -61,6 +61,12 @@ class GetEscalationInsightsAction
             });
         }
 
+        if (is_array($dto->allowed_agent_ids)) {
+            $query->whereHas('callLog', function ($q) use ($dto) {
+                $q->whereIn('agent_id', $dto->allowed_agent_ids);
+            });
+        }
+
         return $query;
     }
 }

@@ -7,6 +7,8 @@ namespace App\Actions\Calls;
 use App\Domain\Calls\DTOs\SyncCallLogsDTO;
 use App\Domain\Calls\Models\CallLog;
 use App\Domain\Classification\Models\CallClassification;
+use App\Jobs\MissedCalls\AttemptEscalationResolutionJob;
+use App\Jobs\MissedCalls\ProcessMissedCallEscalationJob;
 use App\Jobs\ProcessCallLogAnalytics;
 
 class IngestCallLogsAction
@@ -117,9 +119,9 @@ class IngestCallLogsAction
             $direction = strtoupper((string) $callLog->direction);
 
             if (in_array($direction, ['MISSED', 'REJECTED', 'BLOCKED']) || ($direction === 'INCOMING' && $callLog->duration === 0)) {
-                \App\Jobs\MissedCalls\ProcessMissedCallEscalationJob::dispatch($callLog->id);
+                ProcessMissedCallEscalationJob::dispatch($callLog->id);
             } elseif ($direction === 'OUTGOING' && $callLog->duration > 0) {
-                \App\Jobs\MissedCalls\AttemptEscalationResolutionJob::dispatch($callLog->id);
+                AttemptEscalationResolutionJob::dispatch($callLog->id);
             }
         }
 

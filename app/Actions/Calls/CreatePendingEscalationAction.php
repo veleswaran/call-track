@@ -9,12 +9,7 @@ use App\Domain\Calls\Models\CallLog;
 
 class CreatePendingEscalationAction
 {
-    private CalculateSlaDeadlineAction $calculateSlaDeadlineAction;
-
-    public function __construct(CalculateSlaDeadlineAction $calculateSlaDeadlineAction)
-    {
-        $this->calculateSlaDeadlineAction = $calculateSlaDeadlineAction;
-    }
+    public function __construct(private readonly CalculateSlaDeadlineAction $calculateSlaDeadlineAction) {}
 
     public function execute(CallLog $callLog): ?CallEscalation
     {

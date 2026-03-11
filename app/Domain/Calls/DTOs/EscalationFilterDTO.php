@@ -15,9 +15,11 @@ class EscalationFilterDTO
         public ?string $date_from = null,
         public ?string $date_to = null,
         public int $per_page = 20,
+        /** @var int[]|null Null = full access, array = restricted agent IDs */
+        public ?array $allowed_agent_ids = null,
     ) {}
 
-    public static function fromRequest(Request $request): self
+    public static function fromRequest(Request $request, ?array $allowed_agent_ids = null): self
     {
         return new self(
             team_id: $request->filled('team_id') ? (int) $request->input('team_id') : null,
@@ -26,6 +28,7 @@ class EscalationFilterDTO
             date_from: $request->input('date_from'),
             date_to: $request->input('date_to'),
             per_page: (int) $request->input('per_page', 20),
+            allowed_agent_ids: $allowed_agent_ids,
         );
     }
 }

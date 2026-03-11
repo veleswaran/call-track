@@ -8,7 +8,7 @@ class GetEscalationInsightsRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        return $this->user()->can('view escalations');
     }
 
     public function rules(): array
