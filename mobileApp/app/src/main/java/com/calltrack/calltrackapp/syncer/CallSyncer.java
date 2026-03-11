@@ -17,6 +17,7 @@ import com.calltrack.calltrackapp.db.bundles.CallRecord;
 import com.calltrack.calltrackapp.db.bundles.EventRecord;
 import com.calltrack.calltrackapp.db.bundles.TokenEntity;
 import com.calltrack.calltrackapp.utilities.Utility;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -76,6 +77,7 @@ public class CallSyncer extends Worker {
                     }
                 } catch (IOException e) {
                     Log.d("Error", e.toString());
+                    FirebaseCrashlytics.getInstance().recordException(e);
                 }
             }
         }
@@ -122,6 +124,7 @@ public class CallSyncer extends Worker {
             return response.isSuccessful();
         } catch (Exception e) {
             Log.e("CallSyncer -> callAPi", "Exception occurred", e);
+            FirebaseCrashlytics.getInstance().recordException(e);
         }
         return false;
     }

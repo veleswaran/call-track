@@ -72,7 +72,7 @@ public class CallStateMonitor {
     }
 
     private void registerLegacy(TelephonyManager tm) {
-        PhoneStateListener listener = new LegacyMonitor();
+        LegacyMonitor listener = new LegacyMonitor();
         tm.listen(listener, PhoneStateListener.LISTEN_CALL_STATE);
         monitor = listener;
     }
