@@ -57,9 +57,10 @@ class ReportControllerTest extends TestCase
         $response = $this->actingAs($this->admin)->getJson('/api/v1/admin/reports/metrics?start_date='.$today->copy()->subDay()->toDateString().'&end_date='.$today->copy()->addDay()->toDateString());
 
         $response->assertOk()
-            ->assertJsonPath('data.0.value', '1') // Total calls
-            ->assertJsonPath('data.1.value', '1') // Connected
-            ->assertJsonPath('data.1.percentage', 100);
+            ->assertJsonPath('data.0.label', 'Total Agents')
+            ->assertJsonPath('data.1.value', '1') // Total calls
+            ->assertJsonPath('data.2.value', '1') // Connected
+            ->assertJsonPath('data.2.percentage', 100);
     }
 
     public function test_charts_endpoint_returns_structure(): void

@@ -1,4 +1,4 @@
-import { Phone, CheckCircle, XCircle, PhoneOff, Clock, LucideIcon } from "lucide-react"
+import { Phone, CheckCircle, XCircle, PhoneOff, Clock, Users, LucideIcon } from "lucide-react"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@shared/components/ui/card"
 import { cn } from "@shared/utils"
@@ -21,20 +21,21 @@ const iconMap: Record<string, LucideIcon> = {
     'check-circle': CheckCircle,
     'x-circle': XCircle,
     'phone-off': PhoneOff,
-    clock: Clock
+    clock: Clock,
+    users: Users
 }
 
 export function ReportSummary({ metrics, isLoading }: ReportSummaryProps) {
     if (isLoading) {
-        return <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-            {[1, 2, 3, 4, 5].map(i => (
+        return <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+            {[1, 2, 3, 4, 5, 6].map(i => (
                 <Card key={i} className="animate-pulse h-24" />
             ))}
         </div>
     }
 
     return (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
             {metrics.map((metric, index) => {
                 const Icon = iconMap[metric.icon || 'phone'] || Phone
                 return (

@@ -40,7 +40,10 @@ const COLORS = ['#22c55e', '#ef4444', '#eab308', '#3b82f6', '#a855f7'];
 export function ReportCharts({ data }: ReportChartsProps) {
 
     // Status Distribution - Custom Label for Donut Inner Total?
+    // Totals for percentage calculations
     const totalCalls = data.status_distribution.reduce((acc, curr) => acc + curr.value, 0);
+    const totalCallers = data.caller_types.reduce((acc, curr) => acc + curr.value, 0);
+    const totalDirections = data.call_direction_distribution.reduce((acc, curr) => acc + curr.value, 0);
 
     return (
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-7">
@@ -101,7 +104,7 @@ export function ReportCharts({ data }: ReportChartsProps) {
                                     dataKey="value"
                                     nameKey="name"
                                     labelLine={false}
-                                    label={({ value }) => `${((value / totalCalls) * 100).toFixed(0)}%`}
+                                    label={({ value }) => totalCalls > 0 ? `${((value / totalCalls) * 100).toFixed(0)}%` : '0%'}
                                 >
                                     {data.status_distribution?.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={entry.fill || COLORS[index % COLORS.length]} />
@@ -201,7 +204,7 @@ export function ReportCharts({ data }: ReportChartsProps) {
                                 dataKey="value"
                                 nameKey="name"
                                 labelLine={false}
-                                label={({ value }) => `${((value / totalCalls) * 100).toFixed(0)}%`}
+                                label={({ value }) => totalCallers > 0 ? `${((value / totalCallers) * 100).toFixed(0)}%` : '0%'}
                             >
                                 {data.caller_types.map((entry, index) => (
                                     <Cell key={`cell-${index}`} fill={entry.fill || COLORS[index % COLORS.length]} />
@@ -251,7 +254,7 @@ export function ReportCharts({ data }: ReportChartsProps) {
                                 dataKey="value"
                                 nameKey="name"
                                 labelLine={false}
-                                label={({ value }) => `${((value / totalCalls) * 100).toFixed(0)}%`}
+                                label={({ value }) => totalDirections > 0 ? `${((value / totalDirections) * 100).toFixed(0)}%` : '0%'}
                             >
                                 {data.call_direction_distribution?.map((entry, index) => (
                                     <Cell key={`cell-${index}`} fill={entry.fill || COLORS[index % COLORS.length]} />
