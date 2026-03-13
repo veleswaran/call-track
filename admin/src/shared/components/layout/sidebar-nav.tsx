@@ -8,6 +8,7 @@ import {
     LayoutDashboard,
     BarChart,
     Phone,
+    PhoneMissed,
     Smartphone,
     Users,
     Contact,
@@ -34,6 +35,7 @@ export interface NavItem {
 export const defaultNavigation: NavItem[] = [
     { name: "Dashboard", href: "/", icon: LayoutDashboard },
     { name: "Reports", href: "/reports", icon: BarChart },
+    { name: "Missed Calls", href: "/reports/missed-calls", icon: PhoneMissed },
     { name: "Call Logs", href: "/call-logs", icon: Phone }, // accessible by all logged in usually, or check permission
     { name: "Devices", href: "/devices", icon: Smartphone, permission: "manage devices" }, // or view devices? 'manage devices' is permission name.
     { name: "Users", href: "/users", icon: Users, permission: "manage users" },
@@ -99,7 +101,13 @@ export function SidebarNav({
                 {navigation.map((item) => {
                     const isActive =
                         pathname === item.href ||
-                        pathname.startsWith(item.href + "/");
+                        (pathname.startsWith(item.href + "/") &&
+                            !navigation.some(
+                                (other) =>
+                                    other.href !== item.href &&
+                                    other.href.startsWith(item.href) &&
+                                    pathname.startsWith(other.href)
+                            ));
 
                     // Role permission check
                     let isAllowed = true;

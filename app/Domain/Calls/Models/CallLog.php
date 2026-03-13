@@ -72,4 +72,12 @@ class CallLog extends Model
     {
         return $this->hasOne(CallClassification::class);
     }
+
+    /**
+     * @return HasOne<\App\Domain\Calls\Models\CallEscalation, $this>
+     */
+    public function escalation(): HasOne
+    {
+        return $this->hasOne(CallEscalation::class);
+    }
 }
