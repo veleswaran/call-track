@@ -41,6 +41,7 @@ class RolePermissionSeeder extends Seeder
         Permission::firstOrCreate(['name' => 'manage contacts']);
         Permission::firstOrCreate(['name' => 'view device sync logs']);
         Permission::firstOrCreate(['name' => 'generate registration codes']);
+        Permission::firstOrCreate(['name' => 'view escalations']);
 
         // Roles
         $superAdminRole = Role::firstOrCreate(['name' => 'super-admin']);
@@ -53,7 +54,8 @@ class RolePermissionSeeder extends Seeder
             'view dashboard',
             'manage devices',
             'view reports',
-            'manage team', // Admins can manage any team generally, or we restrict this? Spec says Admin can manage all.
+            'manage team',
+            'view escalations',
         ]);
 
         $managerRole = Role::firstOrCreate(['name' => 'manager']);
@@ -65,6 +67,7 @@ class RolePermissionSeeder extends Seeder
             'classify calls',
             'manage contacts',
             'view device sync logs',
+            'view escalations',
         ]);
 
         $memberRole = Role::firstOrCreate(['name' => 'member']);
