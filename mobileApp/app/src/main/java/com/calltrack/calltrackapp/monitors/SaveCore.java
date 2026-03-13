@@ -60,6 +60,7 @@ public class SaveCore {
                     persistRecord(context.getApplicationContext(), record);
                     lastProcessedId = record.callLocalId;
                     Log.e("CallMonitor -> saveLatestCall", "SIM " + record.simSlot);
+                    FirebaseCrashlytics.getInstance().log("SIM -> " + record.simSlot);
                 }
                 localSettings.setLastProcessedCallId(lastProcessedId);
             } catch (Exception e) {
