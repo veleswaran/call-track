@@ -51,9 +51,10 @@ class AgentManagementService implements AgentManagementServiceInterface
                 $query->whereIn('id', $allowedAgentIds);
             })
             ->when($search, function ($query, $search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
-                        ->orWhere('employee_code', 'like', "%{$search}%");
+                $term = strtolower((string) $search);
+                $query->where(function ($q) use ($term) {
+                    $q->whereRaw('LOWER(name) LIKE ?', ["%{$term}%"])
+                        ->orWhereRaw('LOWER(employee_code) LIKE ?', ["%{$term}%"]);
                 });
             })
             ->latest()

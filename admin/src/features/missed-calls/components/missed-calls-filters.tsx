@@ -4,7 +4,6 @@ import { useState } from "react";
 import { format, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isSameDay } from "date-fns";
 import { CalendarIcon, Filter, X } from "lucide-react";
 import { DateRange } from "react-day-picker";
-import { useQuery } from "@tanstack/react-query";
 
 import { cn } from "@shared/utils";
 import { Button } from "@shared/components/ui/button";
@@ -24,6 +23,7 @@ import {
 import { api } from "@shared/api/api";
 import { Agent, Team, PaginatedResponse } from "@shared/types";
 import { EscalationStatus, GetEscalationsParams } from "../types/escalation";
+import { AsyncSelect } from "@shared/components/async-select";
 
 interface MissedCallsFiltersProps {
     onFilterChange: (filters: Partial<GetEscalationsParams>) => void;
@@ -40,24 +40,6 @@ export function MissedCallsFilters({ onFilterChange }: MissedCallsFiltersProps) 
     const [agentId, setAgentId] = useState<string>("all");
     const [teamId, setTeamId] = useState<string>("all");
     const [quickDate, setQuickDate] = useState<string>("today");
-
-    // Fetch Agents for filters
-    const agentsQuery = useQuery({
-        queryKey: ['agents', 'simple-list'],
-        queryFn: async () => {
-            const res = await api.get<PaginatedResponse<Agent>>('/api/v1/admin/agents?per_page=1000');
-            return res.data;
-        }
-    });
-
-    // Fetch Teams for filters
-    const teamsQuery = useQuery({
-        queryKey: ['teams', 'simple-list'],
-        queryFn: async () => {
-            const res = await api.get<PaginatedResponse<Team>>('/api/v1/admin/teams?per_page=1000');
-            return res.data;
-        }
-    });
 
     const handleQuickDateChange = (value: string) => {
         setQuickDate(value);
@@ -191,33 +173,37 @@ export function MissedCallsFilters({ onFilterChange }: MissedCallsFiltersProps) 
                 </SelectContent>
             </Select>
 
-            <Select value={teamId} onValueChange={setTeamId}>
-                <SelectTrigger className="w-[150px]">
-                    <SelectValue placeholder="All Teams" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="all">All Teams</SelectItem>
-                    {teamsQuery.data?.map((team: Team) => (
-                        <SelectItem key={team.id} value={team.id.toString()}>
-                            {team.name}
-                        </SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
+            <AsyncSelect
+                value={teamId}
+                onChange={setTeamId}
+                loadOptions={async (search) => {
+                    const res = await api.get<PaginatedResponse<Team>>(`/api/v1/admin/teams?search=${search}&per_page=100`);
+                    const options = res.data.map((team: Team) => ({
+                        label: team.name,
+                        value: team.id.toString(),
+                    }));
+                    return [{ label: "All Teams", value: "all" }, ...options];
+                }}
+                placeholder="All Teams"
+                label="Team"
+                className="w-[180px]"
+            />
 
-            <Select value={agentId} onValueChange={setAgentId}>
-                <SelectTrigger className="w-[150px]">
-                    <SelectValue placeholder="All Agents" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="all">All Agents</SelectItem>
-                    {agentsQuery.data?.map((agent: Agent) => (
-                        <SelectItem key={agent.id} value={agent.id.toString()}>
-                            {agent.name}
-                        </SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
+            <AsyncSelect
+                value={agentId}
+                onChange={setAgentId}
+                loadOptions={async (search) => {
+                    const res = await api.get<PaginatedResponse<Agent>>(`/api/v1/admin/agents?search=${search}&per_page=100`);
+                    const options = res.data.map((agent: Agent) => ({
+                        label: agent.name,
+                        value: agent.id.toString(),
+                    }));
+                    return [{ label: "All Agents", value: "all" }, ...options];
+                }}
+                placeholder="All Agents"
+                label="Agent"
+                className="w-[180px]"
+            />
 
             <Button size="icon" variant="ghost" onClick={handleReset} title="Reset Filters">
                 <X className="h-4 w-4" />

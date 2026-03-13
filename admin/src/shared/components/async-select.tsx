@@ -87,7 +87,7 @@ export function AsyncSelect({
                     aria-expanded={open}
                     className={cn("w-[200px] justify-between", className)}
                 >
-                    {selectedLabel || value ? (selectedLabel || options.find(o => o.value === value)?.label || value) : placeholder}
+                    {selectedLabel || (value && value !== "all") ? (selectedLabel || options.find(o => o.value === value)?.label || value) : placeholder}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
             </PopoverTrigger>
