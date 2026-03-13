@@ -1,5 +1,6 @@
 package com.calltrack.calltrackapp.syncer;
 
+import android.app.Notification;
 import android.content.Context;
 import android.util.Log;
 
@@ -32,12 +33,16 @@ import java.util.Locale;
 import java.util.Objects;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.NotificationCompat;
+import androidx.work.ForegroundInfo;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 import retrofit2.Call;
 import retrofit2.Response;
 
 public class CallSyncer extends Worker {
+
+    private static final String CHANNEL_ID = "call_monitor_channel";
 
     public CallSyncer(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
@@ -145,6 +150,18 @@ public class CallSyncer extends Worker {
         extra.note = record.notes;
         item.extra = extra;
         return item;
+    }
+
+    @NonNull
+    @Override
+    public ForegroundInfo getForegroundInfo() {
+        Notification notification = new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID)
+            .setContentTitle("Syncing data")
+            .setContentText("Data is being synced...")
+            .setSmallIcon(android.R.drawable.ic_menu_save) // replace with your own icon
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .build();
+        return new ForegroundInfo(1, notification);
     }
 
 }
