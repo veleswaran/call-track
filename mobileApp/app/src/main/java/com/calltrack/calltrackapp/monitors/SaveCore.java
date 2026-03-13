@@ -37,7 +37,7 @@ public class SaveCore {
         if (lastProcessedId > 0) {
             String selection = CallLog.Calls._ID + " > ?";
             String[] selectionArgs = new String[]{String.valueOf(lastProcessedId)};
-            String[] projection = {CallLog.Calls.NUMBER, CallLog.Calls.TYPE, CallLog.Calls.DATE, CallLog.Calls.DURATION, "subscription_id", CallLog.Calls._ID, CallLog.Calls.CACHED_NAME, "block_reason"};
+            String[] projection = {CallLog.Calls.NUMBER, CallLog.Calls.TYPE, CallLog.Calls.DATE, CallLog.Calls.DURATION, "subscription_id", CallLog.Calls._ID, CallLog.Calls.CACHED_NAME};
             try (Cursor cursor = context.getContentResolver().query(CallLog.Calls.CONTENT_URI, projection, selection, selectionArgs, CallLog.Calls._ID + " ASC")) {
                 if (cursor == null) return;
                 int batteryLevel = Utility.getBatteryPercentage(context);
@@ -53,7 +53,8 @@ public class SaveCore {
                     record.duration = getStringSafe(cursor, CallLog.Calls.DURATION);
                     int type = getIntSafe(cursor, CallLog.Calls.TYPE);
                     record.type = mapCallType(type);
-                    int blockReason = getIntSafe(cursor, "block_reason");
+//                    int blockReason = getIntSafe(cursor, "block_reason");
+                    int blockReason = -1;
                     record.metaData = buildMetadata(type, blockReason);
                     int subId = getIntSafe(cursor, "subscription_id");
                     fillSubscriptionInfo(context, record, subId);
@@ -157,7 +158,7 @@ public class SaveCore {
         TokenEntity te = db.tokenDao().getOne();
         if (te.simSlots.contains(record.simSlot) || record.simSlot == null) {
             db.callRecordDao().insert(record);
-            Log.d("CallMonitor", "Call record persisted: " + record.type + " " + record.number);
+//            Log.d("CallMonitor", "Call record persisted: " + record.type + " " + record.number);
         } else {
             Log.d("CallMonitor", "Skipped persisting record due to SIM slot mismatch");
         }
