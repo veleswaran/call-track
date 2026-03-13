@@ -31,7 +31,8 @@ public class SaveCore {
         localSettings = new LocalSettings(context);
     }
 
-    public synchronized void ProcessCalls() {
+    public void ProcessCalls() {
+        localSettings.resetToCurrentCallId();
         long lastProcessedId = localSettings.getLastProcessedCallId();
         if (lastProcessedId > 0) {
             String selection = CallLog.Calls._ID + " > ?";
@@ -41,6 +42,7 @@ public class SaveCore {
                 if (cursor == null) return;
                 int batteryLevel = Utility.getBatteryPercentage(context);
                 while (cursor.moveToNext()) {
+                    Log.e("CallMonitor -> ProcessCalls", "Data fetched");
                     CallRecord record = new CallRecord();
                     record.synced = false;
                     record.batteryLevel = batteryLevel;
@@ -57,6 +59,7 @@ public class SaveCore {
                     fillSubscriptionInfo(context, record, subId);
                     persistRecord(context.getApplicationContext(), record);
                     lastProcessedId = record.callLocalId;
+                    Log.e("CallMonitor -> saveLatestCall", "SIM " + record.simSlot);
                 }
                 localSettings.setLastProcessedCallId(lastProcessedId);
             } catch (Exception e) {
@@ -111,15 +114,24 @@ public class SaveCore {
 
     private String mapBlockReason(int reason) {
         switch (reason) {
-            case 0: return "not_blocked";
-            case 1: return "call_screening_service";
-            case 2: return "direct_to_voicemail";
-            case 3: return "blocked_number";
-            case 4: return "unknown_number";
-            case 5: return "restricted_number";
-            case 6: return "pay_phone";
-            case 7: return "not_in_contacts";
-            default: return "unknown";
+            case 0:
+                return "not_blocked";
+            case 1:
+                return "call_screening_service";
+            case 2:
+                return "direct_to_voicemail";
+            case 3:
+                return "blocked_number";
+            case 4:
+                return "unknown_number";
+            case 5:
+                return "restricted_number";
+            case 6:
+                return "pay_phone";
+            case 7:
+                return "not_in_contacts";
+            default:
+                return "unknown";
         }
     }
 
@@ -144,7 +156,7 @@ public class SaveCore {
         TokenEntity te = db.tokenDao().getOne();
         if (te.simSlots.contains(record.simSlot) || record.simSlot == null) {
             db.callRecordDao().insert(record);
-//            Log.d("CallMonitor", "Call record persisted: " + record.type + " " + record.number);
+            Log.d("CallMonitor", "Call record persisted: " + record.type + " " + record.number);
         } else {
             Log.d("CallMonitor", "Skipped persisting record due to SIM slot mismatch");
         }

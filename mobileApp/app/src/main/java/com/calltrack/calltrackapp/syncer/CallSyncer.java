@@ -69,8 +69,6 @@ public class CallSyncer extends Worker {
                 Call<EventResponse> res = ev.store(te.token, ep);
                 try {
                     Response<EventResponse> response = res.execute(); // synchronous
-                    Log.d("Event Api response", String.valueOf(response.code()));
-                    Log.d("Event Api response", response.body().toString());
                     if (response.isSuccessful() || response.code() == 201) {
                         evr.synced = true;
                         db.eventDAO().update(evr);
