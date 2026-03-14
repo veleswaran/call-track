@@ -23,10 +23,11 @@ class ListDevicesAction
 
         return $deviceQuery
             ->when($dto->search, function (Builder $query, string $search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
-                        ->orWhere('model', 'like', "%{$search}%")
-                        ->orWhere('device_uuid', 'like', "%{$search}%");
+                $term = strtolower($search);
+                $query->where(function ($q) use ($term) {
+                    $q->whereRaw('LOWER(name) LIKE ?', ["%{$term}%"])
+                        ->orWhereRaw('LOWER(model) LIKE ?', ["%{$term}%"])
+                        ->orWhereRaw('LOWER(device_uuid) LIKE ?', ["%{$term}%"]);
                 });
             })
             ->latest()

@@ -21,7 +21,7 @@ import {
     SelectValue,
 } from "@shared/components/ui/select"
 
-import { useQuery } from "@tanstack/react-query"
+
 import { api } from "@shared/api/api"
 import { Agent, Team, PaginatedResponse } from "@shared/types"
 import { AsyncSelect } from "@shared/components/async-select"
@@ -88,14 +88,7 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
         }
     }
 
-    // Fetch Teams with high per_page
-    const teamsQuery = useQuery({
-        queryKey: ['teams', 'simple-list'],
-        queryFn: async () => {
-            const res = await api.get<PaginatedResponse<Team>>('/api/v1/admin/teams?per_page=100')
-            return res.data // This is Team[]
-        }
-    })
+
 
     const handleApplyFilters = () => {
         onFilterChange({
@@ -194,19 +187,21 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
                 </SelectContent>
             </Select>
 
-            <Select value={teamId} onValueChange={setTeamId}>
-                <SelectTrigger className="w-[150px]">
-                    <SelectValue placeholder="All Teams" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="all">All Teams</SelectItem>
-                    {teamsQuery.data?.map((team: Team) => (
-                        <SelectItem key={team.id} value={team.id.toString()}>
-                            {team.name}
-                        </SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
+            <AsyncSelect
+                value={teamId}
+                onChange={setTeamId}
+                loadOptions={async (search) => {
+                    const res = await api.get<PaginatedResponse<Team>>(`/api/v1/admin/teams?search=${search}&per_page=100`)
+                    const options = res.data.map((team: Team) => ({
+                        label: team.name,
+                        value: team.id.toString()
+                    }))
+                    return [{ label: "All Teams", value: "all" }, ...options]
+                }}
+                placeholder="All Teams"
+                label="Team"
+                className="w-[180px]"
+            />
 
             <AsyncSelect
                 value={agentId}

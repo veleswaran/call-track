@@ -13,7 +13,7 @@ interface TeamQueryServiceInterface
 {
     public function getAllTeams(?User $user = null): Collection;
 
-    public function getPaginatedTeams(?User $user = null, int $perPage = 20): LengthAwarePaginator;
+    public function getPaginatedTeams(?User $user = null, int $perPage = 20, ?string $search = null): LengthAwarePaginator;
 
     public function getTeamWithDetails(int $id): Team;
 }

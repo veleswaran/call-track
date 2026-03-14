@@ -31,8 +31,9 @@ final class TeamController extends Controller
     {
         $this->authorize('viewAny', Team::class);
 
+        $search = $request->input('search');
         $perPage = (int) $request->input('per_page', 20);
-        $teams = $this->teamQueryService->getPaginatedTeams($request->user(), $perPage);
+        $teams = $this->teamQueryService->getPaginatedTeams($request->user(), $perPage, $search);
 
         return TeamResource::collection($teams);
     }
