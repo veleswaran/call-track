@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { CalendarIcon, Filter, X } from "lucide-react"
-import { format, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isSameDay } from "date-fns"
+import { format, subDays, startOfWeek, endOfWeek, isSameDay } from "date-fns"
 import { DateRange } from "react-day-picker"
 
 import { cn } from "@shared/utils"
@@ -31,12 +31,12 @@ interface DashboardFiltersProps {
 
 export function DashboardFilters({ onFilterChange }: DashboardFiltersProps) {
     const defaultDateRange = {
-        from: startOfWeek(new Date()),
-        to: endOfWeek(new Date()),
+        from: new Date(),
+        to: new Date(),
     };
 
     const [date, setDate] = useState<DateRange | undefined>(defaultDateRange)
-    const [quickDate, setQuickDate] = useState<string>("this_week")
+    const [quickDate, setQuickDate] = useState<string>("today")
 
     const handleQuickDateChange = (value: string) => {
         setQuickDate(value)
@@ -52,16 +52,10 @@ export function DashboardFilters({ onFilterChange }: DashboardFiltersProps) {
                 newRange = { from: yesterday, to: yesterday }
                 break
             case "this_week":
-                newRange = { from: startOfWeek(today), to: endOfWeek(today) }
-                break
-            case "this_month":
-                newRange = { from: startOfMonth(today), to: endOfMonth(today) }
-                break
-            case "last_7_days":
-                newRange = { from: subDays(today, 7), to: today }
-                break
-            case "last_30_days":
-                newRange = { from: subDays(today, 30), to: today }
+                newRange = { 
+                    from: startOfWeek(today, { weekStartsOn: 1 }), 
+                    to: endOfWeek(today, { weekStartsOn: 1 }) 
+                }
                 break
             case "custom":
                 return
@@ -82,7 +76,7 @@ export function DashboardFilters({ onFilterChange }: DashboardFiltersProps) {
 
     const clearFilters = () => {
         setDate(defaultDateRange);
-        setQuickDate("this_week");
+        setQuickDate("today");
         onFilterChange({
             dateRange: defaultDateRange,
         });
@@ -99,9 +93,6 @@ export function DashboardFilters({ onFilterChange }: DashboardFiltersProps) {
                     <SelectItem value="today">Today</SelectItem>
                     <SelectItem value="yesterday">Yesterday</SelectItem>
                     <SelectItem value="this_week">This Week</SelectItem>
-                    <SelectItem value="this_month">This Month</SelectItem>
-                    <SelectItem value="last_7_days">Last 7 Days</SelectItem>
-                    <SelectItem value="last_30_days">Last 30 Days</SelectItem>
                     <SelectItem value="custom">Custom Range</SelectItem>
                 </SelectContent>
             </Select>

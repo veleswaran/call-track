@@ -12,7 +12,7 @@ import { useDashboardMetrics, useDashboardCharts } from "@features/dashboard/hoo
 import { CallVolumeTrendsChart } from "@features/dashboard/components/CallVolumeTrendsChart";
 import { CallOutcomeChart } from "@features/dashboard/components/CallOutcomeChart";
 import { DashboardFilters, DashboardFiltersData } from "@features/dashboard/components/DashboardFilters";
-import { startOfWeek, endOfWeek, format } from "date-fns";
+import { format } from "date-fns";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -99,8 +99,8 @@ function formatDuration(seconds: number): string {
 export default function DashboardPage() {
     const [filters, setFilters] = useState<DashboardFiltersData>({
         dateRange: {
-            from: startOfWeek(new Date()),
-            to: endOfWeek(new Date()),
+            from: new Date(),
+            to: new Date(),
         }
     });
 
