@@ -52,6 +52,7 @@ Route::prefix('v1')->group(function () {
 
         // Call Logs
         Route::get('/call-logs', [\App\Http\Controllers\Api\Admin\CallLogController::class, 'index']);
+        Route::get('/call-logs/escalations', [\App\Http\Controllers\Api\V1\EscalationInsightController::class, 'index']);
 
         // Contacts
         Route::post('/contacts', [\App\Http\Controllers\Api\Admin\ContactController::class, 'store']);

@@ -26,9 +26,9 @@ final class TeamQueryService implements TeamQueryServiceInterface
         return $this->listTeamsAction->execute($user);
     }
 
-    public function getPaginatedTeams(?User $user = null, int $perPage = 20): LengthAwarePaginator
+    public function getPaginatedTeams(?User $user = null, int $perPage = 20, ?string $search = null): LengthAwarePaginator
     {
-        return $this->listPaginatedTeamsAction->execute($user, $perPage);
+        return $this->listPaginatedTeamsAction->execute($user, $perPage, $search);
     }
 
     public function getTeamWithDetails(int $id): Team

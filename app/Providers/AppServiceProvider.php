@@ -115,6 +115,11 @@ class AppServiceProvider extends ServiceProvider
             \App\Contracts\Services\FcmNotificationServiceInterface::class,
             \App\Services\Devices\FcmNotificationService::class
         );
+
+        $this->app->bind(
+            \App\Contracts\Services\EscalationServiceContract::class,
+            \App\Services\EscalationService::class
+        );
     }
 
     /**

@@ -116,6 +116,42 @@ Call duration
 Agent-wise activity
 Daily / weekly trends
 Only business-classified calls are included by default.
+
+## 8.1 Reporting Enhancements & Escalation (MVP-2)
+
+**Purpose**  
+Expand the admin reporting capability to surface missed-call issues and basic customer engagement metrics. This work builds on the existing call-log database and does **not** introduce new data sources or real-time notification mechanisms.
+
+**In scope**
+
+1. **Missed-call tracking**
+   * Each call log will include a `missed` flag.
+   * A configurable threshold (X hours) defines `response_due_at`.
+   * Logs where `now > response_due_at` and `missed = true` will be marked as **escalation-eligible**.
+   * Automatically resolve missed calls if a follow-up call (incoming or outgoing) with duration > 0 occurs within a configurable window (e.g., 24 hours).
+
+2. **Escalation indicator**
+   * Escalation-eligible calls will be visually highlighted in the admin UI and returned via API.
+   * Managers see these records only for agents in their teams (existing policy rules apply).
+
+3. **Engagement analytics**
+   * Compute aggregates per contact/agent: total call count, total talk-time, average duration.
+   * Provide day/week/month views and a "top engaged customers" ranking.
+
+4. **Access surfaces**
+   * Add new dashboard widgets and/or API endpoints under `/admin/...` to fetch the above.
+   * Follow current architectural patterns (DTOs, Services, Resources).
+   * No agent-facing access in this phase.
+
+**Out of scope**
+
+* Any messaging/notification mechanism (email, SMS, push) triggered by escalations.
+* Real-time streaming or event-driven processing.
+* Integration with external CRM or contact systems.
+* Agent-side reports or dashboards.
+* Predictive modelling or machine-learning.
+* The term **automated workflow engine** refers to future capabilities beyond simple reporting and is **not part of this phase**.
+
 # CRM Integration Readiness
 
 The platform is designed to integrate with CRM systems via APIs

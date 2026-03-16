@@ -15,6 +15,7 @@ import com.calltrack.calltrackapp.db.bundles.CallRecord;
 import com.calltrack.calltrackapp.db.bundles.TokenEntity;
 import com.calltrack.calltrackapp.settings.LocalSettings;
 import com.calltrack.calltrackapp.utilities.Utility;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import java.util.List;
 
@@ -30,7 +31,7 @@ public class SaveCore {
         localSettings = new LocalSettings(context);
     }
 
-    public void ProcessCalls() {
+    public synchronized void ProcessCalls() {
         long lastProcessedId = localSettings.getLastProcessedCallId();
         if (lastProcessedId > 0) {
             String selection = CallLog.Calls._ID + " > ?";
@@ -60,6 +61,7 @@ public class SaveCore {
                 localSettings.setLastProcessedCallId(lastProcessedId);
             } catch (Exception e) {
                 Log.e("CallMonitor -> saveLatestCall", "Exception occurred", e);
+                FirebaseCrashlytics.getInstance().recordException(e);
             }
         }
     }

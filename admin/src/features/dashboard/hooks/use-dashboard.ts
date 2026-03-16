@@ -7,8 +7,14 @@ import type { DashboardMetrics } from "@shared/types";
  */
 export const dashboardKeys = {
     all: ["dashboard"] as const,
-    metrics: () => [...dashboardKeys.all, "metrics"] as const,
-    charts: () => [...dashboardKeys.all, "charts"] as const,
+    metrics: (filters?: Record<string, string>) => {
+        const key = [...dashboardKeys.all, "metrics"];
+        return filters ? [...key, filters] : key;
+    },
+    charts: (filters?: Record<string, string>) => {
+        const key = [...dashboardKeys.all, "charts"];
+        return filters ? [...key, filters] : key;
+    },
 };
 
 /**
@@ -39,12 +45,19 @@ export interface DashboardChartsData {
 /**
  * Hook to fetch dashboard metrics
  */
-export function useDashboardMetrics() {
+export function useDashboardMetrics(startDate?: string, endDate?: string) {
+    const filters = { start_date: startDate, end_date: endDate };
+    const hasFilters = !!(startDate || endDate);
     return useQuery({
-        queryKey: dashboardKeys.metrics(),
+        queryKey: hasFilters ? dashboardKeys.metrics(filters as Record<string, string>) : dashboardKeys.metrics(),
         queryFn: async () => {
+            const params = new URLSearchParams();
+            if (startDate) params.append("start_date", startDate);
+            if (endDate) params.append("end_date", endDate);
+
+            const qs = params.toString();
             const response = await api.get<{ data: DashboardMetrics }>(
-                "/api/v1/admin/dashboard"
+                `/api/v1/admin/dashboard${qs ? `?${qs}` : ""}`
             );
             return response.data;
         },
@@ -57,12 +70,19 @@ export function useDashboardMetrics() {
 /**
  * Hook to fetch dashboard chart data
  */
-export function useDashboardCharts() {
+export function useDashboardCharts(startDate?: string, endDate?: string) {
+    const filters = { start_date: startDate, end_date: endDate };
+    const hasFilters = !!(startDate || endDate);
     return useQuery({
-        queryKey: dashboardKeys.charts(),
+        queryKey: hasFilters ? dashboardKeys.charts(filters as Record<string, string>) : dashboardKeys.charts(),
         queryFn: async () => {
+            const params = new URLSearchParams();
+            if (startDate) params.append("start_date", startDate);
+            if (endDate) params.append("end_date", endDate);
+
+            const qs = params.toString();
             const response = await api.get<{ data: DashboardChartsData }>(
-                "/api/v1/admin/dashboard/charts"
+                `/api/v1/admin/dashboard/charts${qs ? `?${qs}` : ""}`
             );
             return response.data;
         },

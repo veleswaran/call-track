@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Dashboard\Actions;
 
 use App\Domain\Agents\Models\Agent;
+use App\Domain\Dashboard\DTOs\DashboardFilterDTO;
 use App\Domain\Dashboard\DTOs\DashboardMetricsDTO;
 use App\Domain\Devices\Models\Device;
 use Carbon\Carbon;
@@ -16,32 +17,41 @@ use Illuminate\Support\Facades\DB;
 final class GetDashboardMetricsAction
 {
     /**
-     * Execute the action to get aggregated dashboard metrics for current week
-     * with comparison to previous week
-     *
-     * @param  int[]|null  $allowedAgentIds  Null = full access, array = restricted agent IDs
+     * Execute the action to get aggregated dashboard metrics for a period
+     * with comparison to the previous period of the same length
      */
-    public function execute(?array $allowedAgentIds = null): DashboardMetricsDTO
+    public function execute(DashboardFilterDTO $filter): DashboardMetricsDTO
     {
         // Use Asia/Kolkata timezone to match database timestamp storage
         $tz = 'Asia/Kolkata';
-        $currentWeekStart = Carbon::now($tz)->startOfWeek();
-        $currentWeekEnd = Carbon::now($tz)->endOfWeek();
-        $previousWeekStart = Carbon::now($tz)->subWeek()->startOfWeek();
-        $previousWeekEnd = Carbon::now($tz)->subWeek()->endOfWeek();
 
-        // Get current week metrics
-        $currentStats = $this->getCallStats($currentWeekStart, $currentWeekEnd, $allowedAgentIds);
+        if ($filter->startDate && $filter->endDate) {
+            $currentStart = $filter->startDate->copy()->startOfDay();
+            $currentEnd = $filter->endDate->copy()->endOfDay();
+
+            // Comparison period is the preceding period of the same length
+            $diffInDays = $currentStart->diffInDays($currentEnd) + 1;
+            $previousStart = $currentStart->copy()->subDays($diffInDays);
+            $previousEnd = $currentEnd->copy()->subDays($diffInDays);
+        } else {
+            $currentStart = Carbon::now($tz)->startOfWeek();
+            $currentEnd = Carbon::now($tz)->endOfWeek();
+            $previousStart = Carbon::now($tz)->subWeek()->startOfWeek();
+            $previousEnd = Carbon::now($tz)->subWeek()->endOfWeek();
+        }
+
+        // Get current period metrics
+        $currentStats = $this->getCallStats($currentStart, $currentEnd, $filter->allowedAgentIds);
         $currentMissedCalls = $currentStats->missed_calls ?? 0;
 
-        // Get previous week metrics for comparison
-        $previousStats = $this->getCallStats($previousWeekStart, $previousWeekEnd, $allowedAgentIds);
+        // Get previous period metrics for comparison
+        $previousStats = $this->getCallStats($previousStart, $previousEnd, $filter->allowedAgentIds);
         $previousMissedCalls = $previousStats->missed_calls ?? 0;
 
         // Device and agent counts (scoped)
-        if ($allowedAgentIds !== null) {
-            $totalDevices = Device::whereIn('agent_id', $allowedAgentIds)->count();
-            $totalAgents = count($allowedAgentIds);
+        if ($filter->allowedAgentIds !== null) {
+            $totalDevices = Device::whereIn('agent_id', $filter->allowedAgentIds)->count();
+            $totalAgents = count($filter->allowedAgentIds);
         } else {
             $totalDevices = Device::count();
             $totalAgents = Agent::count();
@@ -50,10 +60,10 @@ final class GetDashboardMetricsAction
         // Active devices: Devices that have synced calls in the current period
         $activeDevicesQuery = DB::table('call_logs')
             ->join('devices', 'call_logs.device_id', '=', 'devices.id')
-            ->whereBetween('call_logs.timestamp', [$currentWeekStart, $currentWeekEnd]);
+            ->whereBetween('call_logs.timestamp', [$currentStart, $currentEnd]);
 
-        if ($allowedAgentIds !== null) {
-            $activeDevicesQuery->whereIn('devices.agent_id', $allowedAgentIds);
+        if ($filter->allowedAgentIds !== null) {
+            $activeDevicesQuery->whereIn('devices.agent_id', $filter->allowedAgentIds);
         }
 
         $activeDevices = $activeDevicesQuery

@@ -13,7 +13,7 @@ class ListPaginatedTeamsAction
     /**
      * List teams with pagination and RBAC scoping
      */
-    public function execute(?User $user = null, int $perPage = 20): LengthAwarePaginator
+    public function execute(?User $user = null, int $perPage = 20, ?string $search = null): LengthAwarePaginator
     {
         $query = Team::withCount([
             'members',
@@ -21,6 +21,10 @@ class ListPaginatedTeamsAction
                 $query->where('team_members.role', 'MANAGER');
             },
         ]);
+
+        if ($search) {
+            $query->where('name', 'like', "%{$search}%");
+        }
 
         // Scoping: If user is provided and NOT an admin, filter by manager role
         if ($user && ! $user->hasRole(['super-admin', 'admin'])) {

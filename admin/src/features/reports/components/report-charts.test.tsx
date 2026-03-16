@@ -35,6 +35,14 @@ describe("ReportCharts", () => {
             { name: "Incoming", value: 22 },
             { name: "Outgoing", value: 14 },
         ],
+        agent_distribution: [
+            { name: "Active", value: 5, fill: "#22c55e" },
+            { name: "Inactive", value: 2, fill: "#ef4444" },
+        ],
+        team_distribution: [
+            { name: "Support", value: 3 },
+            { name: "Sales", value: 4 },
+        ],
     }
 
     it("renders all charts with titles", () => {

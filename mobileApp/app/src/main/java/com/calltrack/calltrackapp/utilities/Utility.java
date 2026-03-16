@@ -6,6 +6,8 @@ import android.os.BatteryManager;
 import android.os.Build;
 import android.provider.Settings;
 
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
+
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -49,7 +51,7 @@ public class Utility {
             json.put("version_codename", Build.VERSION.CODENAME);
             json.put("version_incremental", Build.VERSION.INCREMENTAL);
         } catch (Exception e) {
-            e.printStackTrace();
+            FirebaseCrashlytics.getInstance().recordException(e);
         }
         return json.toString();
     }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Dashboard\Actions;
 
 use App\Domain\Dashboard\DTOs\DashboardChartsDTO;
+use App\Domain\Dashboard\DTOs\DashboardFilterDTO;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -17,16 +18,14 @@ final class GetDashboardChartsAction
 
     /**
      * Execute the action to get chart data
-     *
-     * @param  int[]|null  $allowedAgentIds  Null = full access, array = restricted agent IDs
      */
-    public function execute(?array $allowedAgentIds = null): DashboardChartsDTO
+    public function execute(DashboardFilterDTO $filter): DashboardChartsDTO
     {
         $tz = 'Asia/Kolkata';
 
         return DashboardChartsDTO::from(
-            volumeTrends: $this->getVolumeTrends($tz, $allowedAgentIds),
-            outcomeDistribution: $this->getOutcomeDistribution($tz, $allowedAgentIds),
+            volumeTrends: $this->getVolumeTrends($tz, $filter),
+            outcomeDistribution: $this->getOutcomeDistribution($tz, $filter),
         );
     }
 
@@ -35,14 +34,19 @@ final class GetDashboardChartsAction
      *
      * @return array<int, array{day: string, current: int, previous: int}>
      */
-    private function getVolumeTrends(string $tz, ?array $allowedAgentIds): array
+    private function getVolumeTrends(string $tz, DashboardFilterDTO $filter): array
     {
-        $currentWeekStart = Carbon::now($tz)->startOfWeek();
-        $previousWeekStart = Carbon::now($tz)->subWeek()->startOfWeek();
+        if ($filter->startDate && $filter->endDate) {
+            $currentStart = $filter->startDate->copy()->startOfWeek(); // We align to week for DOW grouping
+            $previousStart = $currentStart->copy()->subWeek();
+        } else {
+            $currentStart = Carbon::now($tz)->startOfWeek();
+            $previousStart = Carbon::now($tz)->subWeek()->startOfWeek();
+        }
 
         // Get current week data grouped by day of week
-        $currentWeek = $this->getWeeklyData($currentWeekStart, $allowedAgentIds);
-        $previousWeek = $this->getWeeklyData($previousWeekStart, $allowedAgentIds);
+        $currentWeek = $this->getWeeklyData($currentStart, $filter->allowedAgentIds);
+        $previousWeek = $this->getWeeklyData($previousStart, $filter->allowedAgentIds);
 
         $trends = [];
         foreach (self::DAYS as $index => $day) {
@@ -98,17 +102,22 @@ final class GetDashboardChartsAction
      *
      * @return array<int, array{name: string, value: int}>
      */
-    private function getOutcomeDistribution(string $tz, ?array $allowedAgentIds): array
+    private function getOutcomeDistribution(string $tz, DashboardFilterDTO $filter): array
     {
-        $weekStart = Carbon::now($tz)->startOfWeek();
-        $weekEnd = Carbon::now($tz)->endOfWeek();
+        if ($filter->startDate && $filter->endDate) {
+            $periodStart = $filter->startDate->copy()->startOfDay();
+            $periodEnd = $filter->endDate->copy()->endOfDay();
+        } else {
+            $periodStart = Carbon::now($tz)->startOfWeek();
+            $periodEnd = Carbon::now($tz)->endOfWeek();
+        }
 
         $query = DB::table('call_logs')
             ->join('devices', 'call_logs.device_id', '=', 'devices.id')
-            ->whereBetween('call_logs.timestamp', [$weekStart, $weekEnd]);
+            ->whereBetween('call_logs.timestamp', [$periodStart, $periodEnd]);
 
-        if ($allowedAgentIds !== null) {
-            $query->whereIn('devices.agent_id', $allowedAgentIds);
+        if ($filter->allowedAgentIds !== null) {
+            $query->whereIn('devices.agent_id', $filter->allowedAgentIds);
         }
 
         $results = $query

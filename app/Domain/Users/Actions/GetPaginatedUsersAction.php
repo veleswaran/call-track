@@ -14,9 +14,10 @@ class GetPaginatedUsersAction
         return User::query()
             ->with(['agent']) // Eager load agent to avoid N+1
             ->when($dto->search, function ($query, $search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
-                        ->orWhere('email', 'like', "%{$search}%");
+                $term = strtolower((string) $search);
+                $query->where(function ($q) use ($term) {
+                    $q->whereRaw('LOWER(name) LIKE ?', ["%{$term}%"])
+                        ->orWhereRaw('LOWER(email) LIKE ?', ["%{$term}%"]);
                 });
             })
             ->latest()
