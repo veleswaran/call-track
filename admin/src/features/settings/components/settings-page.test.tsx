@@ -40,6 +40,7 @@ describe("SettingsPage", () => {
                 heartbeat_threshold_minutes: 120,
                 fcm_stale_title: "Test Title",
                 fcm_stale_body: "Test Body",
+                escalation_sla_hours: 4,
             },
         } as unknown as UseQueryResult<SettingsData>);
 
@@ -48,6 +49,7 @@ describe("SettingsPage", () => {
         expect(screen.getByLabelText(/Stale Heartbeat Threshold/i)).toHaveValue(120);
         expect(screen.getByLabelText(/Push Notification Title/i)).toHaveValue("Test Title");
         expect(screen.getByLabelText(/Push Notification Message/i)).toHaveValue("Test Body");
+        expect(screen.getByLabelText(/Escalation SLA Deadline/i)).toHaveValue(4);
     });
 
     it("should validate and submit form correctly", async () => {
@@ -59,6 +61,7 @@ describe("SettingsPage", () => {
                 heartbeat_threshold_minutes: 60,
                 fcm_stale_title: "",
                 fcm_stale_body: "",
+                escalation_sla_hours: 2,
             },
         } as unknown as UseQueryResult<SettingsData>);
 
@@ -79,6 +82,7 @@ describe("SettingsPage", () => {
                     heartbeat_threshold_minutes: 60,
                     fcm_stale_title: "New Warning",
                     fcm_stale_body: "Wake up device",
+                    escalation_sla_hours: 2,
                 }
             });
         });
@@ -93,6 +97,7 @@ describe("SettingsPage", () => {
                 heartbeat_threshold_minutes: 60,
                 fcm_stale_title: "Valid",
                 fcm_stale_body: "Valid",
+                escalation_sla_hours: 2,
             },
         } as unknown as UseQueryResult<SettingsData>);
 

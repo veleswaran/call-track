@@ -41,7 +41,8 @@ describe("AgentPerformanceTable", () => {
             to: new Date("2024-03-31")
         },
         status: "all",
-        type: "all"
+        type: "all",
+        outcome: "all"
     }
 
     it("renders table with data correctly", () => {

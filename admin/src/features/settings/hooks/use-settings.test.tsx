@@ -47,6 +47,7 @@ describe("use-settings hooks", () => {
                 heartbeat_threshold_minutes: 60,
                 fcm_stale_title: "Title",
                 fcm_stale_body: "Body",
+                escalation_sla_hours: 2,
             };
 
             vi.mocked(settingsApi.getSettings).mockResolvedValueOnce({ data: mockData });
