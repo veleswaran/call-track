@@ -16,6 +16,7 @@ const formSchema = z.object({
     heartbeat_threshold_minutes: z.number().min(5, "Minimum threshold is 5 minutes").max(10080, "Maximum is 1 week"),
     fcm_stale_title: z.string().min(1, "Title is required").max(100, "Title is too long"),
     fcm_stale_body: z.string().min(1, "Message body is required").max(500, "Message body is too long"),
+    escalation_sla_hours: z.number().min(1, "Minimum is 1 hour").max(168, "Maximum is 1 week (168 hours)"),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -30,6 +31,7 @@ export function SettingsPage() {
             heartbeat_threshold_minutes: 60,
             fcm_stale_title: "",
             fcm_stale_body: "",
+            escalation_sla_hours: 2,
         },
     });
 
@@ -39,6 +41,7 @@ export function SettingsPage() {
                 heartbeat_threshold_minutes: Number(settings.heartbeat_threshold_minutes),
                 fcm_stale_title: settings.fcm_stale_title,
                 fcm_stale_body: settings.fcm_stale_body,
+                escalation_sla_hours: Number(settings.escalation_sla_hours ?? 2),
             });
         }
     }, [settings, form]);
@@ -49,6 +52,7 @@ export function SettingsPage() {
                 heartbeat_threshold_minutes: Number(values.heartbeat_threshold_minutes),
                 fcm_stale_title: values.fcm_stale_title,
                 fcm_stale_body: values.fcm_stale_body,
+                escalation_sla_hours: Number(values.escalation_sla_hours),
             }
         });
     }
@@ -62,18 +66,17 @@ export function SettingsPage() {
     }
 
     return (
-        <div className="max-w-2xl mx-auto py-6">
-            <Card>
-                <CardHeader>
-                    <CardTitle>System Settings</CardTitle>
-                    <CardDescription>
-                        Configure background sync checking and push notification messages.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-
+        <div className="max-w-2xl mx-auto py-6 space-y-6">
+            <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Device Monitoring</CardTitle>
+                            <CardDescription>
+                                Configure background sync checking and push notification messages.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
                             <FormField
                                 control={form.control}
                                 name="heartbeat_threshold_minutes"
@@ -81,7 +84,11 @@ export function SettingsPage() {
                                     <FormItem>
                                         <FormLabel>Stale Heartbeat Threshold (minutes)</FormLabel>
                                         <FormControl>
-                                            <Input type="number" {...field} />
+                                            <Input
+                                                type="number"
+                                                {...field}
+                                                onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
+                                            />
                                         </FormControl>
                                         <FormDescription>
                                             Devices without a heartbeat for this long will receive a &quot;wake up&quot; push notification.
@@ -122,15 +129,46 @@ export function SettingsPage() {
                                     </FormItem>
                                 )}
                             />
+                        </CardContent>
+                    </Card>
 
-                            <Button type="submit" disabled={updateSettings.isPending}>
-                                {updateSettings.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                Save Settings
-                            </Button>
-                        </form>
-                    </Form>
-                </CardContent>
-            </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Missed Call Rules</CardTitle>
+                            <CardDescription>
+                                Configure how quickly missed calls are marked as unattended.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <FormField
+                                control={form.control}
+                                name="escalation_sla_hours"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Escalation SLA Deadline (hours)</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                type="number"
+                                                {...field}
+                                                onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
+                                            />
+                                        </FormControl>
+                                        <FormDescription>
+                                            Missed calls without a follow-up within this many hours will be flagged as unattended.
+                                        </FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </CardContent>
+                    </Card>
+
+                    <Button type="submit" disabled={updateSettings.isPending}>
+                        {updateSettings.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Save Settings
+                    </Button>
+                </form>
+            </Form>
         </div>
     );
 }

@@ -100,6 +100,9 @@ final class GetDashboardMetricsAction
             'total_agents' => $totalAgents,
             'total_duration_seconds' => $currentStats->total_duration_seconds ?? 0,
             'average_call_duration_seconds' => $currentStats->average_call_duration_seconds ?? 0,
+            'pending_escalations' => (int) ($currentStats->pending_escalations ?? 0),
+            'unattended_escalations' => (int) ($currentStats->unattended_escalations ?? 0),
+            'resolved_escalations' => (int) ($currentStats->resolved_escalations ?? 0),
             'total_calls_change_percent' => $totalCallsChange,
             'missed_calls_change_percent' => $missedCallsChange,
             'average_call_duration_change_percent' => $avgDurationChange,
@@ -115,6 +118,7 @@ final class GetDashboardMetricsAction
         $query = DB::table('call_logs')
             ->join('devices', 'call_logs.device_id', '=', 'devices.id')
             ->leftJoin('call_classifications', 'call_logs.id', '=', 'call_classifications.call_log_id')
+            ->leftJoin('call_escalations', 'call_logs.id', '=', 'call_escalations.call_log_id')
             ->whereBetween('call_logs.timestamp', [$start, $end]);
 
         if ($allowedAgentIds !== null) {
@@ -130,6 +134,9 @@ final class GetDashboardMetricsAction
             DB::raw('0 as unclassified_calls'),
             DB::raw('COALESCE(SUM(call_logs.duration), 0) as total_duration_seconds'),
             DB::raw('COALESCE(AVG(call_logs.duration), 0) as average_call_duration_seconds'),
+            DB::raw("SUM(CASE WHEN call_escalations.status = 'pending' THEN 1 ELSE 0 END) as pending_escalations"),
+            DB::raw("SUM(CASE WHEN call_escalations.status = 'unattended' THEN 1 ELSE 0 END) as unattended_escalations"),
+            DB::raw("SUM(CASE WHEN call_escalations.status = 'resolved' THEN 1 ELSE 0 END) as resolved_escalations"),
         ])
             ->first() ?? (object) [];
     }

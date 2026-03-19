@@ -7,11 +7,12 @@ import {
     CardTitle,
 } from "@shared/components/ui/card";
 import { Button } from "@shared/components/ui/button";
-import { Phone, Clock, Timer, TrendingUp, TrendingDown, PhoneMissed, ArrowRight } from "lucide-react";
+import { Phone, Clock, Timer, TrendingUp, TrendingDown, ArrowRight } from "lucide-react";
 import { useDashboardMetrics, useDashboardCharts } from "@features/dashboard/hooks/use-dashboard";
 import { CallVolumeTrendsChart } from "@features/dashboard/components/CallVolumeTrendsChart";
 import { CallOutcomeChart } from "@features/dashboard/components/CallOutcomeChart";
 import { DashboardFilters, DashboardFiltersData } from "@features/dashboard/components/DashboardFilters";
+import { MissedCallMetricCard } from "@features/missed-calls/components/MissedCallMetricCard";
 import { format } from "date-fns";
 import Link from "next/link";
 import { useState } from "react";
@@ -49,6 +50,7 @@ function MetricCard({
     description,
     changePercent,
     isLoading = false,
+    footer,
 }: {
     title: string;
     value: string | number;
@@ -56,6 +58,7 @@ function MetricCard({
     description?: string;
     changePercent?: number | null;
     isLoading?: boolean;
+    footer?: React.ReactNode;
 }) {
     return (
         <Card>
@@ -76,6 +79,11 @@ function MetricCard({
                     <p className="text-xs text-zinc-500 dark:text-zinc-400">
                         {description}
                     </p>
+                )}
+                {footer && !isLoading && (
+                    <div className="mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-800">
+                        {footer}
+                    </div>
                 )}
             </CardContent>
         </Card>
@@ -145,10 +153,11 @@ export default function DashboardPage() {
                     changePercent={metrics?.total_calls_change_percent}
                     isLoading={metricsLoading}
                 />
-                <MetricCard
-                    title="Missed Calls"
-                    value={missedCalls.toLocaleString()}
-                    icon={PhoneMissed}
+                <MissedCallMetricCard
+                    total={missedCalls}
+                    pending={metrics?.pending_escalations ?? 0}
+                    unattended={metrics?.unattended_escalations ?? 0}
+                    resolved={metrics?.resolved_escalations ?? 0}
                     changePercent={metrics?.missed_calls_change_percent}
                     isLoading={metricsLoading}
                 />
