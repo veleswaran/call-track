@@ -41,9 +41,10 @@ export function ReportSummary({ metrics, isLoading }: ReportSummaryProps) {
             {metrics.map((metric, index) => {
                 // If it's a Missed Calls metric with our expected sub-metrics, use the specialized card
                 if (metric.label === "Missed Calls" && metric.sub_metrics) {
-                    const unattended = Number(metric.sub_metrics.find(s => s.label === "U" || s.label === "Unattended")?.value ?? 0);
-                    const pending = Number(metric.sub_metrics.find(s => s.label === "P" || s.label === "Pending")?.value ?? 0);
-                    const resolved = Number(metric.sub_metrics.find(s => s.label === "R" || s.label === "Resolved")?.value ?? 0);
+                    const getSubMetric = (labels: string[]) => Number(metric.sub_metrics?.find(s => labels.includes(s.label))?.value ?? 0);
+                    const unattended = getSubMetric(['U', 'Unattended']);
+                    const pending = getSubMetric(['P', 'Pending']);
+                    const resolved = getSubMetric(['R', 'Resolved']);
                     
                     return (
                         <MissedCallMetricCard

@@ -64,27 +64,19 @@ export function MissedCallMetricCard({
                                         <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1">
                                             Status Breakdown
                                         </p>
-                                        <div className="flex items-center justify-between gap-4">
-                                            <div className="flex items-center gap-2">
-                                                <span className="w-2 h-2 rounded-full bg-red-500" />
-                                                <span className="text-xs">Unattended</span>
+                                        {[
+                                            { label: "Unattended", value: unattended, color: "bg-red-500" },
+                                            { label: "Pending", value: pending, color: "bg-amber-500" },
+                                            { label: "Resolved", value: resolved, color: "bg-emerald-500" },
+                                            ].map((status) => (
+                                            <div key={status.label} className="flex items-center justify-between gap-4">
+                                                <div className="flex items-center gap-2">
+                                                    <span className={cn("w-2 h-2 rounded-full", status.color)} />
+                                                    <span className="text-xs">{status.label}</span>
+                                                </div>
+                                                <span className="text-xs font-bold">{status.value}</span>
                                             </div>
-                                            <span className="text-xs font-bold">{unattended}</span>
-                                        </div>
-                                        <div className="flex items-center justify-between gap-4">
-                                            <div className="flex items-center gap-2">
-                                                <span className="w-2 h-2 rounded-full bg-amber-500" />
-                                                <span className="text-xs">Pending</span>
-                                            </div>
-                                            <span className="text-xs font-bold">{pending}</span>
-                                        </div>
-                                        <div className="flex items-center justify-between gap-4">
-                                            <div className="flex items-center gap-2">
-                                                <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                                                <span className="text-xs">Resolved</span>
-                                            </div>
-                                            <span className="text-xs font-bold">{resolved}</span>
-                                        </div>
+                                        ))}
                                     </div>
                                 </TooltipContent>
                             </Tooltip>
