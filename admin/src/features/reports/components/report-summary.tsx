@@ -2,6 +2,7 @@ import { Phone, CheckCircle, XCircle, PhoneOff, Clock, Users, LucideIcon } from 
 
 import { Card, CardContent, CardHeader, CardTitle } from "@shared/components/ui/card"
 import { cn } from "@shared/utils"
+import { MissedCallMetricCard } from "@features/missed-calls/components/MissedCallMetricCard"
 
 interface SummaryMetric {
     label: string
@@ -9,6 +10,7 @@ interface SummaryMetric {
     percentage?: number
     icon?: string
     color?: string
+    sub_metrics?: { label: string; value: number | string; color: string }[]
 }
 
 interface ReportSummaryProps {
@@ -37,6 +39,26 @@ export function ReportSummary({ metrics, isLoading }: ReportSummaryProps) {
     return (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
             {metrics.map((metric, index) => {
+                // If it's a Missed Calls metric with our expected sub-metrics, use the specialized card
+                if (metric.label === "Missed Calls" && metric.sub_metrics) {
+                    const unattended = Number(metric.sub_metrics.find(s => s.label === "U" || s.label === "Unattended")?.value ?? 0);
+                    const pending = Number(metric.sub_metrics.find(s => s.label === "P" || s.label === "Pending")?.value ?? 0);
+                    const resolved = Number(metric.sub_metrics.find(s => s.label === "R" || s.label === "Resolved")?.value ?? 0);
+                    
+                    return (
+                        <MissedCallMetricCard
+                            key={index}
+                            title={metric.label}
+                            total={Number(metric.value.toString().replace(/,/g, ''))}
+                            pending={pending}
+                            unattended={unattended}
+                            resolved={resolved}
+                            changePercent={metric.percentage}
+                            isLoading={isLoading}
+                        />
+                    );
+                }
+
                 const Icon = iconMap[metric.icon || 'phone'] || Phone
                 return (
                     <Card key={index}>
@@ -57,6 +79,18 @@ export function ReportSummary({ metrics, isLoading }: ReportSummaryProps) {
                                     </div>
                                 )}
                             </div>
+                            {metric.sub_metrics && metric.sub_metrics.length > 0 && (
+                                <div className="mt-4 pt-3 border-t border-zinc-100 dark:border-zinc-800">
+                                    <div className="flex items-center gap-3 text-[10px] font-medium uppercase tracking-wider text-zinc-500">
+                                        {metric.sub_metrics.map((sub, i) => (
+                                            <div key={i} className="flex items-center gap-1.5">
+                                                <span className={cn("w-1.5 h-1.5 rounded-full", sub.color)} />
+                                                <span>{sub.label}: {sub.value}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                 )
