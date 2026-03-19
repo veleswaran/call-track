@@ -40,7 +40,12 @@ final class GetReportMetricsAction
             // Assuming average duration excludes missed/no-answer (duration=0) or includes all?
             // Usually "Average Handle Time" includes talk time.
             DB::raw('AVG(call_logs.duration) as avg_duration_seconds'),
-        ])->toBase()->first();
+            DB::raw("SUM(CASE WHEN call_escalations.status = 'pending' THEN 1 ELSE 0 END) as pending_escalations"),
+            DB::raw("SUM(CASE WHEN call_escalations.status = 'unattended' THEN 1 ELSE 0 END) as unattended_escalations"),
+            DB::raw("SUM(CASE WHEN call_escalations.status = 'resolved' THEN 1 ELSE 0 END) as resolved_escalations"),
+        ])
+            ->leftJoin('call_escalations', 'call_logs.id', '=', 'call_escalations.call_log_id')
+            ->toBase()->first();
 
         $total = $stats->total_calls ?? 0;
 
@@ -86,6 +91,11 @@ final class GetReportMetricsAction
                 'percentage' => $total > 0 ? round(($stats->missed_calls / $total) * 100, 1) : 0,
                 'icon' => 'x-circle',
                 'color' => 'text-red-500',
+                'sub_metrics' => [
+                    ['label' => 'U', 'value' => (int) ($stats->unattended_escalations ?? 0), 'color' => 'bg-red-500'],
+                    ['label' => 'P', 'value' => (int) ($stats->pending_escalations ?? 0), 'color' => 'bg-amber-500'],
+                    ['label' => 'R', 'value' => (int) ($stats->resolved_escalations ?? 0), 'color' => 'bg-emerald-500'],
+                ],
             ],
             [
                 'label' => 'No Answer',

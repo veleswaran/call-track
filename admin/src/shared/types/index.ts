@@ -178,6 +178,9 @@ export interface DashboardMetrics {
     missed_calls_change_percent: number | null;
     average_call_duration_change_percent: number | null;
     total_duration_change_percent: number | null;
+    pending_escalations: number | null;
+    unattended_escalations: number | null;
+    resolved_escalations: number | null;
 }
 
 export interface TwoFactorSetupResponse {
