@@ -130,7 +130,7 @@ final class GetDashboardMetricsAction
             DB::raw("SUM(CASE WHEN call_classifications.type = 'BUSINESS' OR call_classifications.type IS NULL THEN 1 ELSE 0 END) as business_calls"),
             DB::raw("SUM(CASE WHEN call_classifications.type = 'PERSONAL' THEN 1 ELSE 0 END) as personal_calls"),
             DB::raw("SUM(CASE WHEN call_classifications.type = 'IGNORED' THEN 1 ELSE 0 END) as ignored_calls"),
-            DB::raw("SUM(CASE WHEN call_logs.direction = 'MISSED' THEN 1 ELSE 0 END) as missed_calls"),
+            DB::raw("SUM(CASE WHEN call_escalations.id IS NOT NULL THEN 1 ELSE 0 END) as missed_calls"),
             DB::raw('0 as unclassified_calls'),
             DB::raw('COALESCE(SUM(call_logs.duration), 0) as total_duration_seconds'),
             DB::raw('COALESCE(AVG(call_logs.duration), 0) as average_call_duration_seconds'),
