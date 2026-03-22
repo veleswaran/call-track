@@ -50,7 +50,6 @@ function MetricCard({
     description,
     changePercent,
     isLoading = false,
-    footer,
 }: {
     title: string;
     value: string | number;
@@ -58,7 +57,6 @@ function MetricCard({
     description?: string;
     changePercent?: number | null;
     isLoading?: boolean;
-    footer?: React.ReactNode;
 }) {
     return (
         <Card>
@@ -79,11 +77,6 @@ function MetricCard({
                     <p className="text-xs text-zinc-500 dark:text-zinc-400">
                         {description}
                     </p>
-                )}
-                {footer && !isLoading && (
-                    <div className="mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-800">
-                        {footer}
-                    </div>
                 )}
             </CardContent>
         </Card>
@@ -155,6 +148,7 @@ export default function DashboardPage() {
                 />
                 <MissedCallMetricCard
                     total={missedCalls}
+                    grandTotal={metrics?.total_missed_calls ?? 0}
                     pending={metrics?.pending_escalations ?? 0}
                     unattended={metrics?.unattended_escalations ?? 0}
                     resolved={metrics?.resolved_escalations ?? 0}

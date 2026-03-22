@@ -24,7 +24,10 @@ export function MissedCallSummaryWidgets({ summary, isLoading }: MissedCallSumma
                     {isLoading ? (
                         <div className="h-8 w-24 animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
                     ) : (
-                        <div className="text-2xl font-bold">{summary?.total_missed ?? 0}</div>
+                        <div className="flex items-baseline gap-2 leading-none">
+                            <span className="text-2xl font-bold">{summary?.active_missed ?? 0}</span>
+                            <span className="text-sm text-muted-foreground">/ {summary?.total_missed ?? 0}</span>
+                        </div>
                     )}
                 </CardContent>
             </Card>

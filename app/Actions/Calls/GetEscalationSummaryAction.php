@@ -31,9 +31,11 @@ class GetEscalationSummaryAction
         $resolved = $statusCounts->get('resolved', 0);
 
         $total = $pending + $unattended + $resolved;
+        $active = $pending + $unattended;
 
         return [
             'total_missed' => $total,
+            'active_missed' => $active,
             'pending' => $pending,
             'unattended' => $unattended,
             'resolved' => $resolved,

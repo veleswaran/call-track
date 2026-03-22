@@ -45,12 +45,14 @@ export function ReportSummary({ metrics, isLoading }: ReportSummaryProps) {
                     const unattended = getSubMetric(['U', 'Unattended']);
                     const pending = getSubMetric(['P', 'Pending']);
                     const resolved = getSubMetric(['R', 'Resolved']);
-                    
+                    const grandTotal = getSubMetric(['T', 'Total']);
+
                     return (
                         <MissedCallMetricCard
                             key={index}
                             title={metric.label}
                             total={Number(metric.value.toString().replace(/,/g, ''))}
+                            grandTotal={grandTotal}
                             pending={pending}
                             unattended={unattended}
                             resolved={resolved}

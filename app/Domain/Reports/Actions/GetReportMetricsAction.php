@@ -25,17 +25,17 @@ final class GetReportMetricsAction
 
         $stats = $baseQuery->select([
             DB::raw('COUNT(*) as total_calls'),
-            DB::raw("SUM(CASE 
-                WHEN call_logs.direction IN ('MISSED', 'REJECTED', 'BLOCKED') OR (call_logs.direction = 'INCOMING' AND call_logs.duration = 0) THEN 1 
-                ELSE 0 
+            DB::raw("SUM(CASE
+                WHEN call_logs.direction IN ('MISSED', 'REJECTED', 'BLOCKED') OR (call_logs.direction = 'INCOMING' AND call_logs.duration = 0) THEN 1
+                ELSE 0
             END) as missed_calls"),
-            DB::raw("SUM(CASE 
-                WHEN call_logs.direction = 'OUTGOING' AND call_logs.duration = 0 THEN 1 
-                ELSE 0 
+            DB::raw("SUM(CASE
+                WHEN call_logs.direction = 'OUTGOING' AND call_logs.duration = 0 THEN 1
+                ELSE 0
             END) as no_answer_calls"),
-            DB::raw('SUM(CASE 
-                WHEN call_logs.duration > 0 THEN 1 
-                ELSE 0 
+            DB::raw('SUM(CASE
+                WHEN call_logs.duration > 0 THEN 1
+                ELSE 0
             END) as connected_calls'),
             // Assuming average duration excludes missed/no-answer (duration=0) or includes all?
             // Usually "Average Handle Time" includes talk time.
@@ -43,6 +43,7 @@ final class GetReportMetricsAction
             DB::raw("SUM(CASE WHEN call_escalations.status = 'pending' THEN 1 ELSE 0 END) as pending_escalations"),
             DB::raw("SUM(CASE WHEN call_escalations.status = 'unattended' THEN 1 ELSE 0 END) as unattended_escalations"),
             DB::raw("SUM(CASE WHEN call_escalations.status = 'resolved' THEN 1 ELSE 0 END) as resolved_escalations"),
+            DB::raw("SUM(CASE WHEN call_escalations.id IS NOT NULL THEN 1 ELSE 0 END) as total_missed_calls"),
         ])
             ->leftJoin('call_escalations', 'call_logs.id', '=', 'call_escalations.call_log_id')
             ->toBase()->first();
@@ -95,6 +96,7 @@ final class GetReportMetricsAction
                     ['label' => 'U', 'value' => (int) ($stats->unattended_escalations ?? 0), 'color' => 'bg-red-500'],
                     ['label' => 'P', 'value' => (int) ($stats->pending_escalations ?? 0), 'color' => 'bg-amber-500'],
                     ['label' => 'R', 'value' => (int) ($stats->resolved_escalations ?? 0), 'color' => 'bg-emerald-500'],
+                    ['label' => 'T', 'value' => (int) ($stats->total_missed_calls ?? 0), 'color' => 'bg-zinc-500'],
                 ],
             ],
             [
