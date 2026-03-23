@@ -49,6 +49,4 @@
         android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"
         tools:ignore="ImportantPermission" />
 
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
-
 </manifest>

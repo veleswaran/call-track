@@ -272,7 +272,7 @@ public class MainActivity extends AppCompatActivity {
                         AppDB db = AppDB.getInstance(MainActivity.this);
                         db.tokenDao().deleteAll();
                         db.tokenDao().insert(new TokenEntity(token, selectedSlots, code));
-                        new LocalSettings(MainActivity.this).resetToCurrentCallId();
+                        new LocalSettings(MainActivity.this).setToCurrentCallId();
                     });
                     runOnUiThread(() -> {
                         Toast.makeText(MainActivity.this, "Registration successful", Toast.LENGTH_SHORT).show();
