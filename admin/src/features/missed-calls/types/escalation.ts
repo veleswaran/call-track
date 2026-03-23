@@ -15,6 +15,7 @@ export interface CallEscalation {
 
 export interface EscalationSummary {
     total_missed: number;
+    active_missed: number;
     pending: number;
     unattended: number;
     resolved: number;
