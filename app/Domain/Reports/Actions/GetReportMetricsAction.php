@@ -25,10 +25,7 @@ final class GetReportMetricsAction
 
         $stats = $baseQuery->select([
             DB::raw('COUNT(*) as total_calls'),
-            DB::raw("SUM(CASE
-                WHEN call_logs.direction IN ('MISSED', 'REJECTED', 'BLOCKED') OR (call_logs.direction = 'INCOMING' AND call_logs.duration = 0) THEN 1
-                ELSE 0
-            END) as missed_calls"),
+            DB::raw("COUNT(CASE WHEN call_escalations.status IN ('pending', 'unattended') THEN 1 END) as missed_calls"),
             DB::raw("SUM(CASE
                 WHEN call_logs.direction = 'OUTGOING' AND call_logs.duration = 0 THEN 1
                 ELSE 0
@@ -37,13 +34,11 @@ final class GetReportMetricsAction
                 WHEN call_logs.duration > 0 THEN 1
                 ELSE 0
             END) as connected_calls'),
-            // Assuming average duration excludes missed/no-answer (duration=0) or includes all?
-            // Usually "Average Handle Time" includes talk time.
             DB::raw('AVG(call_logs.duration) as avg_duration_seconds'),
             DB::raw("SUM(CASE WHEN call_escalations.status = 'pending' THEN 1 ELSE 0 END) as pending_escalations"),
             DB::raw("SUM(CASE WHEN call_escalations.status = 'unattended' THEN 1 ELSE 0 END) as unattended_escalations"),
             DB::raw("SUM(CASE WHEN call_escalations.status = 'resolved' THEN 1 ELSE 0 END) as resolved_escalations"),
-            DB::raw('SUM(CASE WHEN call_escalations.id IS NOT NULL THEN 1 ELSE 0 END) as total_missed_calls'),
+            DB::raw("SUM(CASE WHEN call_logs.direction IN ('MISSED', 'REJECTED', 'BLOCKED') THEN 1 ELSE 0 END) as total_missed_calls"),
         ])
             ->leftJoin('call_escalations', 'call_logs.id', '=', 'call_escalations.call_log_id')
             ->toBase()->first();
