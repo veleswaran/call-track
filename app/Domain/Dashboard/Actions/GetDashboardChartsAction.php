@@ -108,13 +108,12 @@ final class GetDashboardChartsAction
             $periodStart = $filter->startDate->copy()->startOfDay();
             $periodEnd = $filter->endDate->copy()->endOfDay();
         } else {
-            $periodStart = Carbon::now($tz)->startOfWeek();
-            $periodEnd = Carbon::now($tz)->endOfWeek();
+            $periodStart = Carbon::now($tz)->startOfWeek(Carbon::SUNDAY);
+            $periodEnd = $periodStart->copy()->addDays(6)->endOfDay();
         }
 
         $query = DB::table('call_logs')
             ->join('devices', 'call_logs.device_id', '=', 'devices.id')
-            ->leftJoin('call_escalations', 'call_logs.id', '=', 'call_escalations.call_log_id')
             ->whereBetween('call_logs.timestamp', [$periodStart, $periodEnd]);
 
         if ($filter->allowedAgentIds !== null) {
@@ -124,14 +123,14 @@ final class GetDashboardChartsAction
         $results = $query
             ->select([
                 DB::raw("CASE
-                    WHEN call_escalations.id IS NOT NULL THEN 'Missed'
+                    WHEN EXISTS (SELECT 1 FROM call_escalations WHERE call_escalations.call_log_id = call_logs.id) THEN 'Missed'
                     WHEN call_logs.direction = 'OUTGOING' AND call_logs.duration = 0 THEN 'No Answer'
                     ELSE 'Connected'
                 END as outcome"),
                 DB::raw('COUNT(*) as count'),
             ])
             ->groupBy(DB::raw("CASE
-                    WHEN call_escalations.id IS NOT NULL THEN 'Missed'
+                    WHEN EXISTS (SELECT 1 FROM call_escalations WHERE call_escalations.call_log_id = call_logs.id) THEN 'Missed'
                     WHEN call_logs.direction = 'OUTGOING' AND call_logs.duration = 0 THEN 'No Answer'
                     ELSE 'Connected'
                 END"))

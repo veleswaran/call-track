@@ -118,8 +118,6 @@ final class GetDashboardMetricsAction
     {
         $query = DB::table('call_logs')
             ->join('devices', 'call_logs.device_id', '=', 'devices.id')
-            ->leftJoin('call_classifications', 'call_logs.id', '=', 'call_classifications.call_log_id')
-            ->leftJoin('call_escalations', 'call_logs.id', '=', 'call_escalations.call_log_id')
             ->whereBetween('call_logs.timestamp', [$start, $end]);
 
         if ($allowedAgentIds !== null) {
@@ -128,17 +126,17 @@ final class GetDashboardMetricsAction
 
         return $query->select([
             DB::raw('COUNT(call_logs.id) as total_calls'),
-            DB::raw("SUM(CASE WHEN call_classifications.type = 'BUSINESS' OR call_classifications.type IS NULL THEN 1 ELSE 0 END) as business_calls"),
-            DB::raw("SUM(CASE WHEN call_classifications.type = 'PERSONAL' THEN 1 ELSE 0 END) as personal_calls"),
-            DB::raw("SUM(CASE WHEN call_classifications.type = 'IGNORED' THEN 1 ELSE 0 END) as ignored_calls"),
-            DB::raw("SUM(CASE WHEN call_escalations.status IN ('pending', 'unattended') THEN 1 ELSE 0 END) as missed_calls"),
-            DB::raw("SUM(CASE WHEN call_escalations.id IS NOT NULL THEN 1 ELSE 0 END) as total_missed_calls"),
+            DB::raw("SUM(CASE WHEN EXISTS (SELECT 1 FROM call_classifications cc WHERE cc.call_log_id = call_logs.id AND cc.type = 'BUSINESS') OR NOT EXISTS (SELECT 1 FROM call_classifications cc WHERE cc.call_log_id = call_logs.id) THEN 1 ELSE 0 END) as business_calls"),
+            DB::raw("SUM(CASE WHEN EXISTS (SELECT 1 FROM call_classifications cc WHERE cc.call_log_id = call_logs.id AND cc.type = 'PERSONAL') THEN 1 ELSE 0 END) as personal_calls"),
+            DB::raw("SUM(CASE WHEN EXISTS (SELECT 1 FROM call_classifications cc WHERE cc.call_log_id = call_logs.id AND cc.type = 'IGNORED') THEN 1 ELSE 0 END) as ignored_calls"),
+            DB::raw("SUM(CASE WHEN EXISTS (SELECT 1 FROM call_escalations ce WHERE ce.call_log_id = call_logs.id AND ce.status IN ('pending', 'unattended')) THEN 1 ELSE 0 END) as missed_calls"),
+            DB::raw("SUM(CASE WHEN EXISTS (SELECT 1 FROM call_escalations ce WHERE ce.call_log_id = call_logs.id) THEN 1 ELSE 0 END) as total_missed_calls"),
             DB::raw('0 as unclassified_calls'),
             DB::raw('COALESCE(SUM(call_logs.duration), 0) as total_duration_seconds'),
             DB::raw('COALESCE(AVG(call_logs.duration), 0) as average_call_duration_seconds'),
-            DB::raw("SUM(CASE WHEN call_escalations.status = 'pending' THEN 1 ELSE 0 END) as pending_escalations"),
-            DB::raw("SUM(CASE WHEN call_escalations.status = 'unattended' THEN 1 ELSE 0 END) as unattended_escalations"),
-            DB::raw("SUM(CASE WHEN call_escalations.status = 'resolved' THEN 1 ELSE 0 END) as resolved_escalations"),
+            DB::raw("SUM(CASE WHEN EXISTS (SELECT 1 FROM call_escalations ce WHERE ce.call_log_id = call_logs.id AND ce.status = 'pending') THEN 1 ELSE 0 END) as pending_escalations"),
+            DB::raw("SUM(CASE WHEN EXISTS (SELECT 1 FROM call_escalations ce WHERE ce.call_log_id = call_logs.id AND ce.status = 'unattended') THEN 1 ELSE 0 END) as unattended_escalations"),
+            DB::raw("SUM(CASE WHEN EXISTS (SELECT 1 FROM call_escalations ce WHERE ce.call_log_id = call_logs.id AND ce.status = 'resolved') THEN 1 ELSE 0 END) as resolved_escalations"),
         ])
             ->first() ?? (object) [];
     }

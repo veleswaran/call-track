@@ -52,7 +52,7 @@ describe("MissedCallMetricCard", () => {
             />
         )
 
-        expect(screen.getByText("+15%")).toBeInTheDocument()
-        expect(screen.getByText("vs last period")).toBeInTheDocument()
+        expect(screen.getByText(/↑ 15%/)).toBeInTheDocument()
+        expect(screen.getByText("vs last week")).toBeInTheDocument()
     })
 })

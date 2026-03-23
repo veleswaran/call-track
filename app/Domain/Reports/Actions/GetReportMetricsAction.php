@@ -43,7 +43,7 @@ final class GetReportMetricsAction
             DB::raw("SUM(CASE WHEN call_escalations.status = 'pending' THEN 1 ELSE 0 END) as pending_escalations"),
             DB::raw("SUM(CASE WHEN call_escalations.status = 'unattended' THEN 1 ELSE 0 END) as unattended_escalations"),
             DB::raw("SUM(CASE WHEN call_escalations.status = 'resolved' THEN 1 ELSE 0 END) as resolved_escalations"),
-            DB::raw("SUM(CASE WHEN call_escalations.id IS NOT NULL THEN 1 ELSE 0 END) as total_missed_calls"),
+            DB::raw('SUM(CASE WHEN call_escalations.id IS NOT NULL THEN 1 ELSE 0 END) as total_missed_calls'),
         ])
             ->leftJoin('call_escalations', 'call_logs.id', '=', 'call_escalations.call_log_id')
             ->toBase()->first();
