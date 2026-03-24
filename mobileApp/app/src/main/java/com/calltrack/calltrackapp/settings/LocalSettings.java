@@ -27,19 +27,22 @@ public class LocalSettings {
         prefs.edit().putLong(LAST_PROCESSED_KEY, value).apply();
     }
 
+    public void setToCurrentCallId() {
+        String[] projection = {CallLog.Calls._ID};
+        try (Cursor cursor = context.getContentResolver().query(
+            CallLog.Calls.CONTENT_URI, projection, null, null, CallLog.Calls._ID + " DESC")) {
+            if (cursor != null && cursor.moveToFirst()) {
+                long lastProcessedId = cursor.getLong(cursor.getColumnIndexOrThrow(CallLog.Calls._ID));
+                setLastProcessedCallId(lastProcessedId);
+            }
+        }
+    }
+
     public void resetToCurrentCallId() {
         long lastProcessedId = getLastProcessedCallId();
         if (lastProcessedId <= 0) {
-            String[] projection = {CallLog.Calls._ID};
-            try (Cursor cursor = context.getContentResolver().query(
-                CallLog.Calls.CONTENT_URI, projection, null, null, CallLog.Calls._ID + " DESC")) {
-                if (cursor != null && cursor.moveToFirst()) {
-                    lastProcessedId = cursor.getLong(cursor.getColumnIndexOrThrow(CallLog.Calls._ID));
-                    setLastProcessedCallId(lastProcessedId);
-                }
-            }
+            setToCurrentCallId();
         }
-
     }
 
 

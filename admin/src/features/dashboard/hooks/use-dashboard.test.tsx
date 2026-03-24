@@ -36,6 +36,7 @@ describe("useDashboardMetrics", () => {
             ignored_calls: 97,
             unclassified_calls: 50,
             missed_calls: 15,
+            total_missed_calls: 20,
             total_devices: 10,
             active_devices: 8,
             total_agents: 5,
@@ -46,6 +47,9 @@ describe("useDashboardMetrics", () => {
             missed_calls_change_percent: -5.0,
             average_call_duration_change_percent: -2.1,
             total_duration_change_percent: 10.0,
+            pending_escalations:4,
+            unattended_escalations:2,
+            resolved_escalations:1
         };
 
         vi.mocked(api.get).mockResolvedValueOnce({ data: mockMetrics });

@@ -8,6 +8,6 @@ final class UpdateFcmTokenDTO
 {
     public function __construct(
         public readonly int $deviceId,
-        public readonly string $fcmToken,
+        public readonly ?string $fcmToken,
     ) {}
 }

@@ -53,10 +53,16 @@ export function DashboardFilters({ onFilterChange }: DashboardFiltersProps) {
                 break
             case "this_week":
                 newRange = { 
-                    from: startOfWeek(today, { weekStartsOn: 1 }), 
-                    to: endOfWeek(today, { weekStartsOn: 1 }) 
+                    from: startOfWeek(today, { weekStartsOn: 0 }), 
+                    to: endOfWeek(today, { weekStartsOn: 0 }) 
                 }
                 break
+            case "this_month":
+                newRange = {
+                    from: new Date(today.getFullYear(), today.getMonth(), 1),
+                    to: new Date(today.getFullYear(), today.getMonth() + 1, 0),
+                }
+                break 
             case "custom":
                 return
             default:
@@ -93,6 +99,7 @@ export function DashboardFilters({ onFilterChange }: DashboardFiltersProps) {
                     <SelectItem value="today">Today</SelectItem>
                     <SelectItem value="yesterday">Yesterday</SelectItem>
                     <SelectItem value="this_week">This Week</SelectItem>
+                    <SelectItem value="this_month">This Month</SelectItem>
                     <SelectItem value="custom">Custom Range</SelectItem>
                 </SelectContent>
             </Select>

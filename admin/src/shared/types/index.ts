@@ -167,6 +167,7 @@ export interface DashboardMetrics {
     ignored_calls: number;
     unclassified_calls: number;
     missed_calls: number;
+    total_missed_calls: number;
     total_duration_seconds: number;
     average_call_duration_seconds: number;
     total_devices: number;
