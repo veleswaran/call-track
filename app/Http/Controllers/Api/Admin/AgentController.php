@@ -34,9 +34,9 @@ class AgentController extends Controller
         $perPage = (int) $request->input('per_page', 20);
         $teamId = $request->has('team_id') ? (int) $request->input('team_id') : null;
         $sortBy = $request->input('sort_by', 'latest');
-        $agentStatusId = $request->has('agent_status_id') ? (int) $request->input('agent_status_id') : null;
+        $status = $request->input('status');
 
-        $paginator = $this->service->getAgentsList($allowedAgentIds, $perPage, $search, $teamId, $sortBy, $agentStatusId);
+        $paginator = $this->service->getAgentsList($allowedAgentIds, $perPage, $search, $teamId, $sortBy, $status);
 
         return AgentResource::collection($paginator);
     }

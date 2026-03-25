@@ -75,17 +75,12 @@ class UserManagementService implements UserManagementServiceInterface
             ));
 
             if ($dto->isAgent) {
-                $statusId = $dto->agentStatusId;
-
-                if (! $statusId) {
-                    $statusId = \App\Domain\Agents\Models\AgentStatus::where('name', 'Active')->value('id')
-                        ?? \App\Domain\Agents\Models\AgentStatus::value('id');
-                }
+                $status = $dto->status ?? 'active';
 
                 $agent = $this->agentService->createAgent(new AgentData(
                     name: $dto->name,
                     employeeCode: $dto->employeeCode,
-                    agentStatusId: $statusId,
+                    status: $status,
                 ));
 
                 $this->linkUserToAgent($user, $agent);

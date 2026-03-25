@@ -9,7 +9,7 @@ class AgentData
     public function __construct(
         public readonly string $name,
         public readonly ?string $employeeCode = null,
-        public readonly ?int $agentStatusId = null,
+        public readonly ?string $status = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -17,7 +17,7 @@ class AgentData
         return new self(
             name: (string) $data['name'],
             employeeCode: $data['employee_code'] ?? null,
-            agentStatusId: isset($data['agent_status_id']) ? (int) $data['agent_status_id'] : null,
+            status: $data['status'] ?? null,
         );
     }
 }

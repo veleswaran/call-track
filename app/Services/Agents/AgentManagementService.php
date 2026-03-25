@@ -44,12 +44,12 @@ class AgentManagementService implements AgentManagementServiceInterface
         return $this->unassignAction->execute($device);
     }
 
-    public function getAgentsList(?array $allowedAgentIds = null, int $perPage = 20, ?string $search = null, ?int $teamId = null, string $sortBy = 'latest', ?int $agentStatusId = null): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    public function getAgentsList(?array $allowedAgentIds = null, int $perPage = 20, ?string $search = null, ?int $teamId = null, string $sortBy = 'latest', ?string $status = null): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
-        return Agent::with(['agentStatus'])
+        return Agent::query()
             ->withCount('devices')
-            ->when($agentStatusId, function ($query) use ($agentStatusId) {
-                $query->where('agent_status_id', $agentStatusId);
+            ->when($status, function ($query) use ($status) {
+                $query->where('status', $status);
             })
             ->when($allowedAgentIds !== null, function ($query) use ($allowedAgentIds) {
                 $query->whereIn('id', $allowedAgentIds);

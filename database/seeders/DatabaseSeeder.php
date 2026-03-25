@@ -18,8 +18,6 @@ class DatabaseSeeder extends Seeder
             SystemSettingsSeeder::class,
             RolePermissionSeeder::class,
             SuperAdminSeeder::class,
-            DeviceStatusSeeder::class,
-            AgentStatusSeeder::class,
             // DemoDataSeeder::class,
             // TeamSeeder::class,
         ]);

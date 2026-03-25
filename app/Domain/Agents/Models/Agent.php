@@ -13,10 +13,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $id
  * @property string $name
  * @property string|null $employee_code
- * @property int|null $agent_status_id
+ * @property string $status
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
- * @property-read \App\Domain\Agents\Models\AgentStatus|null $agentStatus
  */
 class Agent extends Model
 {
@@ -25,14 +24,9 @@ class Agent extends Model
     protected $fillable = [
         'name',
         'employee_code',
-        'agent_status_id',
+        'status',
         'user_id',
     ];
-
-    public function agentStatus(): \Illuminate\Database\Eloquent\Relations\BelongsTo
-    {
-        return $this->belongsTo(AgentStatus::class);
-    }
 
     protected static function newFactory()
     {

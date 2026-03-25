@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useAgents } from "@features/agents/hooks/use-agents";
-import { useAgentStatuses } from "@features/agents/hooks/use-agent-statuses";
 import { useAuth } from "@features/auth/hooks/use-auth";
 import { useSettingsQuery } from "@features/settings/hooks/use-settings";
 import { Input } from "@shared/components/ui/input";
@@ -69,8 +68,10 @@ export default function AgentsPage() {
     const [assigningAgent, setAssigningAgent] = useState<Agent | null>(null);
     const [linkingAgent, setLinkingAgent] = useState<Agent | null>(null);
 
-    const { data: statusesData } = useAgentStatuses();
-    const availableStatuses = statusesData?.data ?? [];
+    const availableStatuses = [
+        { id: 'active', name: 'Active' },
+        { id: 'inactive', name: 'Inactive' }
+    ];
     
     const isAdmin = user?.roles.some((role: string) => ['admin', 'super-admin'].includes(role));
     const agents = data?.data ?? [];
@@ -116,7 +117,7 @@ export default function AgentsPage() {
                             <SelectContent>
                                 <SelectItem value="all">All Statuses</SelectItem>
                                 {availableStatuses.map((s) => (
-                                    <SelectItem key={s.id} value={s.id.toString()}>{s.name}</SelectItem>
+                                    <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
@@ -175,14 +176,13 @@ export default function AgentsPage() {
                                     <TableCell>
                                         {agent.status ? (
                                             <span
-                                                className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
-                                                style={{
-                                                    backgroundColor: `${agent.status.color}20`,
-                                                    color: agent.status.color,
-                                                    border: `1px solid ${agent.status.color}40`,
-                                                }}
+                                                className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium border ${
+                                                    agent.status === 'active' 
+                                                        ? 'bg-emerald-500/20 text-emerald-500 border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-400' 
+                                                        : 'bg-zinc-500/20 text-zinc-500 border-zinc-500/40 dark:bg-zinc-500/10 dark:text-zinc-400'
+                                                }`}
                                             >
-                                                {agent.status.name}
+                                                {agent.status.charAt(0).toUpperCase() + agent.status.slice(1)}
                                             </span>
                                         ) : (
                                             <span className="text-gray-500">-</span>

@@ -21,7 +21,6 @@ import {
 } from "@shared/components/ui/select";
 import { Plus } from "lucide-react";
 import { useCreateAgent } from "../hooks/use-agents";
-import { useAgentStatuses } from "../hooks/use-agent-statuses";
 import { useEffect } from "react";
 
 interface AddAgentDialogProps {
@@ -35,21 +34,13 @@ export function AddAgentDialog({ trigger }: AddAgentDialogProps) {
     const [open, setOpen] = useState(false);
     const [name, setName] = useState("");
     const [employeeCode, setEmployeeCode] = useState("");
-    const [statusId, setStatusId] = useState<string>("");
+    const [status, setStatus] = useState<string>("active");
 
     const createAgent = useCreateAgent();
-    const { data: statusesData } = useAgentStatuses();
-    const statuses = statusesData?.data ?? [];
-
-    const [prevStatusesLength, setPrevStatusesLength] = useState(0);
-
-    if (statuses.length > 0 && statuses.length !== prevStatusesLength) {
-        setPrevStatusesLength(statuses.length);
-        if (!statusId) {
-            const defaultStatus = statuses.find(s => s.is_default) || statuses[0];
-            setStatusId(defaultStatus.id.toString());
-        }
-    }
+    const statuses = [
+        { id: 'active', name: 'Active', color: '#10b981' },
+        { id: 'inactive', name: 'Inactive', color: '#6b7280' }
+    ];
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -60,13 +51,13 @@ export function AddAgentDialog({ trigger }: AddAgentDialogProps) {
             await createAgent.mutateAsync({
                 name: name.trim(),
                 employee_code: employeeCode.trim() || undefined,
-                agent_status_id: statusId ? parseInt(statusId) : undefined,
+                status: status || undefined,
             });
 
             // Reset form and close
             setName("");
             setEmployeeCode("");
-            setStatusId("");
+            setStatus("active");
             setOpen(false);
         } catch {
             // Error handled by mutation
@@ -112,13 +103,13 @@ export function AddAgentDialog({ trigger }: AddAgentDialogProps) {
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="status">Status</Label>
-                        <Select value={statusId} onValueChange={setStatusId}>
+                        <Select value={status} onValueChange={setStatus}>
                             <SelectTrigger>
                                 <SelectValue placeholder="Select status" />
                             </SelectTrigger>
                             <SelectContent>
                                 {statuses.map((s) => (
-                                    <SelectItem key={s.id} value={s.id.toString()}>
+                                    <SelectItem key={s.id} value={s.id}>
                                         <div className="flex items-center gap-2">
                                             <div className="w-2 h-2 rounded-full" style={{ backgroundColor: s.color }} />
                                             {s.name}

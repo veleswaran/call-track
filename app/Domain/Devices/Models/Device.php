@@ -22,8 +22,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property bool|null $active_tokens_exists
  * @property array|null $tracked_sim_slots
  * @property \Illuminate\Support\Carbon|null $last_heartbeat_at
- * @property int|null $device_status_id
- * @property-read \App\Domain\Devices\Models\DeviceStatus|null $deviceStatus
+ * @property string $status
  */
 class Device extends Model
 {
@@ -52,7 +51,7 @@ class Device extends Model
         'last_heartbeat_at',
         'fcm_token',
         'metadata',
-        'device_status_id',
+        'status',
     ];
 
     /**
@@ -72,11 +71,6 @@ class Device extends Model
     public function agent(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(\App\Domain\Agents\Models\Agent::class);
-    }
-
-    public function deviceStatus(): \Illuminate\Database\Eloquent\Relations\BelongsTo
-    {
-        return $this->belongsTo(DeviceStatus::class);
     }
 
     public function tokens(): HasMany

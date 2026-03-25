@@ -23,7 +23,7 @@ class AgentResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'employee_code' => $this->employee_code,
-            'status' => new AgentStatusResource($this->whenLoaded('agentStatus')),
+            'status' => $this->status,
             'user_id' => $this->user_id,
             'devices_count' => $this->whenCounted('devices'),
             'created_at' => $this->created_at,

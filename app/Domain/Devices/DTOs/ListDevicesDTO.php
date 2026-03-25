@@ -13,7 +13,7 @@ readonly class ListDevicesDTO
         public int $perPage,
         public ?string $search = null,
         public mixed $allowedAgentIds = null,
-        public ?int $statusId = null,
+        public ?string $status = null,
     ) {}
 
     public static function fromRequest(Request $request, mixed $allowedAgentIds = null): self
@@ -23,7 +23,7 @@ readonly class ListDevicesDTO
             perPage: (int) $request->input('per_page', 15),
             search: $request->input('search'),
             allowedAgentIds: $allowedAgentIds,
-            statusId: $request->filled('status') && $request->input('status') !== 'all' ? (int) $request->input('status') : null,
+            status: $request->filled('status') && $request->input('status') !== 'all' ? $request->input('status') : null,
         );
     }
 }

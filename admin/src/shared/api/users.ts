@@ -8,7 +8,7 @@ export interface CreateUserData {
     password_confirmation: string;
     is_agent?: boolean;
     is_team?: boolean;
-    agent_status_id?: number;
+    status?: string;
     employee_code?: string;
     team_id?: number;
     role?: string;

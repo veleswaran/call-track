@@ -55,7 +55,7 @@ export function useCreateAgent() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: async (data: { name: string; employee_code?: string; agent_status_id?: number }) => {
+        mutationFn: async (data: { name: string; employee_code?: string; status?: string }) => {
             const response = await api.post<ResourceResponse<Agent>>(
                 "/api/v1/admin/agents",
                 data
@@ -80,7 +80,7 @@ export function useUpdateAgent() {
             data,
         }: {
             id: number;
-            data: { name?: string; employee_code?: string; agent_status_id?: number };
+            data: { name?: string; employee_code?: string; status?: string };
         }) => {
             const response = await api.put<ResourceResponse<Agent>>(
                 `/api/v1/admin/agents/${id}`,

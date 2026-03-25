@@ -13,8 +13,6 @@ import { useSettingsQuery, useUpdateSettingsMutation } from "../hooks/use-settin
 import { Loader2 } from "lucide-react";
 import { Checkbox } from "@shared/components/ui/checkbox";
 import { Accordion, AccordionItem } from "@shared/components/ui/accordion";
-import { DeviceStatusesSettings } from "./device-statuses-settings";
-import { AgentStatusesSettings } from "./agent-statuses-settings";
 
 const formSchema = z.object({
     heartbeat_threshold_minutes: z.number().min(5, "Minimum threshold is 5 minutes").max(10080, "Maximum is 1 week"),
@@ -305,10 +303,6 @@ export function SettingsPage() {
                             </AccordionItem>
                         </Accordion>
                     </Card>
-
-                    <DeviceStatusesSettings />
-                    <AgentStatusesSettings />
-
                     <Button type="submit" disabled={updateSettings.isPending}>
                         {updateSettings.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         Save Settings

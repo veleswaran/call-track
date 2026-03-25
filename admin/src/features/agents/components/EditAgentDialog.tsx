@@ -19,7 +19,6 @@ import {
     SelectValue,
 } from "@shared/components/ui/select";
 import { useUpdateAgent } from "../hooks/use-agents";
-import { useAgentStatuses } from "../hooks/use-agent-statuses";
 import type { Agent } from "@shared/types";
 
 interface EditAgentDialogProps {
@@ -34,11 +33,13 @@ interface EditAgentDialogProps {
 export function EditAgentDialog({ agent, open, onOpenChange }: EditAgentDialogProps) {
     const [name, setName] = useState(agent.name);
     const [employeeCode, setEmployeeCode] = useState(agent.employee_code ?? "");
-    const [statusId, setStatusId] = useState<string>(agent.status?.id?.toString() ?? "");
+    const [status, setStatus] = useState<string>(agent.status ?? "active");
 
     const updateAgent = useUpdateAgent();
-    const { data: statusesData } = useAgentStatuses();
-    const statuses = statusesData?.data ?? [];
+    const statuses = [
+        { id: 'active', name: 'Active', color: '#10b981' },
+        { id: 'inactive', name: 'Inactive', color: '#6b7280' }
+    ];
 
     // Reset form when dialog opens with new agent
     const handleOpenChange = (isOpen: boolean) => {
@@ -46,7 +47,7 @@ export function EditAgentDialog({ agent, open, onOpenChange }: EditAgentDialogPr
             // Reset form to agent values when opening
             setName(agent.name);
             setEmployeeCode(agent.employee_code ?? "");
-            setStatusId(agent.status?.id?.toString() ?? "");
+            setStatus(agent.status ?? "active");
         }
         onOpenChange(isOpen);
     };
@@ -62,7 +63,7 @@ export function EditAgentDialog({ agent, open, onOpenChange }: EditAgentDialogPr
                 data: {
                     name: name.trim(),
                     employee_code: employeeCode.trim() || undefined,
-                    agent_status_id: statusId ? parseInt(statusId) : undefined,
+                    status: status || undefined,
                 },
             });
 
@@ -103,13 +104,13 @@ export function EditAgentDialog({ agent, open, onOpenChange }: EditAgentDialogPr
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="edit-status">Status</Label>
-                        <Select value={statusId} onValueChange={setStatusId}>
+                        <Select value={status} onValueChange={setStatus}>
                             <SelectTrigger>
                                 <SelectValue placeholder="Select status" />
                             </SelectTrigger>
                             <SelectContent>
                                 {statuses.map((s) => (
-                                    <SelectItem key={s.id} value={s.id.toString()}>
+                                    <SelectItem key={s.id} value={s.id}>
                                         <div className="flex items-center gap-2">
                                             <div className="w-2 h-2 rounded-full" style={{ backgroundColor: s.color }} />
                                             {s.name}

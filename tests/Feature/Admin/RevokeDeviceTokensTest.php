@@ -50,7 +50,6 @@ class RevokeDeviceTokensTest extends TestCase
         $indexResponse->assertOk();
         $deviceData = collect($indexResponse->json('data'))->firstWhere('id', $device->id);
 
-        // Use the actual name of the related status
-        $this->assertEquals($device->deviceStatus->name, $deviceData['status']['name']);
+        $this->assertEquals($device->status, $deviceData['status']);
     }
 }

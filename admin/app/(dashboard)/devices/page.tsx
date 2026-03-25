@@ -9,7 +9,6 @@ import { DevicePushNotificationDialog } from "@features/devices/components/devic
 
 import { useAuth } from "@features/auth/hooks/use-auth";
 
-import { useDeviceStatuses } from "@features/devices/hooks/use-device-statuses";
 import { useEffect, useState } from "react";
 import {
     Table,
@@ -40,8 +39,11 @@ import {
 export default function DevicesPage() {
     const { user } = useAuth();
     const { data: settings } = useSettingsQuery();
-    const { data: statusesData } = useDeviceStatuses();
-    const statuses = statusesData?.data;
+    const statuses = [
+        { id: 'active', name: 'Active' },
+        { id: 'inactive', name: 'Inactive' },
+        { id: 'maintenance', name: 'Maintenance' },
+    ];
     const [search, setSearch] = useState("");
     const [status, setStatus] = useState<string>("all");
     const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -122,7 +124,7 @@ export default function DevicesPage() {
                             <SelectContent>
                                 <SelectItem value="all">All Statuses</SelectItem>
                                 {statuses?.map((s) => (
-                                    <SelectItem key={s.id} value={s.id.toString()}>
+                                    <SelectItem key={s.id} value={s.id}>
                                         {s.name}
                                     </SelectItem>
                                 ))}

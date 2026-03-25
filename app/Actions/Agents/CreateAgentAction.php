@@ -14,7 +14,7 @@ class CreateAgentAction
         return Agent::create([
             'name' => $data->name,
             'employee_code' => $data->employeeCode,
-            'agent_status_id' => $data->agentStatusId,
+            'status' => $data->status ?? 'active',
         ]);
     }
 }

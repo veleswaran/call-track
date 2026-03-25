@@ -40,7 +40,7 @@ describe("DevicesPage", () => {
             device_uuid: "uuid-1",
             device_name: "Test Device",
             device_model: "Pixel 6",
-            status: { id: 1, name: "Active", color: "#22c55e" },
+            status: "active",
             last_sync_at: new Date().toISOString(),
             battery_level: 80,
             tracked_sim_slots: [],

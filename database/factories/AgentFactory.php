@@ -14,7 +14,7 @@ class AgentFactory extends Factory
         return [
             'name' => $this->faker->name,
             'employee_code' => $this->faker->unique()->bothify('EMP-####'),
-            'agent_status_id' => \App\Domain\Agents\Models\AgentStatus::factory(),
+            'status' => 'active',
         ];
     }
 }

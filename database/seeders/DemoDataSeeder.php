@@ -110,13 +110,12 @@ class DemoDataSeeder extends Seeder
         ];
 
         $createdDevices = [];
-        $statusIds = \App\Domain\Devices\Models\DeviceStatus::pluck('id')->toArray();
-        $defaultStatusId = \App\Domain\Devices\Models\DeviceStatus::where('is_default', true)->value('id');
+        $statuses = ['active', 'inactive', 'maintenance'];
 
         foreach ($deviceSpecs as $index => $spec) {
             $agent = $createdAgents[$index % count($createdAgents)];
-            // Mostly active/default, sometimes suspended
-            $statusId = empty($statusIds) ? null : ((rand(1, 10) > 8) ? $statusIds[array_rand($statusIds)] : $defaultStatusId);
+            // Mostly active, sometimes inactive/maintenance
+            $status = (rand(1, 10) > 8) ? $statuses[array_rand($statuses)] : 'active';
 
             $device = Device::firstOrCreate(
                 ['name' => $spec['name'].' ('.$agent->name.')'],
@@ -124,7 +123,7 @@ class DemoDataSeeder extends Seeder
                     'agent_id' => $agent->id,
                     'device_uuid' => Str::uuid()->toString(),
                     'app_version' => '1.2.'.rand(0, 9),
-                    'device_status_id' => $statusId,
+                    'status' => $status,
                 ])
             );
             $createdDevices[] = $device;

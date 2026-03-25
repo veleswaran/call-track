@@ -38,7 +38,6 @@ import {
 import { useCreateUser } from "../hooks/use-users";
 import { useQuery } from "@tanstack/react-query";
 import { teamsApi } from "../../teams/api/teams-api";
-import { useAgentStatuses } from "../../agents/hooks/use-agent-statuses";
 
 
 // ✅ Validation Schema
@@ -54,7 +53,7 @@ const formSchema = z
         role: z.string().optional(),
 
         employee_code: z.string().optional(),
-        agent_status_id: z.string().optional(),
+        status: z.string().optional(),
         team_id: z.string().optional(),
     })
     .refine((data) => data.password === data.password_confirmation, {
@@ -70,11 +69,11 @@ const formSchema = z
                     path: ["employee_code"],
                 });
             }
-            if (!data.agent_status_id) {
+            if (!data.status) {
                 ctx.addIssue({
                     code: z.ZodIssueCode.custom,
                     message: "Status is required",
-                    path: ["agent_status_id"],
+                    path: ["status"],
                 });
             }
             if (data.is_team && !data.team_id) {
@@ -96,7 +95,10 @@ export function CreateUserDialog() {
         queryFn: () => teamsApi.getTeams({ page }),
     });
 
-    const { data: agentStatuses } = useAgentStatuses();
+    const statuses = [
+        { id: 'active', name: 'Active', color: '#10b981' },
+        { id: 'inactive', name: 'Inactive', color: '#6b7280' }
+    ];
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -108,18 +110,12 @@ export function CreateUserDialog() {
             is_agent: false,
             is_team: false,
             employee_code: "",
-            agent_status_id: "",
+            status: "active",
             team_id: "",
             role: "member"
         },
     });
 
-    useEffect(() => {
-        if (agentStatuses?.data && agentStatuses.data.length > 0 && !form.getValues("agent_status_id")) {
-            const defaultStatus = agentStatuses.data.find(s => s.is_default) || agentStatuses.data[0];
-            form.setValue("agent_status_id", defaultStatus.id.toString());
-        }
-    }, [agentStatuses, form]);
     const isAgent = useWatch({ control: form.control, name: "is_agent" });
     const isTeam = useWatch({ control: form.control, name: "is_team" });
 
@@ -134,7 +130,6 @@ export function CreateUserDialog() {
     function onSubmit(values: z.infer<typeof formSchema>) {
         const payload = {
             ...values,
-            agent_status_id: values.agent_status_id ? parseInt(values.agent_status_id) : undefined,
             team_id: values.team_id ? parseInt(values.team_id) : undefined,
         };
 
@@ -243,7 +238,7 @@ export function CreateUserDialog() {
                                         <FormMessage />
                                     </FormItem>
                                 )} />
-                                <FormField control={form.control} name="agent_status_id" render={({ field }) => (
+                                <FormField control={form.control} name="status" render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Status</FormLabel>
                                         <Select onValueChange={field.onChange} value={field.value}>
@@ -253,11 +248,11 @@ export function CreateUserDialog() {
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
-                                                {agentStatuses?.data.map((status) => (
-                                                    <SelectItem key={status.id} value={status.id.toString()}>
+                                                {statuses.map((s) => (
+                                                    <SelectItem key={s.id} value={s.id}>
                                                         <div className="flex items-center gap-2">
-                                                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: status.color }} />
-                                                            {status.name}
+                                                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: s.color }} />
+                                                            {s.name}
                                                         </div>
                                                     </SelectItem>
                                                 ))}

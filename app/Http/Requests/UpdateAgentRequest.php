@@ -22,7 +22,7 @@ class UpdateAgentRequest extends FormRequest
                 'max:50',
                 Rule::unique('agents', 'employee_code')->ignore($this->route('agent')),
             ],
-            'agent_status_id' => ['required', 'exists:agent_statuses,id'],
+            'status' => ['nullable', 'string', 'in:active,inactive'],
         ];
     }
 }
