@@ -16,9 +16,15 @@ class ListContactsAction
         return Contact::query()
             ->when($dto->search, function (Builder $query, string $search) {
                 $term = strtolower($search);
-                $query->where(function ($q) use ($term) {
-                    $q->whereRaw('LOWER(name) LIKE ?', ["%{$term}%"])
-                        ->orWhereRaw('LOWER(phone_number) LIKE ?', ["%{$term}%"]);
+                $normalizedSearch = \App\Support\PhoneNormalizer::normalize($search);
+                $searchHash = ! empty($normalizedSearch) ? hash('sha256', $normalizedSearch) : null;
+
+                $query->where(function ($q) use ($term, $searchHash) {
+                    $q->whereRaw('LOWER(name) LIKE ?', ["%{$term}%"]);
+
+                    if ($searchHash) {
+                        $q->orWhere('phone_hash', $searchHash);
+                    }
                 });
             })
             ->latest()

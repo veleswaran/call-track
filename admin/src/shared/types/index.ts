@@ -73,7 +73,12 @@ export interface Device {
     device_model: string | null;
     os_version: string | null;
     app_version: string | null;
-    status: "active" | "suspended";
+    status: {
+        id: number;
+        name: string;
+        color: string;
+    } | null;
+    device_status_id?: number | null;
     agent_id: number | null;
     agent: { id: number; name: string } | null;
     battery_level: number | null;
@@ -92,7 +97,11 @@ export interface Agent {
     id: number;
     name: string;
     employee_code: string | null;
-    status: "active" | "inactive";
+    status: {
+        id: number;
+        name: string;
+        color: string;
+    } | null;
     user_id?: number | null;
     user?: User | null;
     devices_count?: number;
@@ -108,7 +117,8 @@ export interface Contact {
     phone_number: string;
     name: string;
     company: string | null;
-    notes: string | null;
+    notes?: string;
+    is_internal: boolean;
     created_at: string;
     updated_at: string;
 }

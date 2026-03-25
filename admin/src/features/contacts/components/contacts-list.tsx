@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useContacts } from "@features/contacts/hooks/use-contacts";
 import { EditContactDialog } from "./edit-contact-dialog";
 import { DeleteContactDialog } from "./delete-contact-dialog";
@@ -15,15 +15,25 @@ import { MoreVertical, Pencil, Trash } from "lucide-react";
 import type { Contact } from "@shared/types";
 import { useAuth } from "@features/auth/hooks/use-auth";
 import { CallLogPagination } from "@features/call-logs/components/call-log-pagination";
+import { Badge } from "@shared/components/ui/badge";
 
-export function ContactsList() {
+export function ContactsList({ search }: { search?: string }) {
     const { user } = useAuth(); // RBAC
     const [page, setPage] = useState(1);
     const [perPage, setPerPage] = useState(15);
-    const { data, isLoading, isError } = useContacts({ page, per_page: perPage });
+
+    // Reset page on search
+    useEffect(() => {
+        setPage(1);
+    }, [search]);
+
+    const { data, isLoading, isError } = useContacts({ 
+        page, 
+        per_page: perPage,
+        search 
+    });
     const [editingContact, setEditingContact] = useState<Contact | null>(null);
     const [deletingContact, setDeletingContact] = useState<Contact | null>(null);
-
     const handleEdit = (contact: Contact) => {
         setEditingContact(contact);
     };
@@ -31,6 +41,7 @@ export function ContactsList() {
     const handleDelete = (contact: Contact) => {
         setDeletingContact(contact);
     };
+
 
     if (isLoading) {
         return (
@@ -73,6 +84,9 @@ export function ContactsList() {
                             <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
                                 Created
                             </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
+                                Type
+                            </th>
                             <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-zinc-500">
                                 Actions
                             </th>
@@ -89,6 +103,13 @@ export function ContactsList() {
                                 </td>
                                 <td className="px-4 py-3 text-sm text-zinc-700 dark:text-zinc-300">
                                     {new Date(c.created_at).toLocaleString()}
+                                </td>
+                                <td className="px-4 py-3 text-sm">
+                                    {c.is_internal ? (
+                                        <Badge className="bg-green-100 text-green-700 hover:bg-green-200 border-none shadow-none">Internal</Badge>
+                                    ) : (
+                                        <Badge className="bg-zinc-100 text-zinc-700 hover:bg-zinc-200 border-none shadow-none">External</Badge>
+                                    )}
                                 </td>
                                 <td className="px-4 py-3 text-right text-sm">
                                     <DropdownMenu>

@@ -30,6 +30,7 @@ Route::prefix('v1')->group(function () {
             Route::get('/metrics', [\App\Http\Controllers\Api\Admin\ReportController::class, 'metrics']);
             Route::get('/charts', [\App\Http\Controllers\Api\Admin\ReportController::class, 'charts']);
             Route::get('/performance', [\App\Http\Controllers\Api\Admin\ReportController::class, 'performance']);
+            Route::get('/loyalty', \App\Http\Controllers\Api\V1\Admin\Analytics\LoyaltyController::class);
         });
 
         // Device Codes
@@ -40,6 +41,7 @@ Route::prefix('v1')->group(function () {
 
         // Agent Management
         Route::apiResource('agents', \App\Http\Controllers\Api\Admin\AgentController::class);
+        Route::apiResource('agent-statuses', \App\Http\Controllers\Api\Admin\AgentStatusController::class)->except(['show']);
         Route::post('/agents/{agent}/link-user', \App\Http\Controllers\Api\Admin\LinkUserToAgentController::class);
         Route::post('/agents/{agent}/unlink-user', \App\Http\Controllers\Api\Admin\UnlinkUserFromAgentController::class);
         Route::post('/devices/{device}/assign-agent', [\App\Http\Controllers\Api\Admin\DeviceAgentController::class, 'assign']);
@@ -49,6 +51,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/devices', [\App\Http\Controllers\Api\Admin\DeviceController::class, 'index']);
         Route::get('/devices/{device}/events', [\App\Http\Controllers\Api\Admin\DeviceEventController::class, 'index']);
         Route::post('/devices/{device}/revoke-tokens', \App\Http\Controllers\Api\Admin\RevokeDeviceTokensController::class);
+        Route::apiResource('device-statuses', \App\Http\Controllers\Api\Admin\DeviceStatusController::class)->except(['show']);
 
         // Call Logs
         Route::get('/call-logs', [\App\Http\Controllers\Api\Admin\CallLogController::class, 'index']);

@@ -15,7 +15,7 @@ export default function MissedCallsInsightsPage() {
     const [filters, setFilters] = useState<GetEscalationsParams>({
         page: 1,
         per_page: 20,
-        status: "all",
+        status: ["pending", "unattended"],
         date_from: today,
         date_to: today,
     });
