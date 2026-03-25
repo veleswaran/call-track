@@ -6,27 +6,10 @@ import { useSettingsQuery, useUpdateSettingsMutation } from "../hooks/use-settin
 import type { UseQueryResult } from "@tanstack/react-query";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { SettingsData } from "../types";
-import { useDeviceStatuses, useCreateDeviceStatus, useUpdateDeviceStatus, useDeleteDeviceStatus } from "../../devices/hooks/use-device-statuses";
-import { useAgentStatuses, useCreateAgentStatus, useUpdateAgentStatus, useDeleteAgentStatus } from "../../agents/hooks/use-agent-statuses";
-
 // Mock the hooks
 vi.mock("../hooks/use-settings", () => ({
     useSettingsQuery: vi.fn(),
     useUpdateSettingsMutation: vi.fn(),
-}));
-
-vi.mock("../../devices/hooks/use-device-statuses", () => ({
-    useDeviceStatuses: vi.fn(),
-    useCreateDeviceStatus: vi.fn(),
-    useUpdateDeviceStatus: vi.fn(),
-    useDeleteDeviceStatus: vi.fn(),
-}));
-
-vi.mock("../../agents/hooks/use-agent-statuses", () => ({
-    useAgentStatuses: vi.fn(),
-    useCreateAgentStatus: vi.fn(),
-    useUpdateAgentStatus: vi.fn(),
-    useDeleteAgentStatus: vi.fn(),
 }));
 
 // Mock ResizeObserver
@@ -63,22 +46,6 @@ describe("SettingsPage", () => {
             mutate: mockUpdateMutate,
             isPending: false,
         } as unknown as ReturnType<typeof useUpdateSettingsMutation>);
-
-        vi.mocked(useDeviceStatuses).mockReturnValue({
-            data: { data: [] },
-            isLoading: false,
-        } as unknown as ReturnType<typeof useDeviceStatuses>);
-        vi.mocked(useCreateDeviceStatus).mockReturnValue({ mutate: vi.fn(), isPending: false } as unknown as ReturnType<typeof useCreateDeviceStatus>);
-        vi.mocked(useUpdateDeviceStatus).mockReturnValue({ mutate: vi.fn(), isPending: false } as unknown as ReturnType<typeof useUpdateDeviceStatus>);
-        vi.mocked(useDeleteDeviceStatus).mockReturnValue({ mutate: vi.fn(), isPending: false } as unknown as ReturnType<typeof useDeleteDeviceStatus>);
-
-        vi.mocked(useAgentStatuses).mockReturnValue({
-            data: { data: [] },
-            isLoading: false,
-        } as unknown as ReturnType<typeof useAgentStatuses>);
-        vi.mocked(useCreateAgentStatus).mockReturnValue({ mutate: vi.fn(), isPending: false } as unknown as ReturnType<typeof useCreateAgentStatus>);
-        vi.mocked(useUpdateAgentStatus).mockReturnValue({ mutate: vi.fn(), isPending: false } as unknown as ReturnType<typeof useUpdateAgentStatus>);
-        vi.mocked(useDeleteAgentStatus).mockReturnValue({ mutate: vi.fn(), isPending: false } as unknown as ReturnType<typeof useDeleteAgentStatus>);
     });
 
     it("should display loading spinner when loading", () => {
