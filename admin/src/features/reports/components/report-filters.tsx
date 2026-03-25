@@ -100,7 +100,7 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
             type,
             agentIds: agentId && agentId !== "all" ? [agentId] : null,
             teamIds: teamId !== "all" ? [teamId] : null,
-            contactFilter: contactFilter === "all" ? null : contactFilter as any
+            contactFilter: contactFilter === "all" ? null : contactFilter as "internal" | "external"
         })
     }
 

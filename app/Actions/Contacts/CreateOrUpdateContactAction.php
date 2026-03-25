@@ -6,8 +6,6 @@ namespace App\Actions\Contacts;
 
 use App\Domain\Calls\Models\Contact;
 use App\Domain\Contacts\DTOs\StoreContactDTO;
-use App\Support\PhoneNormalizer;
-use Illuminate\Support\Facades\Log;
 
 class CreateOrUpdateContactAction
 {

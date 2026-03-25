@@ -22,10 +22,13 @@ export function ContactsList({ search }: { search?: string }) {
     const [page, setPage] = useState(1);
     const [perPage, setPerPage] = useState(15);
 
-    // Reset page on search
-    useEffect(() => {
+    const [prevSearch, setPrevSearch] = useState(search);
+
+    // Reset page on search by updating during render
+    if (search !== prevSearch) {
+        setPrevSearch(search);
         setPage(1);
-    }, [search]);
+    }
 
     const { data, isLoading, isError } = useContacts({ 
         page, 

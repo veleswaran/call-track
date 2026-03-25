@@ -20,7 +20,7 @@ class GetContactHashVariationsAction
     {
         return Cache::remember('contact_hash_variations', 3600, function () {
             $allHashes = [];
-            
+
             // Use cursor to iterate and ensure phone_number is decrypted via model casting
             foreach (Contact::whereNotNull('phone_number')->cursor() as $contact) {
                 $variations = PhoneNormalizer::generateHashVariations($contact->phone_number);

@@ -85,7 +85,7 @@ export function MissedCallsFilters({ onFilterChange }: MissedCallsFiltersProps) 
             status: status === "all" ? null : status as EscalationStatus,
             agent_id: agentId === "all" ? null : agentId,
             team_id: teamId === "all" ? null : teamId,
-            contact_filter: contactFilter === "all" ? null : contactFilter as any,
+            contact_filter: contactFilter === "all" ? null : contactFilter as "internal" | "external",
             date_from: date?.from ? format(date.from, "yyyy-MM-dd") : null,
             date_to: date?.to ? format(date.to, "yyyy-MM-dd") : null,
         });

@@ -46,17 +46,17 @@ class PhoneNormalizer
     public static function generateSearchVariations(string $search): array
     {
         $variations = [];
-        
+
         // Remove all non-digit characters except +
         $clean = preg_replace('/[^\d+]/', '', $search);
-        
+
         // 1. As-is (cleaned)
         $variations[] = $clean;
-        
+
         // 2. Digits only (no +)
         $digits = preg_replace('/\D/', '', $clean);
         $variations[] = $digits;
-        
+
         // 3. Fully normalized
         $normalized = self::normalize($clean);
         $variations[] = $normalized;
