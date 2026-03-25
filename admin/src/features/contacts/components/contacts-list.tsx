@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useContacts } from "@features/contacts/hooks/use-contacts";
 import { EditContactDialog } from "./edit-contact-dialog";
 import { DeleteContactDialog } from "./delete-contact-dialog";

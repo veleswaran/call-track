@@ -30,7 +30,11 @@ class ListDevicesAction
                 $term = strtolower($search);
                 $isPostgres = config('database.default') === 'pgsql';
                 $query->where(function ($q) use ($term, $isPostgres) {
-                    $q->whereRaw('LOWER(name) LIKE ?', ["%{$term}%"])
+                    if (is_numeric($term)) {
+                        $q->orWhere('id', $term);
+                    }
+
+                    $q->orWhereRaw('LOWER(name) LIKE ?', ["%{$term}%"])
                         ->orWhereRaw('LOWER(model) LIKE ?', ["%{$term}%"]);
 
                     if ($isPostgres) {
@@ -43,6 +47,13 @@ class ListDevicesAction
                         $q->whereRaw('LOWER(name) LIKE ?', ["%{$term}%"]);
                     });
                 });
+
+                // Prioritize exact matches (Exact ID, then Exact Name)
+                $query->orderByRaw('CASE 
+                    WHEN id = ? THEN 1 
+                    WHEN LOWER(name) = ? THEN 2 
+                    WHEN LOWER(name) LIKE ? THEN 3 
+                    ELSE 4 END', [$term, $term, "{$term}%"]);
             })
             ->latest()
             ->paginate($dto->perPage, ['*'], 'page', $dto->page);

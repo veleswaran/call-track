@@ -21,7 +21,6 @@ import {
 } from "@shared/components/ui/select";
 import { Plus } from "lucide-react";
 import { useCreateAgent } from "../hooks/use-agents";
-import { useEffect } from "react";
 
 interface AddAgentDialogProps {
     trigger?: React.ReactNode;
@@ -110,10 +109,10 @@ export function AddAgentDialog({ trigger }: AddAgentDialogProps) {
                             <SelectContent>
                                 {statuses.map((s) => (
                                     <SelectItem key={s.id} value={s.id}>
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: s.color }} />
+                                        <span className="flex items-center gap-2">
+                                            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: s.color }} />
                                             {s.name}
-                                        </div>
+                                        </span>
                                     </SelectItem>
                                 ))}
                             </SelectContent>
