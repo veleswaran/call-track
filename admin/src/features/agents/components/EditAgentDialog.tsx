@@ -19,6 +19,7 @@ import {
     SelectValue,
 } from "@shared/components/ui/select";
 import { useUpdateAgent } from "../hooks/use-agents";
+import { useAgentStatuses } from "../hooks/use-agent-statuses";
 import type { Agent } from "@shared/types";
 
 interface EditAgentDialogProps {
@@ -33,9 +34,11 @@ interface EditAgentDialogProps {
 export function EditAgentDialog({ agent, open, onOpenChange }: EditAgentDialogProps) {
     const [name, setName] = useState(agent.name);
     const [employeeCode, setEmployeeCode] = useState(agent.employee_code ?? "");
-    const [status, setStatus] = useState<"active" | "inactive">(agent.status);
+    const [statusId, setStatusId] = useState<string>(agent.status?.id?.toString() ?? "");
 
     const updateAgent = useUpdateAgent();
+    const { data: statusesData } = useAgentStatuses();
+    const statuses = statusesData?.data ?? [];
 
     // Reset form when dialog opens with new agent
     const handleOpenChange = (isOpen: boolean) => {
@@ -43,7 +46,7 @@ export function EditAgentDialog({ agent, open, onOpenChange }: EditAgentDialogPr
             // Reset form to agent values when opening
             setName(agent.name);
             setEmployeeCode(agent.employee_code ?? "");
-            setStatus(agent.status);
+            setStatusId(agent.status?.id?.toString() ?? "");
         }
         onOpenChange(isOpen);
     };
@@ -59,8 +62,8 @@ export function EditAgentDialog({ agent, open, onOpenChange }: EditAgentDialogPr
                 data: {
                     name: name.trim(),
                     employee_code: employeeCode.trim() || undefined,
-                    status,
-                },
+                    agent_status_id: statusId ? parseInt(statusId) : undefined,
+                } as any,
             });
 
             onOpenChange(false);
@@ -100,13 +103,19 @@ export function EditAgentDialog({ agent, open, onOpenChange }: EditAgentDialogPr
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="edit-status">Status</Label>
-                        <Select value={status} onValueChange={(v) => setStatus(v as "active" | "inactive")}>
+                        <Select value={statusId} onValueChange={setStatusId}>
                             <SelectTrigger>
                                 <SelectValue placeholder="Select status" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="active">Active</SelectItem>
-                                <SelectItem value="inactive">Inactive</SelectItem>
+                                {statuses.map((s) => (
+                                    <SelectItem key={s.id} value={s.id.toString()}>
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: s.color }} />
+                                            {s.name}
+                                        </div>
+                                    </SelectItem>
+                                ))}
                             </SelectContent>
                         </Select>
                     </div>

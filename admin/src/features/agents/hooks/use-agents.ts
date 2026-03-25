@@ -17,13 +17,18 @@ export const agentKeys = {
 /**
  * Fetch paginated agents list
  */
-export function useAgents(params?: { page?: number; per_page?: number }) {
+export function useAgents(params?: { page?: number; per_page?: number; search?: string; status?: string }) {
     return useQuery({
         queryKey: agentKeys.list(params ?? {}),
-        queryFn: () =>
-            api.get<PaginatedResponse<Agent>>(
-                `/api/v1/admin/agents?page=${params?.page ?? 1}&per_page=${params?.per_page ?? 15}`
-            ),
+        queryFn: () => {
+            const queryParams = new URLSearchParams();
+            if (params?.page) queryParams.append("page", params.page.toString());
+            if (params?.per_page) queryParams.append("per_page", params.per_page.toString());
+            if (params?.search) queryParams.append("search", params.search);
+            if (params?.status) queryParams.append("status", params.status);
+            
+            return api.get<PaginatedResponse<Agent>>(`/api/v1/admin/agents?${queryParams.toString()}`);
+        },
     });
 }
 

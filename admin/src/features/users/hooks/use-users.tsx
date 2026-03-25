@@ -5,10 +5,10 @@ import { usersApi, CreateUserData } from "@shared/api/users";
 import { toast } from "sonner";
 import { ApiError } from "@shared/api/api";
 
-export function useUsers(page = 1, perPage = 15) {
+export function useUsers(page = 1, perPage = 15, search?: string) {
     return useQuery({
-        queryKey: ["users", page, perPage],
-        queryFn: () => usersApi.getUsers(page, perPage),
+        queryKey: ["users", page, perPage, search],
+        queryFn: () => usersApi.getUsers(page, perPage, search),
     });
 }
 

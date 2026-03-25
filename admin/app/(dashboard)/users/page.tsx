@@ -13,13 +13,27 @@ import { CreateUserDialog } from "@features/users/components/create-user-dialog"
 import { UserActions } from "@features/users/components/user-actions";
 import { Badge } from "@shared/components/ui/badge";
 import { formatDate } from "@shared/utils/date";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CallLogPagination } from "@features/call-logs/components/call-log-pagination";
+import { Input } from "@shared/components/ui/input";
+import { Search } from "lucide-react";
 
 export default function UsersPage() {
     const [page, setPage] = useState(1);
     const [perPage, setPerPage] = useState(25);
-    const { data, isLoading } = useUsers(page, perPage);
+    const [search, setSearch] = useState("");
+    const [debouncedSearch, setDebouncedSearch] = useState("");
+
+    // Debounce search input
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(search);
+            setPage(1); // Reset to first page on search
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [search]);
+
+    const { data, isLoading } = useUsers(page, perPage, debouncedSearch);
 
     const users = data?.data ?? [];
     const meta = data?.meta;
@@ -34,6 +48,16 @@ export default function UsersPage() {
                     </p>
                 </div>
                 <CreateUserDialog />
+            </div>
+
+            <div className="relative mb-6">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                    placeholder="Search users by name or email..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="pl-9 max-w-sm"
+                />
             </div>
 
             <div className="rounded-md border">

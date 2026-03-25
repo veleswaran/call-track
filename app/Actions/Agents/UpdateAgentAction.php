@@ -14,7 +14,7 @@ class UpdateAgentAction
         $agent->update([
             'name' => $data->name,
             'employee_code' => $data->employeeCode,
-            'status' => $data->status,
+            'agent_status_id' => $data->agentStatusId,
         ]);
 
         return $agent;

@@ -30,7 +30,12 @@ class DeviceResource extends JsonResource
             'has_fcm_token' => ! empty($this->fcm_token),
             'tracked_sim_slots' => $this->tracked_sim_slots,
             'battery_level' => $this->battery_level,
-            'status' => $this->active_tokens_exists ? 'active' : 'inactive',
+            'status' => $this->deviceStatus ? [
+                'id' => $this->deviceStatus->id,
+                'name' => $this->deviceStatus->name,
+                'color' => $this->deviceStatus->color,
+            ] : null,
+            'device_status_id' => $this->device_status_id,
             'agent_id' => $this->agent_id,
             'agent' => $this->whenLoaded('agent', fn () => [
                 'id' => $this->resource->agent->id,

@@ -1,8 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAgents } from "@features/agents/hooks/use-agents";
+import { useAgentStatuses } from "@features/agents/hooks/use-agent-statuses";
 import { useAuth } from "@features/auth/hooks/use-auth";
+import { useSettingsQuery } from "@features/settings/hooks/use-settings";
+import { Input } from "@shared/components/ui/input";
 import { AddAgentDialog } from "@features/agents/components/AddAgentDialog";
 import { EditAgentDialog } from "@features/agents/components/EditAgentDialog";
 import { AssignDeviceDialog } from "@features/agents/components/AssignDeviceDialog";
@@ -16,23 +19,56 @@ import {
     TableRow,
 } from "@shared/components/ui/table";
 import { Button } from "@shared/components/ui/button";
-import { User, Pencil, Smartphone, Link as LinkIcon } from "lucide-react";
+import { User, Pencil, Smartphone, Link as LinkIcon, Search, X } from "lucide-react";
 import { CallLogPagination } from "@features/call-logs/components/call-log-pagination";
 import type { Agent } from "@shared/types";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@shared/components/ui/select";
 
 /**
  * Agents page - displays agent list with CRUD capabilities
  */
 export default function AgentsPage() {
     const { user } = useAuth();
+    const { data: settings } = useSettingsQuery();
     const [page, setPage] = useState(1);
     const [perPage, setPerPage] = useState(25);
+    const [search, setSearch] = useState("");
+    const [status, setStatus] = useState<string>("all");
+    const [debouncedSearch, setDebouncedSearch] = useState("");
 
-    const { data, isLoading, isError } = useAgents({ page, per_page: perPage });
+    // Debounce search input
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(search);
+            setPage(1); // Reset to first page on search
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [search]);
+
+    // Reset page on status change
+    useEffect(() => {
+        setPage(1);
+    }, [status]);
+
+    const { data, isLoading, isError } = useAgents({ 
+        page, 
+        per_page: perPage,
+        search: debouncedSearch,
+        status: status === "all" ? undefined : status
+    });
     const [editingAgent, setEditingAgent] = useState<Agent | null>(null);
     const [assigningAgent, setAssigningAgent] = useState<Agent | null>(null);
     const [linkingAgent, setLinkingAgent] = useState<Agent | null>(null);
 
+    const { data: statusesData } = useAgentStatuses();
+    const availableStatuses = statusesData?.data ?? [];
+    
     const isAdmin = user?.roles.some((role: string) => ['admin', 'super-admin'].includes(role));
     const agents = data?.data ?? [];
     const meta = data?.meta;
@@ -47,6 +83,42 @@ export default function AgentsPage() {
                     </p>
                 </div>
                 {isAdmin && <AddAgentDialog />}
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                <div className="relative flex-1 max-w-sm">
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                        placeholder="Search agents by name or code..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="pl-9"
+                    />
+                    {search && (
+                        <button
+                            onClick={() => setSearch("")}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+                        >
+                            <X className="h-4 w-4" />
+                        </button>
+                    )}
+                </div>
+
+                {settings?.enable_agent_status_filter && (
+                    <div className="w-full sm:w-[180px]">
+                        <Select value={status} onValueChange={setStatus}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Statuses</SelectItem>
+                                {availableStatuses.map((s) => (
+                                    <SelectItem key={s.id} value={s.id.toString()}>{s.name}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                )}
             </div>
 
             <div className="rounded-md border border-zinc-200 dark:border-zinc-800">
@@ -98,14 +170,20 @@ export default function AgentsPage() {
                                         <span className="font-medium">{agent.devices_count ?? 0}</span>
                                     </TableCell>
                                     <TableCell>
-                                        <span
-                                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${agent.status === 'active'
-                                                ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
-                                                : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
-                                                }`}
-                                        >
-                                            {agent.status === 'active' ? "Active" : "Inactive"}
-                                        </span>
+                                        {agent.status ? (
+                                            <span
+                                                className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+                                                style={{
+                                                    backgroundColor: `${agent.status.color}20`,
+                                                    color: agent.status.color,
+                                                    border: `1px solid ${agent.status.color}40`,
+                                                }}
+                                            >
+                                                {agent.status.name}
+                                            </span>
+                                        ) : (
+                                            <span className="text-gray-500">-</span>
+                                        )}
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-2">

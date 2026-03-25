@@ -1,23 +1,25 @@
 "use client";
 
+import type { Device } from "@shared/types";
+
 interface DeviceStatusBadgeProps {
-    status: "active" | "suspended";
+    status: Device["status"];
 }
 
 /**
- * Badge component to display device token status (active/inactive)
+ * Badge component to display dynamic device status
  */
 export function DeviceStatusBadge({ status }: DeviceStatusBadgeProps) {
-    const isActive = status === "active";
+    if (!status) {
+        return <span className="text-zinc-400">—</span>;
+    }
 
     return (
         <span
-            className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${isActive
-                    ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                    : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                }`}
+            className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+            style={{ color: status.color, backgroundColor: `${status.color}20` }}
         >
-            {isActive ? "Active" : "Suspended"}
+            {status.name}
         </span>
     );
 }

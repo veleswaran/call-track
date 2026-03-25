@@ -21,6 +21,8 @@ import {
 } from "@shared/components/ui/select";
 import { Plus } from "lucide-react";
 import { useCreateAgent } from "../hooks/use-agents";
+import { useAgentStatuses } from "../hooks/use-agent-statuses";
+import { useEffect } from "react";
 
 interface AddAgentDialogProps {
     trigger?: React.ReactNode;
@@ -33,9 +35,18 @@ export function AddAgentDialog({ trigger }: AddAgentDialogProps) {
     const [open, setOpen] = useState(false);
     const [name, setName] = useState("");
     const [employeeCode, setEmployeeCode] = useState("");
-    const [status, setStatus] = useState<"active" | "inactive">("active");
+    const [statusId, setStatusId] = useState<string>("");
 
     const createAgent = useCreateAgent();
+    const { data: statusesData } = useAgentStatuses();
+    const statuses = statusesData?.data ?? [];
+
+    useEffect(() => {
+        if (statuses.length > 0 && !statusId) {
+            const defaultStatus = statuses.find(s => s.is_default) || statuses[0];
+            setStatusId(defaultStatus.id.toString());
+        }
+    }, [statuses, statusId]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -46,13 +57,13 @@ export function AddAgentDialog({ trigger }: AddAgentDialogProps) {
             await createAgent.mutateAsync({
                 name: name.trim(),
                 employee_code: employeeCode.trim() || undefined,
-                status,
-            });
+                agent_status_id: statusId ? parseInt(statusId) : undefined,
+            } as any);
 
             // Reset form and close
             setName("");
             setEmployeeCode("");
-            setStatus("active");
+            setStatusId("");
             setOpen(false);
         } catch {
             // Error handled by mutation
@@ -98,13 +109,19 @@ export function AddAgentDialog({ trigger }: AddAgentDialogProps) {
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="status">Status</Label>
-                        <Select value={status} onValueChange={(v) => setStatus(v as "active" | "inactive")}>
+                        <Select value={statusId} onValueChange={setStatusId}>
                             <SelectTrigger>
                                 <SelectValue placeholder="Select status" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="active">Active</SelectItem>
-                                <SelectItem value="inactive">Inactive</SelectItem>
+                                {statuses.map((s) => (
+                                    <SelectItem key={s.id} value={s.id.toString()}>
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: s.color }} />
+                                            {s.name}
+                                        </div>
+                                    </SelectItem>
+                                ))}
                             </SelectContent>
                         </Select>
                     </div>

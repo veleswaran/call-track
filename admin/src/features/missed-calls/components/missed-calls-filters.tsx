@@ -24,6 +24,7 @@ import { api } from "@shared/api/api";
 import { Agent, Team, PaginatedResponse } from "@shared/types";
 import { EscalationStatus, GetEscalationsParams } from "../types/escalation";
 import { AsyncSelect } from "@shared/components/async-select";
+import { useSettingsQuery } from "@features/settings/hooks/use-settings";
 
 interface MissedCallsFiltersProps {
     onFilterChange: (filters: Partial<GetEscalationsParams>) => void;
@@ -39,7 +40,9 @@ export function MissedCallsFilters({ onFilterChange }: MissedCallsFiltersProps) 
     const [status, setStatus] = useState<string>("all");
     const [agentId, setAgentId] = useState<string>("all");
     const [teamId, setTeamId] = useState<string>("all");
+    const [contactFilter, setContactFilter] = useState<string>("all");
     const [quickDate, setQuickDate] = useState<string>("today");
+    const { data: settings } = useSettingsQuery();
 
     const handleQuickDateChange = (value: string) => {
         setQuickDate(value);
@@ -82,6 +85,7 @@ export function MissedCallsFilters({ onFilterChange }: MissedCallsFiltersProps) 
             status: status === "all" ? null : status as EscalationStatus,
             agent_id: agentId === "all" ? null : agentId,
             team_id: teamId === "all" ? null : teamId,
+            contact_filter: contactFilter === "all" ? null : contactFilter as any,
             date_from: date?.from ? format(date.from, "yyyy-MM-dd") : null,
             date_to: date?.to ? format(date.to, "yyyy-MM-dd") : null,
         });
@@ -91,12 +95,14 @@ export function MissedCallsFilters({ onFilterChange }: MissedCallsFiltersProps) 
         setStatus("all");
         setAgentId("all");
         setTeamId("all");
+        setContactFilter("all");
         setDate(defaultDateRange);
         setQuickDate("today");
         onFilterChange({
             status: "all",
             agent_id: null,
             team_id: null,
+            contact_filter: "all",
             date_from: format(defaultDateRange.from!, "yyyy-MM-dd"),
             date_to: format(defaultDateRange.to!, "yyyy-MM-dd"),
         });
@@ -173,6 +179,19 @@ export function MissedCallsFilters({ onFilterChange }: MissedCallsFiltersProps) 
                 </SelectContent>
             </Select>
 
+            {settings?.enable_missed_call_internal_filter && (
+                <Select value={contactFilter} onValueChange={setContactFilter}>
+                    <SelectTrigger className="w-[150px]">
+                        <SelectValue placeholder="All Records" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Records</SelectItem>
+                        <SelectItem value="internal">Include Internal</SelectItem>
+                        <SelectItem value="external">Exclude Internal</SelectItem>
+                    </SelectContent>
+                </Select>
+            )}
+
             <AsyncSelect
                 value={teamId}
                 onChange={setTeamId}
@@ -193,7 +212,7 @@ export function MissedCallsFilters({ onFilterChange }: MissedCallsFiltersProps) 
                 value={agentId}
                 onChange={setAgentId}
                 loadOptions={async (search) => {
-                    const res = await api.get<PaginatedResponse<Agent>>(`/api/v1/admin/agents?search=${search}&per_page=100`);
+                    const res = await api.get<PaginatedResponse<Agent>>(`/api/v1/admin/agents?search=${search}&per_page=100&sort_by=name`);
                     const options = res.data.map((agent: Agent) => ({
                         label: agent.name,
                         value: agent.id.toString(),
