@@ -20,7 +20,7 @@ import { format, subDays, startOfDay, endOfDay, startOfMonth, endOfMonth, subMon
 import { CalendarIcon, X } from "lucide-react";
 import type { CallLogFilters as FilterTypes } from "../hooks/use-call-logs";
 import { api } from "@shared/api/api";
-import type { PaginatedResponse, Device, Agent } from "@shared/types";
+import type { Agent } from "@shared/types";
 import { useAuth } from "@features/auth/hooks/use-auth";
 import { useSettingsQuery } from "@features/settings/hooks/use-settings";
 
@@ -246,7 +246,7 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
             {settings?.enable_call_log_internal_filter && (
                 <Select
                     value={filters.contact_filter ?? "all"}
-                    onValueChange={(val) => onChange({ ...filters, page: 1, contact_filter: val as any })}
+                    onValueChange={(val) => onChange({ ...filters, page: 1, contact_filter: val as "internal" | "external" })}
                 >
                     <SelectTrigger className="w-[140px]">
                         <SelectValue placeholder="Contact Type" />

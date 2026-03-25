@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Actions\Devices;
@@ -12,7 +13,7 @@ class UpdateDeviceStatusAction
     public function execute(DeviceStatus $status, DeviceStatusData $data): DeviceStatus
     {
         return DB::transaction(function () use ($status, $data) {
-            if ($data->is_default && !$status->is_default) {
+            if ($data->is_default && ! $status->is_default) {
                 DeviceStatus::where('id', '!=', $status->id)
                     ->where('is_default', true)
                     ->update(['is_default' => false]);

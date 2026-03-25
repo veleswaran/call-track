@@ -56,11 +56,13 @@ export default function DevicesPage() {
         return () => clearTimeout(timer);
     }, [search]);
 
-    // Reset page on status change
-    useEffect(() => {
-        setPagination(prev => ({ ...prev, page: 1 }));
-    }, [status]);
+    const [prevStatus, setPrevStatus] = useState(status);
 
+    // Reset page on status change
+    if (status !== prevStatus) {
+        setPrevStatus(status);
+        setPagination(prev => ({ ...prev, page: 1 }));
+    }
     const { data, isLoading, isError } = useDevices({ 
         ...pagination, 
         search: debouncedSearch,

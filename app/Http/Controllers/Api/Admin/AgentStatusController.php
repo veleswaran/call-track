@@ -57,13 +57,13 @@ class AgentStatusController extends Controller
     {
         // TODO: Replace with an Action class
         $validated = $request->validate([
-            'name' => ['sometimes', 'string', 'max:255', 'unique:agent_statuses,name,' . $agentStatus->id],
+            'name' => ['sometimes', 'string', 'max:255', 'unique:agent_statuses,name,'.$agentStatus->id],
             'color' => ['sometimes', 'string', 'max:20'],
             'is_default' => ['sometimes', 'boolean'],
             'is_active' => ['sometimes', 'boolean'],
         ]);
 
-        if (isset($validated['is_default']) && $validated['is_default'] === true && !$agentStatus->is_default) {
+        if (isset($validated['is_default']) && $validated['is_default'] === true && ! $agentStatus->is_default) {
             AgentStatus::query()->update(['is_default' => false]);
         }
 

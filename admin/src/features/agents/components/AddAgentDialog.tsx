@@ -41,12 +41,15 @@ export function AddAgentDialog({ trigger }: AddAgentDialogProps) {
     const { data: statusesData } = useAgentStatuses();
     const statuses = statusesData?.data ?? [];
 
-    useEffect(() => {
-        if (statuses.length > 0 && !statusId) {
+    const [prevStatusesLength, setPrevStatusesLength] = useState(0);
+
+    if (statuses.length > 0 && statuses.length !== prevStatusesLength) {
+        setPrevStatusesLength(statuses.length);
+        if (!statusId) {
             const defaultStatus = statuses.find(s => s.is_default) || statuses[0];
             setStatusId(defaultStatus.id.toString());
         }
-    }, [statuses, statusId]);
+    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -58,7 +61,7 @@ export function AddAgentDialog({ trigger }: AddAgentDialogProps) {
                 name: name.trim(),
                 employee_code: employeeCode.trim() || undefined,
                 agent_status_id: statusId ? parseInt(statusId) : undefined,
-            } as any);
+            });
 
             // Reset form and close
             setName("");

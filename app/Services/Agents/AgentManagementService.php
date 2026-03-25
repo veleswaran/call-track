@@ -44,11 +44,20 @@ class AgentManagementService implements AgentManagementServiceInterface
         return $this->unassignAction->execute($device);
     }
 
-    public function getAgentsList(?array $allowedAgentIds = null, int $perPage = 20, ?string $search = null): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    public function getAgentsList(?array $allowedAgentIds = null, int $perPage = 20, ?string $search = null, ?int $teamId = null, string $sortBy = 'latest', ?int $agentStatusId = null): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
-        return Agent::withCount('devices')
+        return Agent::with(['agentStatus'])
+            ->withCount('devices')
+            ->when($agentStatusId, function ($query) use ($agentStatusId) {
+                $query->where('agent_status_id', $agentStatusId);
+            })
             ->when($allowedAgentIds !== null, function ($query) use ($allowedAgentIds) {
                 $query->whereIn('id', $allowedAgentIds);
+            })
+            ->when($teamId, function ($query) use ($teamId) {
+                $query->whereHas('teams', function ($q) use ($teamId) {
+                    $q->where('teams.id', $teamId);
+                });
             })
             ->when($search, function ($query, $search) {
                 $term = strtolower((string) $search);
@@ -57,7 +66,11 @@ class AgentManagementService implements AgentManagementServiceInterface
                         ->orWhereRaw('LOWER(employee_code) LIKE ?', ["%{$term}%"]);
                 });
             })
-            ->latest()
+            ->when($sortBy === 'name', function ($query) {
+                $query->orderBy('name', 'asc');
+            }, function ($query) {
+                $query->latest();
+            })
             ->paginate($perPage);
     }
 }

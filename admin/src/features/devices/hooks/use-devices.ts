@@ -22,8 +22,8 @@ export function useDevices(params?: { page?: number; per_page?: number; search?:
         queryKey: deviceKeys.list(params ?? {}),
         queryFn: () => {
             const queryParams = new URLSearchParams();
-            if (params?.page) queryParams.append("page", params.page.toString());
-            if (params?.per_page) queryParams.append("per_page", params.per_page.toString());
+            queryParams.append("page", (params?.page ?? 1).toString());
+            queryParams.append("per_page", (params?.per_page ?? 15).toString());
             if (params?.search) queryParams.append("search", params.search);
             if (params?.status) queryParams.append("status", params.status);
             

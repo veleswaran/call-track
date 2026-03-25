@@ -31,7 +31,7 @@ class ListDevicesAction
                 $query->where(function ($q) use ($term) {
                     $q->whereRaw('LOWER(name) LIKE ?', ["%{$term}%"])
                         ->orWhereRaw('LOWER(model) LIKE ?', ["%{$term}%"])
-                        ->orWhereRaw('LOWER(device_uuid::text) LIKE ?', ["%{$term}%"])
+                        ->orWhereRaw('LOWER(device_uuid) LIKE ?', ["%{$term}%"])
                         ->orWhereHas('agent', function ($q) use ($term) {
                             $q->whereRaw('LOWER(name) LIKE ?', ["%{$term}%"]);
                         });

@@ -25,7 +25,9 @@ class UpdateContactActionTest extends TestCase
             phoneNumber: PhoneNormalizer::normalize('+0987654321'),
         );
 
-        $action = new UpdateContactAction;
+        $action = new UpdateContactAction(
+            new \App\Actions\Contacts\GetContactHashVariationsAction
+        );
         $updatedContact = $action->execute($contact, $dto);
 
         $this->assertEquals('New Name', $updatedContact->name);

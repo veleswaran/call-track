@@ -24,7 +24,9 @@ class CreateOrUpdateContactActionTest extends TestCase
             phoneNumber: $rawPhone
         );
 
-        $action = new CreateOrUpdateContactAction;
+        $action = new CreateOrUpdateContactAction(
+            new \App\Actions\Contacts\GetContactHashVariationsAction
+        );
         $contact = $action->execute($dto);
 
         $this->assertInstanceOf(Contact::class, $contact);
@@ -53,7 +55,9 @@ class CreateOrUpdateContactActionTest extends TestCase
             phoneNumber: $rawPhone
         );
 
-        $action = new CreateOrUpdateContactAction;
+        $action = new CreateOrUpdateContactAction(
+            new \App\Actions\Contacts\GetContactHashVariationsAction
+        );
         $contact = $action->execute($dto);
 
         // Should update, not create new
@@ -78,7 +82,9 @@ class CreateOrUpdateContactActionTest extends TestCase
             phoneNumber: $rawPhone
         );
 
-        $action = new CreateOrUpdateContactAction;
+        $action = new CreateOrUpdateContactAction(
+            new \App\Actions\Contacts\GetContactHashVariationsAction
+        );
         $contact1 = $action->execute($dto1);
         $contact2 = $action->execute($dto2);
 

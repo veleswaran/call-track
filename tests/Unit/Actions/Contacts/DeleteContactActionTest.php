@@ -15,7 +15,9 @@ class DeleteContactActionTest extends TestCase
     {
         $contact = Contact::factory()->create();
 
-        $action = new DeleteContactAction;
+        $action = new DeleteContactAction(
+            new \App\Actions\Contacts\GetContactHashVariationsAction
+        );
         $action->execute($contact);
 
         $this->assertDatabaseMissing('contacts', ['id' => $contact->id]);

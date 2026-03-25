@@ -18,10 +18,11 @@ class AgentManagementTest extends TestCase
         $admin = User::factory()->create();
         Sanctum::actingAs($admin, ['*']);
 
+        $status = \App\Domain\Agents\Models\AgentStatus::factory()->create();
         $payload = [
             'name' => 'John Doe',
             'employee_code' => 'EMP-001',
-            'status' => 'active',
+            'agent_status_id' => $status->id,
         ];
 
         $response = $this->postJson('/api/v1/admin/agents', $payload);
@@ -30,6 +31,7 @@ class AgentManagementTest extends TestCase
         $this->assertDatabaseHas('agents', [
             'name' => 'John Doe',
             'employee_code' => 'EMP-001',
+            'agent_status_id' => $status->id,
         ]);
     }
 
@@ -40,10 +42,11 @@ class AgentManagementTest extends TestCase
 
         $agent = Agent::factory()->create(['name' => 'Old Name']);
 
+        $status = \App\Domain\Agents\Models\AgentStatus::factory()->create();
         $payload = [
             'name' => 'New Name',
             'employee_code' => 'EMP-002',
-            'status' => 'inactive',
+            'agent_status_id' => $status->id,
         ];
 
         $response = $this->putJson("/api/v1/admin/agents/{$agent->id}", $payload);
@@ -52,7 +55,7 @@ class AgentManagementTest extends TestCase
         $this->assertDatabaseHas('agents', [
             'id' => $agent->id,
             'name' => 'New Name',
-            'status' => 'inactive',
+            'agent_status_id' => $status->id,
         ]);
     }
 
@@ -94,9 +97,10 @@ class AgentManagementTest extends TestCase
 
     public function test_guest_cannot_create_agent()
     {
+        $status = \App\Domain\Agents\Models\AgentStatus::factory()->create();
         $response = $this->postJson('/api/v1/admin/agents', [
             'name' => 'Test',
-            'status' => 'active',
+            'agent_status_id' => $status->id,
         ]);
 
         $response->assertUnauthorized();

@@ -51,10 +51,13 @@ export default function AgentsPage() {
         return () => clearTimeout(timer);
     }, [search]);
 
+    const [prevStatus, setPrevStatus] = useState(status);
+    
     // Reset page on status change
-    useEffect(() => {
+    if (status !== prevStatus) {
+        setPrevStatus(status);
         setPage(1);
-    }, [status]);
+    }
 
     const { data, isLoading, isError } = useAgents({ 
         page, 

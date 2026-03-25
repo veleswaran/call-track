@@ -285,9 +285,10 @@ final class GetReportChartsAction
             });
         }
 
-        $stats = $query->selectRaw("
-                SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active,
-                SUM(CASE WHEN status = 'inactive' THEN 1 ELSE 0 END) as inactive
+        $stats = $query->leftJoin('agent_statuses', 'agents.agent_status_id', '=', 'agent_statuses.id')
+            ->selectRaw("
+                SUM(CASE WHEN agent_statuses.name = 'Active' THEN 1 ELSE 0 END) as active,
+                SUM(CASE WHEN agent_statuses.name = 'Inactive' THEN 1 ELSE 0 END) as inactive
             ")
             ->toBase()
             ->first();

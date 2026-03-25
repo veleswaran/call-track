@@ -21,6 +21,11 @@ class AgentStatus extends Model
 {
     use HasFactory;
 
+    protected static function newFactory()
+    {
+        return \Database\Factories\AgentStatusFactory::new();
+    }
+
     protected $fillable = [
         'name',
         'color',

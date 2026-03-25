@@ -104,14 +104,14 @@ final class BuildCallLogQueryAction
             $query->where(function (Builder $q) use ($searchTerm) {
                 // 1. Search by Contact Name (Case-insensitive)
                 $termLower = strtolower($searchTerm);
-                
+
                 $matchingContacts = \App\Domain\Calls\Models\Contact::whereRaw('LOWER(name) LIKE ?', ["%{$termLower}%"])
                     ->get() // Use get() to ensure phone_number is decrypted via model casting
                     ->pluck('phone_number')
                     ->filter()
                     ->all();
-                
-                if (!empty($matchingContacts)) {
+
+                if (! empty($matchingContacts)) {
                     $searchHashes = [];
                     foreach ($matchingContacts as $num) {
                         $searchHashes = array_merge($searchHashes, \App\Support\PhoneNormalizer::generateHashVariations($num));

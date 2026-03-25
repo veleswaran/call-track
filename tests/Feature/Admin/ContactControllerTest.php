@@ -68,6 +68,7 @@ class ContactControllerTest extends TestCase
         $response = $this->putJson("/api/v1/admin/contacts/{$contact->id}", [
             'name' => 'Updated Name',
             'phone_number' => PhoneNormalizer::normalize('9876543210'),
+            'is_internal' => false,
         ]);
 
         $response->assertStatus(200)

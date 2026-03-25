@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Http\Resources;
@@ -17,8 +18,8 @@ class DeviceStatusResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'color' => $this->color,
-            'is_default' => (bool)$this->is_default,
-            'is_active' => (bool)$this->is_active,
+            'is_default' => (bool) $this->is_default,
+            'is_active' => (bool) $this->is_active,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

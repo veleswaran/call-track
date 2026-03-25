@@ -18,10 +18,6 @@ import { useState } from "react";
 import { CallLogSearch } from "@features/call-logs/components/call-log-search";
 import { CallLogFilters } from "@features/call-logs/components/call-log-filters";
 import { CallLogPagination } from "@features/call-logs/components/call-log-pagination";
-
-/**
- * Call Logs page - displays paginated call log list using API hook
- */
 import { useSearchParams } from "next/navigation";
 
 /**

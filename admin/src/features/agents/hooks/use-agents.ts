@@ -22,8 +22,8 @@ export function useAgents(params?: { page?: number; per_page?: number; search?: 
         queryKey: agentKeys.list(params ?? {}),
         queryFn: () => {
             const queryParams = new URLSearchParams();
-            if (params?.page) queryParams.append("page", params.page.toString());
-            if (params?.per_page) queryParams.append("per_page", params.per_page.toString());
+            queryParams.append("page", (params?.page ?? 1).toString());
+            queryParams.append("per_page", (params?.per_page ?? 15).toString());
             if (params?.search) queryParams.append("search", params.search);
             if (params?.status) queryParams.append("status", params.status);
             
@@ -55,7 +55,7 @@ export function useCreateAgent() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: async (data: { name: string; employee_code?: string; status: string }) => {
+        mutationFn: async (data: { name: string; employee_code?: string; agent_status_id?: number }) => {
             const response = await api.post<ResourceResponse<Agent>>(
                 "/api/v1/admin/agents",
                 data
@@ -80,7 +80,7 @@ export function useUpdateAgent() {
             data,
         }: {
             id: number;
-            data: { name?: string; employee_code?: string; status?: string };
+            data: { name?: string; employee_code?: string; agent_status_id?: number };
         }) => {
             const response = await api.put<ResourceResponse<Agent>>(
                 `/api/v1/admin/agents/${id}`,

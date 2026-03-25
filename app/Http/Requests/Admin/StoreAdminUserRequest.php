@@ -36,7 +36,7 @@ class StoreAdminUserRequest extends FormRequest
                     }
                 },
             ],
-            'status' => ['nullable', 'string'],
+            'agent_status_id' => ['nullable', 'integer', 'exists:agent_statuses,id'],
             'employee_code' => ['nullable', 'string'],
             'team_id' => ['nullable', 'integer'],
             'is_agent' => ['nullable', 'boolean'],

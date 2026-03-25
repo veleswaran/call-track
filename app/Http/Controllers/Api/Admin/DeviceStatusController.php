@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Admin;
@@ -38,7 +39,7 @@ class DeviceStatusController extends Controller
     public function update(Request $request, DeviceStatus $deviceStatus, UpdateDeviceStatusAction $action): DeviceStatusResource
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:device_statuses,name,' . $deviceStatus->id,
+            'name' => 'required|string|max:255|unique:device_statuses,name,'.$deviceStatus->id,
             'color' => 'nullable|string|max:20',
             'is_default' => 'boolean',
             'is_active' => 'boolean',
@@ -54,6 +55,7 @@ class DeviceStatusController extends Controller
     {
         try {
             $action->execute($deviceStatus);
+
             return response()->noContent();
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 422);

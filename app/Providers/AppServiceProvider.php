@@ -135,5 +135,10 @@ class AppServiceProvider extends ServiceProvider
         \Illuminate\Support\Facades\Gate::policy(\App\Domain\Agents\Models\Agent::class, \App\Policies\AgentPolicy::class);
         \Illuminate\Support\Facades\Gate::policy(\App\Domain\Calls\Models\CallLog::class, \App\Policies\CallLogPolicy::class);
         \Illuminate\Support\Facades\Gate::policy(\App\Domain\Settings\Models\SystemSetting::class, \App\Policies\SystemSettingPolicy::class);
+
+        \Illuminate\Support\Facades\Event::listen(
+            \App\Domain\Calls\Events\CallLogCreated::class,
+            \App\Domain\Analytics\Listeners\UpdateLoyaltyMetricsListener::class
+        );
     }
 }
