@@ -16,10 +16,19 @@ class GetEscalationInsightsRequest extends FormRequest
         return [
             'team_id' => ['nullable', 'integer', 'exists:teams,id'],
             'agent_id' => ['nullable', 'integer', 'exists:agents,id'],
-            'status' => ['nullable', 'string', 'in:pending,unattended,resolved'],
+            'status' => ['nullable', function ($attribute, $value, $fail) {
+                $allowed = ['pending', 'unattended', 'resolved'];
+                $statuses = is_array($value) ? $value : explode(',', (string) $value);
+                foreach ($statuses as $status) {
+                    if (! in_array(trim($status), $allowed)) {
+                        $fail(__('validation.in', ['attribute' => $attribute]));
+                    }
+                }
+            }],
             'date_from' => ['nullable', 'date'],
             'date_to' => ['nullable', 'date', 'after_or_equal:date_from'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'contact_filter' => ['nullable', 'string', 'in:all,internal,external'],
         ];
     }
 }

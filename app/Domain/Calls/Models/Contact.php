@@ -32,9 +32,11 @@ class Contact extends Model
         'phone_hash',
         'phone_number',
         'notes',
+        'is_internal',
     ];
 
     protected $casts = [
         'phone_number' => 'encrypted',
+        'is_internal' => 'boolean',
     ];
 }

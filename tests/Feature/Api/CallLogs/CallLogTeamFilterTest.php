@@ -40,14 +40,13 @@ class CallLogTeamFilterTest extends TestCase
         $this->manager->assignRole('member');
         $this->managerAgent = Agent::factory()->create([
             'user_id' => $this->manager->id,
-            'status' => 'active',
         ]);
 
         // Assign Manager to Team A
         $this->teamA->members()->attach($this->managerAgent->id, ['role' => 'MANAGER']);
 
         // 3. Create Team Members (Agents + Devices + Logs)
-        $this->memberA = Agent::factory()->create(['status' => 'active']);
+        $this->memberA = Agent::factory()->create();
         $this->teamA->members()->attach($this->memberA->id, ['role' => 'MEMBER']);
         $deviceA = Device::factory()->create(['agent_id' => $this->memberA->id]);
         CallLog::factory()->create([
@@ -55,7 +54,7 @@ class CallLogTeamFilterTest extends TestCase
             'direction' => 'INCOMING',
         ]);
 
-        $this->memberB = Agent::factory()->create(['status' => 'active']);
+        $this->memberB = Agent::factory()->create();
         $this->teamB->members()->attach($this->memberB->id, ['role' => 'MEMBER']);
         $deviceB = Device::factory()->create(['agent_id' => $this->memberB->id]);
         CallLog::factory()->create([

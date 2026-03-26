@@ -32,6 +32,7 @@ class ContactController extends Controller
         $dto = new StoreContactDTO(
             name: $request->string('name')->toString(),
             phoneNumber: $request->string('phone_number')->toString(),
+            isInternal: $request->boolean('is_internal'),
         );
 
         $contact = $this->contactService->storeContact($dto);
@@ -46,6 +47,7 @@ class ContactController extends Controller
         $dto = new StoreContactDTO(
             name: $request->string('name')->toString(),
             phoneNumber: $request->string('phone_number')->toString(),
+            isInternal: $request->boolean('is_internal'),
         );
 
         $updatedContact = $this->contactService->updateContact($contact, $dto);

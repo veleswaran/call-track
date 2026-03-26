@@ -52,6 +52,7 @@ class IndexCallLogsRequest extends FormRequest
             'end_date' => ['sometimes', 'date', 'after_or_equal:start_date'],
 
             'search' => ['sometimes', 'string', 'max:255'],
+            'contact_filter' => ['sometimes', 'string', 'in:all,internal,external'],
         ];
     }
 }

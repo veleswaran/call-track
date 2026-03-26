@@ -25,6 +25,7 @@ import {
 import { api } from "@shared/api/api"
 import { Agent, Team, PaginatedResponse } from "@shared/types"
 import { AsyncSelect } from "@shared/components/async-select"
+import { useSettingsQuery } from "@features/settings/hooks/use-settings"
 
 export interface ReportFiltersData {
     dateRange: DateRange | undefined
@@ -32,6 +33,7 @@ export interface ReportFiltersData {
     type: string
     agentIds?: string[] | null
     teamIds?: string[] | null
+    contactFilter?: "all" | "internal" | "external" | null
 }
 
 interface ReportFiltersProps {
@@ -50,8 +52,9 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
     const [type, setType] = useState("BUSINESS")
     const [agentId, setAgentId] = useState<string>("")
     const [teamId, setTeamId] = useState<string>("all")
+    const [contactFilter, setContactFilter] = useState<string>("all")
     const [quickDate, setQuickDate] = useState<string>("today")
-
+    const { data: settings } = useSettingsQuery()
     const handleQuickDateChange = (value: string) => {
         setQuickDate(value)
         const today = new Date()
@@ -96,7 +99,8 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
             outcome,
             type,
             agentIds: agentId && agentId !== "all" ? [agentId] : null,
-            teamIds: teamId !== "all" ? [teamId] : null
+            teamIds: teamId !== "all" ? [teamId] : null,
+            contactFilter: contactFilter === "all" ? null : contactFilter as "internal" | "external"
         })
     }
 
@@ -107,12 +111,14 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
         setType("BUSINESS");
         setAgentId("");
         setTeamId("all");
+        setContactFilter("all");
         onFilterChange({
             dateRange: defaultDateRange,
             outcome: "all",
             type: "BUSINESS",
             agentIds: null,
-            teamIds: null
+            teamIds: null,
+            contactFilter: null
         });
     }
 
@@ -207,7 +213,7 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
                 value={agentId}
                 onChange={setAgentId}
                 loadOptions={async (search) => {
-                    const res = await api.get<PaginatedResponse<Agent>>(`/api/v1/admin/agents?search=${search}&per_page=100`)
+                    const res = await api.get<PaginatedResponse<Agent>>(`/api/v1/admin/agents?search=${search}&per_page=100&sort_by=name`)
                     const options = res.data.map((agent: Agent) => ({
                         label: agent.name,
                         value: agent.id.toString()
@@ -230,6 +236,19 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
                     <SelectItem value="IGNORED">Ignored</SelectItem>
                 </SelectContent>
             </Select>
+
+            {settings?.enable_report_internal_filter && (
+                <Select value={contactFilter} onValueChange={setContactFilter}>
+                    <SelectTrigger className="w-[150px]">
+                        <SelectValue placeholder="All Records" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Records</SelectItem>
+                        <SelectItem value="internal">Include Internal</SelectItem>
+                        <SelectItem value="external">Exclude Internal</SelectItem>
+                    </SelectContent>
+                </Select>
+            )}
 
             <Button size="icon" variant="ghost" onClick={clearFilters} title="Reset Filters">
                 <X className="h-4 w-4" />

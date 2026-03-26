@@ -14,21 +14,51 @@ class ListDevicesAction
     public function execute(ListDevicesDTO $dto): LengthAwarePaginator
     {
         $deviceQuery = Device::query()
-            ->with('agent')
+            ->with(['agent'])
             ->withExists('activeTokens');
 
         if ($dto->allowedAgentIds !== null && $dto->allowedAgentIds !== 'all') {
             $deviceQuery->whereIn('agent_id', (array) $dto->allowedAgentIds);
         }
 
+        if ($dto->status !== null) {
+            if ($dto->status === 'active') {
+                $deviceQuery->whereHas('activeTokens');
+            } elseif ($dto->status === 'inactive') {
+                $deviceQuery->whereDoesntHave('activeTokens');
+            }
+        }
+
         return $deviceQuery
             ->when($dto->search, function (Builder $query, string $search) {
                 $term = strtolower($search);
-                $query->where(function ($q) use ($term) {
-                    $q->whereRaw('LOWER(name) LIKE ?', ["%{$term}%"])
-                        ->orWhereRaw('LOWER(model) LIKE ?', ["%{$term}%"])
-                        ->orWhereRaw('LOWER(device_uuid) LIKE ?', ["%{$term}%"]);
+                $isPostgres = config('database.default') === 'pgsql';
+                $query->where(function ($q) use ($term, $isPostgres) {
+                    if (is_numeric($term)) {
+                        $q->orWhere('id', $term);
+                    }
+
+                    $q->orWhereRaw('LOWER(name) LIKE ?', ["%{$term}%"])
+                        ->orWhereRaw('LOWER(model) LIKE ?', ["%{$term}%"]);
+
+                    if ($isPostgres) {
+                        $q->orWhereRaw('LOWER(device_uuid::text) LIKE ?', ["%{$term}%"]);
+                    } else {
+                        $q->orWhere('device_uuid', 'LIKE', "%{$term}%");
+                    }
+
+                    $q->orWhereHas('agent', function ($q) use ($term) {
+                        $q->whereRaw('LOWER(name) LIKE ?', ["%{$term}%"]);
+                    });
                 });
+
+                $idColumn = $isPostgres ? 'id::text' : 'id';
+
+                $query->orderByRaw("CASE 
+                    WHEN {$idColumn} = ? THEN 1 
+                    WHEN LOWER(name) = ? THEN 2 
+                    WHEN LOWER(name) LIKE ? THEN 3 
+                    ELSE 4 END", [$term, $term, "{$term}%"]);
             })
             ->latest()
             ->paginate($dto->perPage, ['*'], 'page', $dto->page);

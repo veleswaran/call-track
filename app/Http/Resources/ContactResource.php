@@ -23,6 +23,7 @@ class ContactResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'phone_number' => $this->phone_number,
+            'is_internal' => $this->is_internal,
             'created_at' => $this->created_at->toDateTimeString(),
             'updated_at' => $this->updated_at->toDateTimeString(),
         ];

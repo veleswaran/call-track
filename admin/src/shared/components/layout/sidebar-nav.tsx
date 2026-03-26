@@ -70,7 +70,7 @@ export function SidebarNav({
         <aside
             data-testid="sidebar"
             className={cn(
-                "flex flex-col bg-white dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800 transition-all duration-200",
+                "fixed inset-y-0 left-0 z-30 flex flex-col bg-white dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800 transition-all duration-200",
                 open ? "w-64" : "w-16"
             )}
         >

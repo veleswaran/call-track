@@ -7,6 +7,7 @@ import { Input } from "@shared/components/ui/input";
 import { useCreateContact } from "@features/contacts/hooks/use-create-contact";
 import type { CallLog } from "@shared/types";
 import { Loader2 } from "lucide-react";
+import { Checkbox } from "@shared/components/ui/checkbox";
 
 interface AddContactDialogProps {
     /**
@@ -21,6 +22,7 @@ interface AddContactDialogProps {
 export function AddContactDialog({ callLog, open, onOpenChange }: AddContactDialogProps) {
     const [name, setName] = useState("");
     const [phoneNumber, setPhoneNumber] = useState("");
+    const [isInternal, setIsInternal] = useState(true);
     const { mutate: createContact, isPending } = useCreateContact();
 
     // Determine if we're in standalone mode (no call log provided)
@@ -35,12 +37,14 @@ export function AddContactDialog({ callLog, open, onOpenChange }: AddContactDial
         createContact({
             name: name.trim(),
             phone_number: isStandaloneMode ? `+91${phoneNumber.trim()}` : effectivePhoneNumber,
+            is_internal: isInternal,
         }, {
-            onSuccess: () => {
-                onOpenChange(false);
-                setName("");
-                setPhoneNumber("");
-            }
+                onSuccess: () => {
+                    onOpenChange(false);
+                    setName("");
+                    setPhoneNumber("");
+                    setIsInternal(true);
+                }
         });
     };
 
@@ -49,6 +53,7 @@ export function AddContactDialog({ callLog, open, onOpenChange }: AddContactDial
             // Reset form when closing
             setName("");
             setPhoneNumber("");
+            setIsInternal(true);
         }
         onOpenChange(newOpen);
     };
@@ -91,6 +96,19 @@ export function AddContactDialog({ callLog, open, onOpenChange }: AddContactDial
                             onChange={(e) => setName(e.target.value)}
                             placeholder="John Doe"
                         />
+                    </div>
+                    <div className="flex items-center space-x-2 pt-2">
+                        <Checkbox
+                            id="is_internal"
+                            checked={isInternal}
+                            onCheckedChange={(checked) => setIsInternal(!!checked)}
+                        />
+                        <label
+                            htmlFor="is_internal"
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                        >
+                            Internal Contact
+                        </label>
                     </div>
                 </div>
 

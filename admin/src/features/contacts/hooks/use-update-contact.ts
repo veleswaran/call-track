@@ -7,9 +7,9 @@ export function useUpdateContact() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: async ({ id, data }: { id: number; data: { name: string; phone_number: string } }) => {
+        mutationFn: async ({ id, data }: { id: number; data: { name: string; phone_number: string; is_internal: boolean } }) => {
             const response = await api.put<{ data: Contact }>(`/api/v1/admin/contacts/${id}`, data);
-            return response;
+            return response.data;
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["call-logs"] });

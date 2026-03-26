@@ -4,8 +4,9 @@ import * as React from "react";
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Phone, Smartphone, Users, BarChart, Menu, Contact, Settings, X, LogOut } from "lucide-react";
+import { LayoutDashboard, Phone, Smartphone, Users, BarChart, Menu, Contact, Settings, X, LogOut, PhoneMissed } from "lucide-react";
 import { cn } from "@shared/utils";
+import { useAuth } from "@/src/features/auth/hooks/use-auth";
 
 /**
  * Primary navigation items shown directly in the bottom bar
@@ -21,6 +22,7 @@ const primaryNavItems = [
  * Overflow navigation items shown in the "More" menu
  */
 const moreNavItems = [
+    { name: "Missed Calls", href: "/reports/missed-calls", icon: PhoneMissed },
     { name: "Teams", href: "/teams", icon: Users, permission: "manage team" },
     { name: "Users", href: "/users", icon: Users, permission: "manage users" },
     { name: "Agents", href: "/agents", icon: Users, permission: "manage team" },
@@ -35,10 +37,6 @@ export type BottomNavItem = (typeof navItems)[number];
 export interface BottomNavProps {
     onLogout?: () => void;
 }
-
-import { useAuth } from "@/src/features/auth/hooks/use-auth";
-
-// ... existing code ...
 
 export function BottomNav({ onLogout }: BottomNavProps) {
     const pathname = usePathname();

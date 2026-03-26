@@ -21,7 +21,6 @@ export interface CallLogFilters {
     sim_slot?: number;
 
     // Filters
-    device_id?: number;
 
     // Array filters support
     agents?: number[];    // Replaces single agent_id
@@ -40,6 +39,9 @@ export interface CallLogFilters {
 
     // Team Filter
     team_id?: number;
+
+    // Contact Filter
+    contact_filter?: "all" | "internal" | "external";
 }
 
 /**

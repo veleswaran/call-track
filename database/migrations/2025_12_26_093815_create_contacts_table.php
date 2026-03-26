@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('device_id')->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->string('phone_hash');
+            $table->boolean('is_internal')->default(true);
             $table->timestamps();
 
             $table->unique(['device_id', 'phone_hash']);

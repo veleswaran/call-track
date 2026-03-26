@@ -12,7 +12,7 @@ readonly class CreateUserWithContextDTO
         public string $password,
         public bool $isAgent = false,
         public ?string $employeeCode = null,
-        public string $status = 'active',
+        public ?string $status = null,
         public ?string $role = null,
         public bool $isTeam = false,
         public ?int $teamId = null,

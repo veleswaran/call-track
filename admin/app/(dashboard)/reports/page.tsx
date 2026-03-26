@@ -30,6 +30,7 @@ export default function ReportsPage() {
         types: filters.type !== 'all' ? [filters.type] : undefined,
         agent_ids: filters.agentIds || undefined,
         team_ids: filters.teamIds || undefined,
+        contact_filter: filters.contactFilter || undefined,
     }
 
     const getQueryString = (params: Record<string, string | number | (string | number)[] | undefined | null>) => {
