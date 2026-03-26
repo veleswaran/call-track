@@ -50,7 +50,7 @@ export function AddAgentDialog({ trigger }: AddAgentDialogProps) {
             await createAgent.mutateAsync({
                 name: name.trim(),
                 employee_code: employeeCode.trim() || undefined,
-                status: status || undefined,
+                status: status,
             });
 
             // Reset form and close

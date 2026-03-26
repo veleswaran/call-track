@@ -22,7 +22,11 @@ class ListDevicesAction
         }
 
         if ($dto->status !== null) {
-            $deviceQuery->where('status', $dto->status);
+            if ($dto->status === 'active') {
+                $deviceQuery->whereHas('activeTokens');
+            } elseif ($dto->status === 'inactive') {
+                $deviceQuery->whereDoesntHave('activeTokens');
+            }
         }
 
         return $deviceQuery
@@ -48,12 +52,13 @@ class ListDevicesAction
                     });
                 });
 
-                // Prioritize exact matches (Exact ID, then Exact Name)
-                $query->orderByRaw('CASE 
-                    WHEN id = ? THEN 1 
+                $idColumn = $isPostgres ? 'id::text' : 'id';
+
+                $query->orderByRaw("CASE 
+                    WHEN {$idColumn} = ? THEN 1 
                     WHEN LOWER(name) = ? THEN 2 
                     WHEN LOWER(name) LIKE ? THEN 3 
-                    ELSE 4 END', [$term, $term, "{$term}%"]);
+                    ELSE 4 END", [$term, $term, "{$term}%"]);
             })
             ->latest()
             ->paginate($dto->perPage, ['*'], 'page', $dto->page);

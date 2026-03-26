@@ -25,7 +25,7 @@ class DeviceFactory extends Factory
             'model' => $this->faker->word,
             'os_version' => $this->faker->numerify('#.#'),
             'app_version' => $this->faker->numerify('#.#.#'),
-            'status' => 'active',
+            'status' => 'inactive',
         ];
     }
 }

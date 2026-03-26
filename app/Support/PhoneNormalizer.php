@@ -43,6 +43,12 @@ class PhoneNormalizer
         return '+'.$digits;
     }
 
+    /**
+     * Generate search variations for a phone number.
+     * Returns array of normalized phone numbers to try.
+     *
+     * @return array<string>
+     */
     public static function generateSearchVariations(string $search): array
     {
         $variations = [];

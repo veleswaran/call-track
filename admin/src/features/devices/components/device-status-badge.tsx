@@ -18,7 +18,6 @@ export function DeviceStatusBadge({ status }: DeviceStatusBadgeProps) {
         const lowerStatus = s.toLowerCase();
         switch (lowerStatus) {
             case 'active': return 'bg-emerald-500/20 text-emerald-500 border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-400';
-            case 'maintenance': return 'bg-amber-500/20 text-amber-500 border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-400';
             case 'inactive':
             default: return 'bg-zinc-500/20 text-zinc-500 border-zinc-500/40 dark:bg-zinc-500/10 dark:text-zinc-400';
         }

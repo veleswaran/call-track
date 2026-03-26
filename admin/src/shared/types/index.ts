@@ -92,7 +92,7 @@ export interface Agent {
     id: number;
     name: string;
     employee_code: string | null;
-    status: string | null;
+    status: "active" | "inactive";
     user_id?: number | null;
     user?: User | null;
     devices_count?: number;
@@ -108,7 +108,7 @@ export interface Contact {
     phone_number: string;
     name: string;
     company: string | null;
-    notes?: string;
+    notes: string | null;
     is_internal: boolean;
     created_at: string;
     updated_at: string;

@@ -63,7 +63,7 @@ export function EditAgentDialog({ agent, open, onOpenChange }: EditAgentDialogPr
                 data: {
                     name: name.trim(),
                     employee_code: employeeCode.trim() || undefined,
-                    status: status || undefined,
+                    status: status,
                 },
             });
 

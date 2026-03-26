@@ -20,7 +20,7 @@ class UpdateContactAction
         $contact->update([
             'name' => $dto->name,
             'phone_hash' => hash('sha256', $normalizedPhone),
-            'phone_number' => $dto->phoneNumber,
+            'phone_number' => $dto->phoneNumber, // Casts handle encryption
             'is_internal' => $dto->isInternal,
         ]);
 

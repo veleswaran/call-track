@@ -42,7 +42,6 @@ export default function DevicesPage() {
     const statuses = [
         { id: 'active', name: 'Active' },
         { id: 'inactive', name: 'Inactive' },
-        { id: 'maintenance', name: 'Maintenance' },
     ];
     const [search, setSearch] = useState("");
     const [status, setStatus] = useState<string>("all");
