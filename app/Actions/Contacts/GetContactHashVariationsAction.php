@@ -22,7 +22,7 @@ class GetContactHashVariationsAction
             $allHashes = [];
 
             // Use cursor to iterate and ensure phone_number is decrypted via model casting
-            foreach (Contact::whereNotNull('phone_number')->cursor() as $contact) {
+            foreach (Contact::where('is_internal', true)->whereNotNull('phone_number')->cursor() as $contact) {
                 $variations = PhoneNormalizer::generateHashVariations($contact->phone_number);
                 foreach ($variations as $hash) {
                     $allHashes[] = $hash;
@@ -30,7 +30,7 @@ class GetContactHashVariationsAction
             }
 
             // Also include existing phone_hash as a fallback for old contacts without phone_number
-            $existingHashes = Contact::pluck('phone_hash')->all();
+            $existingHashes = Contact::where('is_internal', true)->pluck('phone_hash')->all();
             foreach ($existingHashes as $hash) {
                 $allHashes[] = $hash;
             }
