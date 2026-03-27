@@ -26,7 +26,7 @@ interface FilterRow {
 const ROWS: FilterRow[] = [
     {
         id: "agents",
-        label: "1. All Agents",
+        label: "All Agents",
         keys: {
             callLogs: "enable_call_log_agent_filter",
             missedCalls: "enable_missed_call_agent_filter",
@@ -35,7 +35,7 @@ const ROWS: FilterRow[] = [
     },
     {
         id: "internal",
-        label: "2. Internal Calls",
+        label: "Internal Calls",
         keys: {
             callLogs: "enable_call_log_internal_filter",
             missedCalls: "enable_missed_call_internal_filter",
@@ -44,7 +44,7 @@ const ROWS: FilterRow[] = [
     },
     {
         id: "teams",
-        label: "3. All Teams",
+        label: "All Teams",
         keys: {
             callLogs: "enable_call_log_team_filter",
             missedCalls: "enable_missed_call_team_filter",
@@ -53,7 +53,7 @@ const ROWS: FilterRow[] = [
     },
     {
         id: "classes",
-        label: "4. All Classes",
+        label: "All Classes",
         keys: {
             callLogs: "enable_call_log_class_filter",
             missedCalls: null,
@@ -62,7 +62,7 @@ const ROWS: FilterRow[] = [
     },
     {
         id: "outcomes",
-        label: "5. All Outcomes",
+        label: "All Outcomes",
         keys: {
             callLogs: "enable_call_log_outcome_filter",
             missedCalls: null,
@@ -71,7 +71,7 @@ const ROWS: FilterRow[] = [
     },
     {
         id: "sims",
-        label: "6. SIMs",
+        label: "SIMs",
         keys: {
             callLogs: "enable_call_log_sim_filter",
             missedCalls: null,

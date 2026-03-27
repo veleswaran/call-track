@@ -8,6 +8,18 @@ use Illuminate\Support\Facades\DB;
 return new class extends Migration
 {
     /**
+     * The migrations that should be run before this migration.
+     *
+     * @return array
+     */
+    public function after(): array
+    {
+        return [
+            '2026_03_06_163138_create_system_settings_table',
+        ];
+    }
+
+    /**
      * Run the migrations.
      */
     public function up(): void
