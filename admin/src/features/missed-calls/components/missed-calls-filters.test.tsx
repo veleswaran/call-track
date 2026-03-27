@@ -75,6 +75,15 @@ describe("MissedCallsFilters", () => {
     beforeEach(() => {
         vi.clearAllMocks()
         vi.mocked(api.get).mockImplementation((url) => {
+            if (url.includes("settings")) {
+                return Promise.resolve({
+                    data: {
+                        enable_missed_call_team_filter: true,
+                        enable_missed_call_agent_filter: true,
+                        enable_missed_call_internal_filter: true,
+                    }
+                })
+            }
             if (url.includes("agents")) {
                 return Promise.resolve({
                     data: {
@@ -93,7 +102,11 @@ describe("MissedCallsFilters", () => {
             wrapper: createWrapper(),
         })
 
-        expect(screen.getAllByTestId("mock-select")).toHaveLength(2)
+        // Wait for dynamic elements first
+        await screen.findByTestId("async-select-Team")
+        await screen.findByTestId("async-select-Agent")
+
+        expect(screen.getAllByTestId("mock-select")).toHaveLength(3)
         expect(screen.getByTestId("async-select-Team")).toBeInTheDocument()
         expect(screen.getByTestId("async-select-Agent")).toBeInTheDocument()
     })
@@ -102,6 +115,9 @@ describe("MissedCallsFilters", () => {
         render(<MissedCallsFilters onFilterChange={onFilterChange} />, {
             wrapper: createWrapper(),
         })
+
+        // Wait for dynamic elements first
+        await screen.findByTestId("async-select-Team")
 
         // Change status
         const statusSelects = screen.getAllByTestId("mock-select")

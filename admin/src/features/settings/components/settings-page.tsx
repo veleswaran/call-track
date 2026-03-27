@@ -13,6 +13,15 @@ import { useSettingsQuery, useUpdateSettingsMutation } from "../hooks/use-settin
 import { Loader2 } from "lucide-react";
 import { Checkbox } from "@shared/components/ui/checkbox";
 import { Accordion, AccordionItem } from "@shared/components/ui/accordion";
+import { FilterVisibilityMatrix } from "./FilterVisibilityMatrix";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@shared/components/ui/table";
 
 const formSchema = z.object({
     heartbeat_threshold_minutes: z.number().min(5, "Minimum threshold is 5 minutes").max(10080, "Maximum is 1 week"),
@@ -25,6 +34,16 @@ const formSchema = z.object({
     enable_call_log_internal_filter: z.boolean(),
     enable_report_internal_filter: z.boolean(),
     enable_missed_call_internal_filter: z.boolean(),
+    enable_call_log_agent_filter: z.boolean(),
+    enable_missed_call_agent_filter: z.boolean(),
+    enable_report_agent_filter: z.boolean(),
+    enable_call_log_team_filter: z.boolean(),
+    enable_missed_call_team_filter: z.boolean(),
+    enable_report_team_filter: z.boolean(),
+    enable_call_log_class_filter: z.boolean(),
+    enable_report_class_filter: z.boolean(),
+    enable_call_log_outcome_filter: z.boolean(),
+    enable_report_outcome_filter: z.boolean(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -40,12 +59,22 @@ export function SettingsPage() {
             fcm_stale_title: "",
             fcm_stale_body: "",
             escalation_sla_hours: 2,
-            enable_call_log_sim_filter: false,
-            enable_agent_status_filter: false,
-            enable_device_status_filter: false,
-            enable_call_log_internal_filter: false,
-            enable_report_internal_filter: false,
-            enable_missed_call_internal_filter: false,
+            enable_call_log_sim_filter: true,
+            enable_agent_status_filter: true,
+            enable_device_status_filter: true,
+            enable_call_log_internal_filter: true,
+            enable_report_internal_filter: true,
+            enable_missed_call_internal_filter: true,
+            enable_call_log_agent_filter: true,
+            enable_missed_call_agent_filter: true,
+            enable_report_agent_filter: true,
+            enable_call_log_team_filter: true,
+            enable_missed_call_team_filter: true,
+            enable_report_team_filter: true,
+            enable_call_log_class_filter: true,
+            enable_report_class_filter: true,
+            enable_call_log_outcome_filter: true,
+            enable_report_outcome_filter: true,
         },
     });
 
@@ -62,6 +91,16 @@ export function SettingsPage() {
                 enable_call_log_internal_filter: !!settings.enable_call_log_internal_filter,
                 enable_report_internal_filter: !!settings.enable_report_internal_filter,
                 enable_missed_call_internal_filter: !!settings.enable_missed_call_internal_filter,
+                enable_call_log_agent_filter: !!settings.enable_call_log_agent_filter,
+                enable_missed_call_agent_filter: !!settings.enable_missed_call_agent_filter,
+                enable_report_agent_filter: !!settings.enable_report_agent_filter,
+                enable_call_log_team_filter: !!settings.enable_call_log_team_filter,
+                enable_missed_call_team_filter: !!settings.enable_missed_call_team_filter,
+                enable_report_team_filter: !!settings.enable_report_team_filter,
+                enable_call_log_class_filter: !!settings.enable_call_log_class_filter,
+                enable_report_class_filter: !!settings.enable_report_class_filter,
+                enable_call_log_outcome_filter: !!settings.enable_call_log_outcome_filter,
+                enable_report_outcome_filter: !!settings.enable_report_outcome_filter,
             });
         }
     }, [settings, form]);
@@ -79,6 +118,16 @@ export function SettingsPage() {
                 enable_call_log_internal_filter: values.enable_call_log_internal_filter,
                 enable_report_internal_filter: values.enable_report_internal_filter,
                 enable_missed_call_internal_filter: values.enable_missed_call_internal_filter,
+                enable_call_log_agent_filter: values.enable_call_log_agent_filter,
+                enable_missed_call_agent_filter: values.enable_missed_call_agent_filter,
+                enable_report_agent_filter: values.enable_report_agent_filter,
+                enable_call_log_team_filter: values.enable_call_log_team_filter,
+                enable_missed_call_team_filter: values.enable_missed_call_team_filter,
+                enable_report_team_filter: values.enable_report_team_filter,
+                enable_call_log_class_filter: values.enable_call_log_class_filter,
+                enable_report_class_filter: values.enable_report_class_filter,
+                enable_call_log_outcome_filter: values.enable_call_log_outcome_filter,
+                enable_report_outcome_filter: values.enable_report_outcome_filter,
             }
         });
     }
@@ -191,114 +240,65 @@ export function SettingsPage() {
 
                     <Card>
                         <Accordion>
-                            <AccordionItem title="Filter Configuration" defaultOpen={false} className="px-6">
-                                <div className="space-y-2">
-                                    <Accordion className="border-none divide-y-0">
-                                         <AccordionItem title="SIM Slot Configuration" defaultOpen={false} className="px-0">
-                                             <div className="space-y-6 pt-2 pb-4">
-                                                 <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                                                     Enable or disable SIM slot filtering on specific pages.
-                                                 </p>
-  
-                                                 <div className="space-y-4">
-                                                     <FormField
-                                                         control={form.control}
-                                                         name="enable_call_log_sim_filter"
-                                                         render={({ field }) => (
-                                                             <FormItem className="flex flex-row items-center space-x-3 space-y-0 text-zinc-900 dark:text-zinc-100">
-                                                                 <FormControl>
-                                                                     <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                                                                 </FormControl>
-                                                                 <FormLabel className="text-base font-normal cursor-pointer">Call Logs</FormLabel>
-                                                             </FormItem>
-                                                         )}
-                                                     />
-                                                 </div>
-                                             </div>
-                                         </AccordionItem>
-  
-                                         <AccordionItem title="Status Filter Configuration" defaultOpen={false} className="px-0">
-                                             <div className="space-y-6 pt-2 pb-4">
-                                                 <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                                                     Enable or disable status filtering for agents and devices.
-                                                 </p>
-  
-                                                 <div className="space-y-4">
-                                                     <FormField
-                                                         control={form.control}
-                                                         name="enable_agent_status_filter"
-                                                         render={({ field }) => (
-                                                             <FormItem className="flex flex-row items-center space-x-3 space-y-0 text-zinc-900 dark:text-zinc-100">
-                                                                 <FormControl>
-                                                                     <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                                                                 </FormControl>
-                                                                 <FormLabel className="text-base font-normal cursor-pointer">Agents</FormLabel>
-                                                             </FormItem>
-                                                         )}
-                                                     />
-                                                     <FormField
-                                                         control={form.control}
-                                                         name="enable_device_status_filter"
-                                                         render={({ field }) => (
-                                                             <FormItem className="flex flex-row items-center space-x-3 space-y-0 text-zinc-900 dark:text-zinc-100">
-                                                                 <FormControl>
-                                                                     <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                                                                 </FormControl>
-                                                                 <FormLabel className="text-base font-normal cursor-pointer">Devices</FormLabel>
-                                                             </FormItem>
-                                                         )}
-                                                     />
-                                                 </div>
-                                             </div>
-                                         </AccordionItem>
- 
-                                         <AccordionItem title="Contact Filter Configuration" defaultOpen={false} className="px-0">
-                                             <div className="space-y-6 pt-2 pb-4">
-                                                 <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                                                     Enable or disable internal and external call filtering.
-                                                 </p>
-  
-                                                 <div className="space-y-4">
-                                                     <FormField
-                                                         control={form.control}
-                                                         name="enable_call_log_internal_filter"
-                                                         render={({ field }) => (
-                                                             <FormItem className="flex flex-row items-center space-x-3 space-y-0 text-zinc-900 dark:text-zinc-100">
-                                                                 <FormControl>
-                                                                     <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                                                                 </FormControl>
-                                                                 <FormLabel className="text-base font-normal cursor-pointer">Call Logs</FormLabel>
-                                                             </FormItem>
-                                                         )}
-                                                     />
-                                                     <FormField
-                                                         control={form.control}
-                                                         name="enable_report_internal_filter"
-                                                         render={({ field }) => (
-                                                             <FormItem className="flex flex-row items-center space-x-3 space-y-0 text-zinc-900 dark:text-zinc-100">
-                                                                 <FormControl>
-                                                                     <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                                                                 </FormControl>
-                                                                 <FormLabel className="text-base font-normal cursor-pointer">Reports</FormLabel>
-                                                             </FormItem>
-                                                         )}
-                                                     />
-                                                     <FormField
-                                                         control={form.control}
-                                                         name="enable_missed_call_internal_filter"
-                                                         render={({ field }) => (
-                                                             <FormItem className="flex flex-row items-center space-x-3 space-y-0 text-zinc-900 dark:text-zinc-100">
-                                                                 <FormControl>
-                                                                     <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                                                                 </FormControl>
-                                                                 <FormLabel className="text-base font-normal cursor-pointer">Missed Calls</FormLabel>
-                                                             </FormItem>
-                                                         )}
-                                                     />
-                                                 </div>
-                                             </div>
-                                         </AccordionItem>
-                                    </Accordion>
+                            <AccordionItem title="Filter Configuration" defaultOpen={true} className="px-6">
+                                <div className="space-y-6 pb-6 pt-2">
+                                    <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                                        Configure which filters are visible on each dashboard page.
+                                    </p>
+                                    
+                                    <FilterVisibilityMatrix />
+
+                                    <div className="pt-6 border-t border-zinc-100 dark:border-zinc-800">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">Management Filters</h3>
+                                        </div>
+                                        <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6">
+                                            Enable or disable status filtering on management pages (Agents, Devices).
+                                        </p>
+
+                                        <div className="rounded-md border border-zinc-200 dark:border-zinc-800 overflow-hidden max-w-2xl">
+                                            <Table>
+                                                <TableHeader>
+                                                    <TableRow className="bg-zinc-50/50 dark:bg-zinc-900/50">
+                                                        <TableHead className="w-[120px] font-bold">Filter</TableHead>
+                                                        <TableHead className="text-center font-bold">Agents</TableHead>
+                                                        <TableHead className="text-center font-bold">Device</TableHead>
+                                                    </TableRow>
+                                                </TableHeader>
+                                                <TableBody>
+                                                    <TableRow>
+                                                        <TableCell className="font-medium">Status</TableCell>
+                                                        <TableCell className="text-center">
+                                                            <FormField
+                                                                control={form.control}
+                                                                name="enable_agent_status_filter"
+                                                                render={({ field }) => (
+                                                                    <FormItem className="flex justify-center">
+                                                                        <FormControl>
+                                                                            <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                                                                        </FormControl>
+                                                                    </FormItem>
+                                                                )}
+                                                            />
+                                                        </TableCell>
+                                                        <TableCell className="text-center">
+                                                            <FormField
+                                                                control={form.control}
+                                                                name="enable_device_status_filter"
+                                                                render={({ field }) => (
+                                                                    <FormItem className="flex justify-center">
+                                                                        <FormControl>
+                                                                            <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                                                                        </FormControl>
+                                                                    </FormItem>
+                                                                )}
+                                                            />
+                                                        </TableCell>
+                                                    </TableRow>
+                                                </TableBody>
+                                            </Table>
+                                        </div>
+                                    </div>
                                 </div>
                             </AccordionItem>
                         </Accordion>
