@@ -9,8 +9,6 @@ return new class extends Migration
 {
     /**
      * The migrations that should be run before this migration.
-     *
-     * @return array
      */
     public function after(): array
     {
@@ -63,5 +61,4 @@ return new class extends Migration
     {
         // No need to remove these in down as they are harmless settings
     }
-
 };
