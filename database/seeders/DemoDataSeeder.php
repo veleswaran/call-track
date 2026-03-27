@@ -52,6 +52,7 @@ class DemoDataSeeder extends Seeder
         );
 
         if (class_exists(\Spatie\Permission\Models\Role::class)) {
+            \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'admin']);
             $admin->assignRole('admin');
         }
 
@@ -78,8 +79,11 @@ class DemoDataSeeder extends Seeder
                 ]
             );
 
-            if (class_exists(\Spatie\Permission\Models\Role::class) && ! $user->hasRole('member')) {
-                $user->assignRole('member');
+            if (class_exists(\Spatie\Permission\Models\Role::class)) {
+                \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'member']);
+                if (! $user->hasRole('member')) {
+                    $user->assignRole('member');
+                }
             }
 
             $createdAgents[] = Agent::firstOrCreate(
@@ -253,6 +257,27 @@ class DemoDataSeeder extends Seeder
         }
 
         $this->command->info("Created {$callLogsCount} call logs.");
+
+        // 6.5 Create explicit Contact records for demo numbers
+        $this->command->info('Creating contact records...');
+        foreach ($phoneNumbers as $idx => $rawPhone) {
+            $name = $contactNames[$idx];
+            if (! $name) {
+                continue;
+            }
+
+            $normalized = PhoneNormalizer::normalize($rawPhone);
+
+            \App\Domain\Calls\Models\Contact::updateOrCreate(
+                ['phone_hash' => hash('sha256', $normalized)],
+                [
+                    'name' => $name,
+                    'phone_number' => $normalized,
+                    // Make the first 3 contacts "Internal" for demonstration
+                    'is_internal' => $idx < 3,
+                ]
+            );
+        }
 
         // 7. Update Loyalty Metrics
         $this->command->info('Updating loyalty metrics...');

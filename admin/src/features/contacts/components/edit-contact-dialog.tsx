@@ -18,7 +18,7 @@ interface EditContactDialogProps {
 export function EditContactDialog({ contact, open, onOpenChange }: EditContactDialogProps) {
     const [name, setName] = useState(contact?.name || "");
     const [phoneNumber, setPhoneNumber] = useState(contact?.phone_number || "");
-    const [isInternal, setIsInternal] = useState(contact?.is_internal ?? true);
+    const [isInternal, setIsInternal] = useState(contact?.is_internal ?? false);
     const { mutate: updateContact, isPending } = useUpdateContact();
 
     // Removed useEffect. Parent component must conditionally render this dialog

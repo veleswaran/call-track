@@ -35,6 +35,9 @@ class CreateOrUpdateContactActionTest extends TestCase
         // Phone is stored in normalized international format
         $this->assertEquals($normalizedPhone, $contact->phone_number);
 
+        // Should default to external (false)
+        $this->assertFalse($contact->is_internal);
+
         // Hash is generated from the normalized phone number
         $this->assertEquals(hash('sha256', $normalizedPhone), $contact->phone_hash);
     }
@@ -64,6 +67,7 @@ class CreateOrUpdateContactActionTest extends TestCase
         $this->assertEquals($existingContact->id, $contact->id);
         $this->assertEquals('Updated Name', $contact->name);
         $this->assertEquals($normalizedPhone, $contact->phone_number);
+        $this->assertFalse($contact->is_internal);
         $this->assertEquals(1, Contact::count());
     }
 
