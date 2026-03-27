@@ -63,4 +63,5 @@ return new class extends Migration
     {
         // No need to remove these in down as they are harmless settings
     }
+
 };
