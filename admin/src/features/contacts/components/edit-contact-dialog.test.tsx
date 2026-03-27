@@ -61,7 +61,7 @@ describe("EditContactDialog", () => {
                     data: {
                         name: "Jane Doe",
                         phone_number: "1234567890",
-                        is_internal: true,
+                        is_internal: false,
                     },
                 },
                 expect.any(Object)

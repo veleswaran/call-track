@@ -22,7 +22,7 @@ interface AddContactDialogProps {
 export function AddContactDialog({ callLog, open, onOpenChange }: AddContactDialogProps) {
     const [name, setName] = useState("");
     const [phoneNumber, setPhoneNumber] = useState("");
-    const [isInternal, setIsInternal] = useState(true);
+    const [isInternal, setIsInternal] = useState(false);
     const { mutate: createContact, isPending } = useCreateContact();
 
     // Determine if we're in standalone mode (no call log provided)
@@ -43,7 +43,7 @@ export function AddContactDialog({ callLog, open, onOpenChange }: AddContactDial
                     onOpenChange(false);
                     setName("");
                     setPhoneNumber("");
-                    setIsInternal(true);
+                    setIsInternal(false);
                 }
         });
     };
@@ -53,7 +53,7 @@ export function AddContactDialog({ callLog, open, onOpenChange }: AddContactDial
             // Reset form when closing
             setName("");
             setPhoneNumber("");
-            setIsInternal(true);
+            setIsInternal(false);
         }
         onOpenChange(newOpen);
     };

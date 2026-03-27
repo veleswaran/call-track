@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('contacts', function (Blueprint $table) {
-            $table->boolean('is_internal')->default(true)->after('phone_hash');
+            $table->boolean('is_internal')->default(false)->after('phone_hash');
         });
     }
 
