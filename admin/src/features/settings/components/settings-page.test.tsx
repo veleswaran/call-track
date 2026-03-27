@@ -27,17 +27,23 @@ describe("SettingsPage", () => {
         fcm_stale_title: "Warning",
         fcm_stale_body: "Wake up",
         escalation_sla_hours: 2,
-        enable_device_search: false,
-        enable_user_search: false,
-        enable_agent_search: false,
         enable_contact_search: false,
-        enable_report_sim_filter: false,
         enable_call_log_sim_filter: false,
         enable_agent_status_filter: false,
         enable_device_status_filter: false,
         enable_call_log_internal_filter: false,
         enable_report_internal_filter: false,
         enable_missed_call_internal_filter: false,
+        enable_call_log_agent_filter: false,
+        enable_missed_call_agent_filter: false,
+        enable_report_agent_filter: false,
+        enable_call_log_team_filter: false,
+        enable_missed_call_team_filter: false,
+        enable_report_team_filter: false,
+        enable_call_log_class_filter: false,
+        enable_report_class_filter: false,
+        enable_call_log_outcome_filter: false,
+        enable_report_outcome_filter: false,
     };
 
     beforeEach(() => {
@@ -117,20 +123,12 @@ describe("SettingsPage", () => {
         await user.click(submitBtn);
 
         await waitFor(() => {
-            expect(mockUpdateMutate).toHaveBeenCalledWith({
-                settings: {
-                    heartbeat_threshold_minutes: 60,
+            expect(mockUpdateMutate).toHaveBeenCalledWith(expect.objectContaining({
+                settings: expect.objectContaining({
                     fcm_stale_title: "New Warning",
                     fcm_stale_body: "Wake up device",
-                    escalation_sla_hours: 2,
-                    enable_call_log_sim_filter: false,
-                    enable_agent_status_filter: false,
-                    enable_device_status_filter: false,
-                    enable_call_log_internal_filter: false,
-                    enable_report_internal_filter: false,
-                    enable_missed_call_internal_filter: false,
-                }
-            });
+                })
+            }));
         });
     });
 

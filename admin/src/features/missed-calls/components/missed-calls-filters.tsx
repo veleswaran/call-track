@@ -192,37 +192,41 @@ export function MissedCallsFilters({ onFilterChange }: MissedCallsFiltersProps) 
                 </Select>
             )}
 
-            <AsyncSelect
-                value={teamId}
-                onChange={setTeamId}
-                loadOptions={async (search) => {
-                    const res = await api.get<PaginatedResponse<Team>>(`/api/v1/admin/teams?search=${search}&per_page=100`);
-                    const options = res.data.map((team: Team) => ({
-                        label: team.name,
-                        value: team.id.toString(),
-                    }));
-                    return [{ label: "All Teams", value: "all" }, ...options];
-                }}
-                placeholder="All Teams"
-                label="Team"
-                className="w-[180px]"
-            />
+            {settings?.enable_missed_call_team_filter && (
+                <AsyncSelect
+                    value={teamId}
+                    onChange={setTeamId}
+                    loadOptions={async (search) => {
+                        const res = await api.get<PaginatedResponse<Team>>(`/api/v1/admin/teams?search=${search}&per_page=100`);
+                        const options = res.data.map((team: Team) => ({
+                            label: team.name,
+                            value: team.id.toString(),
+                        }));
+                        return [{ label: "All Teams", value: "all" }, ...options];
+                    }}
+                    placeholder="All Teams"
+                    label="Team"
+                    className="w-[180px]"
+                />
+            )}
 
-            <AsyncSelect
-                value={agentId}
-                onChange={setAgentId}
-                loadOptions={async (search) => {
-                    const res = await api.get<PaginatedResponse<Agent>>(`/api/v1/admin/agents?search=${search}&per_page=100&sort_by=name`);
-                    const options = res.data.map((agent: Agent) => ({
-                        label: agent.name,
-                        value: agent.id.toString(),
-                    }));
-                    return [{ label: "All Agents", value: "all" }, ...options];
-                }}
-                placeholder="All Agents"
-                label="Agent"
-                className="w-[180px]"
-            />
+            {settings?.enable_missed_call_agent_filter && (
+                <AsyncSelect
+                    value={agentId}
+                    onChange={setAgentId}
+                    loadOptions={async (search) => {
+                        const res = await api.get<PaginatedResponse<Agent>>(`/api/v1/admin/agents?search=${search}&per_page=100&sort_by=name`);
+                        const options = res.data.map((agent: Agent) => ({
+                            label: agent.name,
+                            value: agent.id.toString(),
+                        }));
+                        return [{ label: "All Agents", value: "all" }, ...options];
+                    }}
+                    placeholder="All Agents"
+                    label="Agent"
+                    className="w-[180px]"
+                />
+            )}
 
             <Button size="icon" variant="ghost" onClick={handleReset} title="Reset Filters">
                 <X className="h-4 w-4" />

@@ -181,61 +181,69 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
                 </PopoverContent>
             </Popover>
 
-            <Select value={outcome} onValueChange={setOutcome}>
-                <SelectTrigger className="w-[150px]">
-                    <SelectValue placeholder="All Outcomes" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="all">All Outcomes</SelectItem>
-                    <SelectItem value="Connected">Connected</SelectItem>
-                    <SelectItem value="Missed">Missed</SelectItem>
-                    <SelectItem value="No Answer">No Answer</SelectItem>
-                </SelectContent>
-            </Select>
+            {settings?.enable_report_outcome_filter && (
+                <Select value={outcome} onValueChange={setOutcome}>
+                    <SelectTrigger className="w-[150px]">
+                        <SelectValue placeholder="All Outcomes" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Outcomes</SelectItem>
+                        <SelectItem value="Connected">Connected</SelectItem>
+                        <SelectItem value="Missed">Missed</SelectItem>
+                        <SelectItem value="No Answer">No Answer</SelectItem>
+                    </SelectContent>
+                </Select>
+            )}
 
-            <AsyncSelect
-                value={teamId}
-                onChange={setTeamId}
-                loadOptions={async (search) => {
-                    const res = await api.get<PaginatedResponse<Team>>(`/api/v1/admin/teams?search=${search}&per_page=100`)
-                    const options = res.data.map((team: Team) => ({
-                        label: team.name,
-                        value: team.id.toString()
-                    }))
-                    return [{ label: "All Teams", value: "all" }, ...options]
-                }}
-                placeholder="All Teams"
-                label="Team"
-                className="w-[180px]"
-            />
+            {settings?.enable_report_team_filter && (
+                <AsyncSelect
+                    value={teamId}
+                    onChange={setTeamId}
+                    loadOptions={async (search) => {
+                        const res = await api.get<PaginatedResponse<Team>>(`/api/v1/admin/teams?search=${search}&per_page=100`)
+                        const options = res.data.map((team: Team) => ({
+                            label: team.name,
+                            value: team.id.toString()
+                        }))
+                        return [{ label: "All Teams", value: "all" }, ...options]
+                    }}
+                    placeholder="All Teams"
+                    label="Team"
+                    className="w-[180px]"
+                />
+            )}
 
-            <AsyncSelect
-                value={agentId}
-                onChange={setAgentId}
-                loadOptions={async (search) => {
-                    const res = await api.get<PaginatedResponse<Agent>>(`/api/v1/admin/agents?search=${search}&per_page=100&sort_by=name`)
-                    const options = res.data.map((agent: Agent) => ({
-                        label: agent.name,
-                        value: agent.id.toString()
-                    }))
-                    return [{ label: "All Agents", value: "all" }, ...options]
-                }}
-                placeholder="All Agents"
-                label="Agent"
-                className="w-[180px]"
-            />
+            {settings?.enable_report_agent_filter && (
+                <AsyncSelect
+                    value={agentId}
+                    onChange={setAgentId}
+                    loadOptions={async (search) => {
+                        const res = await api.get<PaginatedResponse<Agent>>(`/api/v1/admin/agents?search=${search}&per_page=100&sort_by=name`)
+                        const options = res.data.map((agent: Agent) => ({
+                            label: agent.name,
+                            value: agent.id.toString()
+                        }))
+                        return [{ label: "All Agents", value: "all" }, ...options]
+                    }}
+                    placeholder="All Agents"
+                    label="Agent"
+                    className="w-[180px]"
+                />
+            )}
 
-            <Select value={type} onValueChange={setType}>
-                <SelectTrigger className="w-[150px]">
-                    <SelectValue placeholder="All Classes" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="all">All Classes</SelectItem>
-                    <SelectItem value="BUSINESS">Business</SelectItem>
-                    <SelectItem value="PERSONAL">Personal</SelectItem>
-                    <SelectItem value="IGNORED">Ignored</SelectItem>
-                </SelectContent>
-            </Select>
+            {settings?.enable_report_class_filter && (
+                <Select value={type} onValueChange={setType}>
+                    <SelectTrigger className="w-[150px]">
+                        <SelectValue placeholder="All Classes" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Classes</SelectItem>
+                        <SelectItem value="BUSINESS">Business</SelectItem>
+                        <SelectItem value="PERSONAL">Personal</SelectItem>
+                        <SelectItem value="IGNORED">Ignored</SelectItem>
+                    </SelectContent>
+                </Select>
+            )}
 
             {settings?.enable_report_internal_filter && (
                 <Select value={contactFilter} onValueChange={setContactFilter}>

@@ -139,8 +139,8 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
 
     return (
         <div className="flex flex-wrap items-center gap-2">
-            {/* Agent Filter - Only for Admins/Managers */}
-            {canViewTeams && (
+            {/* Agent Filter - Only for Admins/Managers and if enabled in settings */}
+            {canViewTeams && settings?.enable_call_log_agent_filter && (
                 <AsyncSelect
                     label="Agent"
                     placeholder="All Agents"
@@ -169,8 +169,8 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
                 </SelectContent>
             </Select>
 
-            {/* Team Filter - Only for Admins/Managers */}
-            {canViewTeams && (
+            {/* Team Filter - Only for Admins/Managers and if enabled in settings */}
+            {canViewTeams && settings?.enable_call_log_team_filter && (
                 <AsyncSelect
                     label="Team"
                     placeholder="Team..."
@@ -197,35 +197,39 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
                 />
             )}
 
-            <Select
-                value={filters.outcomes?.[0] ?? "all"}
-                onValueChange={(val) => updateArrayFilter("outcomes", val)}
-            >
-                <SelectTrigger className="w-[160px]">
-                    <SelectValue placeholder="Call Outcome" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="all">All Outcomes</SelectItem>
-                    <SelectItem value="Connected">Connected</SelectItem>
-                    <SelectItem value="Missed">Missed</SelectItem>
-                    <SelectItem value="No Answer">No Answer</SelectItem>
-                </SelectContent>
-            </Select>
+            {settings?.enable_call_log_outcome_filter && (
+                <Select
+                    value={filters.outcomes?.[0] ?? "all"}
+                    onValueChange={(val) => updateArrayFilter("outcomes", val)}
+                >
+                    <SelectTrigger className="w-[160px]">
+                        <SelectValue placeholder="Call Outcome" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Outcomes</SelectItem>
+                        <SelectItem value="Connected">Connected</SelectItem>
+                        <SelectItem value="Missed">Missed</SelectItem>
+                        <SelectItem value="No Answer">No Answer</SelectItem>
+                    </SelectContent>
+                </Select>
+            )}
 
-            <Select
-                value={filters.classifications?.[0] ?? "all"}
-                onValueChange={(val) => updateArrayFilter("classifications", val)}
-            >
-                <SelectTrigger className="w-[140px]">
-                    <SelectValue placeholder="Classification" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="all">All Classes</SelectItem>
-                    <SelectItem value="business">Business</SelectItem>
-                    <SelectItem value="personal">Personal</SelectItem>
-                    <SelectItem value="ignored">Ignored</SelectItem>
-                </SelectContent>
-            </Select>
+            {settings?.enable_call_log_class_filter && (
+                <Select
+                    value={filters.classifications?.[0] ?? "all"}
+                    onValueChange={(val) => updateArrayFilter("classifications", val)}
+                >
+                    <SelectTrigger className="w-[140px]">
+                        <SelectValue placeholder="Classification" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Classes</SelectItem>
+                        <SelectItem value="business">Business</SelectItem>
+                        <SelectItem value="personal">Personal</SelectItem>
+                        <SelectItem value="ignored">Ignored</SelectItem>
+                    </SelectContent>
+                </Select>
+            )}
 
             {settings?.enable_call_log_sim_filter && (
                 <Select
