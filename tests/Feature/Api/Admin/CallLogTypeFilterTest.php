@@ -30,17 +30,14 @@ class CallLogTypeFilterTest extends TestCase
         Sanctum::actingAs($this->admin);
 
         // Clear cache for contact variations and enrichment before each test
-        app(\App\Actions\Contacts\GetContactHashVariationsAction::class)->clearCache();
         \Illuminate\Support\Facades\Cache::flush();
     }
 
-    public function test_can_filter_internal_call_logs(): void
+    private function createTestScenario(): void
     {
         // 1. Internal Contact
         $rawInternal = '15551112222';
-        $internalPhone = PhoneNormalizer::normalize($rawInternal);
-        $internalHash = hash('sha256', $internalPhone);
-
+        $internalHash = hash('sha256', PhoneNormalizer::normalize($rawInternal));
         Contact::factory()->create([
             'name' => 'Internal Contact',
             'phone_number' => $rawInternal,
@@ -50,9 +47,7 @@ class CallLogTypeFilterTest extends TestCase
 
         // 2. External Contact
         $rawExternal = '15553334444';
-        $externalPhone = PhoneNormalizer::normalize($rawExternal);
-        $externalHash = hash('sha256', $externalPhone);
-
+        $externalHash = hash('sha256', PhoneNormalizer::normalize($rawExternal));
         Contact::factory()->create([
             'name' => 'External Contact',
             'phone_number' => $rawExternal,
@@ -62,31 +57,25 @@ class CallLogTypeFilterTest extends TestCase
 
         // 3. Unknown Number (No contact)
         $rawUnknown = '15559990000';
-        $unknownPhone = PhoneNormalizer::normalize($rawUnknown);
-        $unknownHash = hash('sha256', $unknownPhone);
+        $unknownHash = hash('sha256', PhoneNormalizer::normalize($rawUnknown));
 
-        // Create call logs with correct phone numbers and hashes
-        CallLog::factory()->create([
-            'phone_number' => $rawInternal,
-            'phone_number_hash' => $internalHash,
-        ]);
-        CallLog::factory()->create([
-            'phone_number' => $rawExternal,
-            'phone_number_hash' => $externalHash,
-        ]);
-        CallLog::factory()->create([
-            'phone_number' => $rawUnknown,
-            'phone_number_hash' => $unknownHash,
-        ]);
+        // Create call logs
+        CallLog::factory()->create(['phone_number' => $rawInternal, 'phone_number_hash' => $internalHash]);
+        CallLog::factory()->create(['phone_number' => $rawExternal, 'phone_number_hash' => $externalHash]);
+        CallLog::factory()->create(['phone_number' => $rawUnknown, 'phone_number_hash' => $unknownHash]);
 
-        // Clear cache again after creating contacts to ensure they are discovered
-        app(\App\Actions\Contacts\GetContactHashVariationsAction::class)->clearCache();
+        // Clear cache after creating contacts
         \Illuminate\Support\Facades\Cache::flush();
+    }
+
+    public function test_can_filter_internal_call_logs(): void
+    {
+        $this->createTestScenario();
 
         // ACT: Filter by internal
         $response = $this->getJson('/api/v1/admin/call-logs?contact_filter=internal');
 
-        // ASSERT: Only the internal call should be returned
+        // ASSERT
         $response->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonPath('data.0.is_internal', true);
@@ -94,57 +83,12 @@ class CallLogTypeFilterTest extends TestCase
 
     public function test_can_filter_external_call_logs_excludes_internal(): void
     {
-        // 1. Internal Contact
-        $rawInternal = '15551112222';
-        $internalPhone = PhoneNormalizer::normalize($rawInternal);
-        $internalHash = hash('sha256', $internalPhone);
-
-        Contact::factory()->create([
-            'name' => 'Internal Contact',
-            'phone_number' => $rawInternal,
-            'phone_hash' => $internalHash,
-            'is_internal' => true,
-        ]);
-
-        // 2. External Contact
-        $rawExternal = '15553334444';
-        $externalPhone = PhoneNormalizer::normalize($rawExternal);
-        $externalHash = hash('sha256', $externalPhone);
-
-        Contact::factory()->create([
-            'name' => 'External Contact',
-            'phone_number' => $rawExternal,
-            'phone_hash' => $externalHash,
-            'is_internal' => false,
-        ]);
-
-        // 3. Unknown Number (No contact)
-        $rawUnknown = '15559990000';
-        $unknownPhone = PhoneNormalizer::normalize($rawUnknown);
-        $unknownHash = hash('sha256', $unknownPhone);
-
-        // Create call logs
-        CallLog::factory()->create([
-            'phone_number' => $rawInternal,
-            'phone_number_hash' => $internalHash,
-        ]);
-        CallLog::factory()->create([
-            'phone_number' => $rawExternal,
-            'phone_number_hash' => $externalHash,
-        ]);
-        CallLog::factory()->create([
-            'phone_number' => $rawUnknown,
-            'phone_number_hash' => $unknownHash,
-        ]);
-
-        // Clear cache again after creating contacts
-        app(\App\Actions\Contacts\GetContactHashVariationsAction::class)->clearCache();
-        \Illuminate\Support\Facades\Cache::flush();
+        $this->createTestScenario();
 
         // ACT: Filter by external
         $response = $this->getJson('/api/v1/admin/call-logs?contact_filter=external');
 
-        // ASSERT: Internal call should be excluded (2 logs remaining: external + unknown)
+        // ASSERT
         $response->assertOk()
             ->assertJsonCount(2, 'data')
             ->assertJsonPath('data.0.is_internal', false)
