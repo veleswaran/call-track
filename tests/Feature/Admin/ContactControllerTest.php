@@ -12,12 +12,50 @@ class ContactControllerTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected User $user;
+
     protected function setUp(): void
     {
         parent::setUp();
-        // Assuming Sanctum auth or similar, create an admin user
         $this->user = User::factory()->create();
+
+        // Setup admin role
+        \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'admin']);
+        $this->user->assignRole('admin');
+
         $this->actingAs($this->user, 'sanctum');
+    }
+
+    public function test_can_list_contacts()
+    {
+        Contact::factory()->count(3)->create();
+
+        $response = $this->getJson('/api/v1/admin/contacts');
+
+        $response->assertStatus(200)
+            ->assertJsonCount(3, 'data');
+    }
+
+    public function test_can_search_contacts()
+    {
+        Contact::factory()->create(['name' => 'John Doe', 'phone_number' => '1111111111']);
+        Contact::factory()->create(['name' => 'Jane Smith', 'phone_number' => '2222222222']);
+
+        $response = $this->getJson('/api/v1/admin/contacts?search=John');
+
+        $response->assertStatus(200)
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.name', 'John Doe');
+    }
+
+    public function test_non_admin_cannot_list_contacts()
+    {
+        $nonAdmin = User::factory()->create();
+        // No admin role
+
+        $response = $this->actingAs($nonAdmin, 'sanctum')->getJson('/api/v1/admin/contacts');
+
+        $response->assertStatus(403);
     }
 
     public function test_admin_can_update_contact()

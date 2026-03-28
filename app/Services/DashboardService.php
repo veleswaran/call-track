@@ -8,6 +8,7 @@ use App\Contracts\Services\DashboardServiceContract;
 use App\Domain\Dashboard\Actions\GetDashboardChartsAction;
 use App\Domain\Dashboard\Actions\GetDashboardMetricsAction;
 use App\Domain\Dashboard\DTOs\DashboardChartsDTO;
+use App\Domain\Dashboard\DTOs\DashboardFilterDTO;
 use App\Domain\Dashboard\DTOs\DashboardMetricsDTO;
 
 /**
@@ -23,16 +24,16 @@ final class DashboardService implements DashboardServiceContract
     /**
      * Get aggregated dashboard metrics
      */
-    public function getMetrics(): DashboardMetricsDTO
+    public function getMetrics(DashboardFilterDTO $filter): DashboardMetricsDTO
     {
-        return $this->getDashboardMetricsAction->execute();
+        return $this->getDashboardMetricsAction->execute($filter);
     }
 
     /**
      * Get dashboard chart data
      */
-    public function getCharts(): DashboardChartsDTO
+    public function getCharts(DashboardFilterDTO $filter): DashboardChartsDTO
     {
-        return $this->getDashboardChartsAction->execute();
+        return $this->getDashboardChartsAction->execute($filter);
     }
 }

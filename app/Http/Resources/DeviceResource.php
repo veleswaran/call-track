@@ -27,6 +27,7 @@ class DeviceResource extends JsonResource
             'device_model' => $this->model,
             'os_version' => $this->os_version,
             'app_version' => $this->app_version,
+            'has_fcm_token' => ! empty($this->fcm_token),
             'tracked_sim_slots' => $this->tracked_sim_slots,
             'battery_level' => $this->battery_level,
             'status' => $this->active_tokens_exists ? 'active' : 'inactive',
@@ -36,6 +37,7 @@ class DeviceResource extends JsonResource
                 'name' => $this->resource->agent->name,
             ]),
             'last_sync_at' => $this->last_heartbeat_at,
+            'metadata' => $this->metadata,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

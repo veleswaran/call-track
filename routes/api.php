@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/user', function (Request $request) {
-    return $request->user();
+    return new \App\Http\Resources\AdminUserResource($request->user());
 })->middleware('auth:sanctum');
 
 Route::prefix('v1')->group(function () {
@@ -17,6 +17,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/call-logs/sync', [\App\Http\Controllers\Api\CallLogController::class, 'store']);
         Route::post('/call-logs/{callHash}/classify', [\App\Http\Controllers\Api\DeviceCallClassificationController::class, 'classify']);
         Route::post('/device/events', [\App\Http\Controllers\Api\Device\DeviceEventController::class, 'store']);
+        Route::post('/device/fcm-token', [\App\Http\Controllers\Api\DeviceFcmTokenController::class, 'store']);
     });
 
     // Admin Routes
@@ -39,6 +40,8 @@ Route::prefix('v1')->group(function () {
 
         // Agent Management
         Route::apiResource('agents', \App\Http\Controllers\Api\Admin\AgentController::class);
+        Route::post('/agents/{agent}/link-user', \App\Http\Controllers\Api\Admin\LinkUserToAgentController::class);
+        Route::post('/agents/{agent}/unlink-user', \App\Http\Controllers\Api\Admin\UnlinkUserFromAgentController::class);
         Route::post('/devices/{device}/assign-agent', [\App\Http\Controllers\Api\Admin\DeviceAgentController::class, 'assign']);
         Route::post('/devices/{device}/unassign-agent', [\App\Http\Controllers\Api\Admin\DeviceAgentController::class, 'unassign']);
 
@@ -49,6 +52,7 @@ Route::prefix('v1')->group(function () {
 
         // Call Logs
         Route::get('/call-logs', [\App\Http\Controllers\Api\Admin\CallLogController::class, 'index']);
+        Route::get('/call-logs/escalations', [\App\Http\Controllers\Api\V1\EscalationInsightController::class, 'index']);
 
         // Contacts
         Route::post('/contacts', [\App\Http\Controllers\Api\Admin\ContactController::class, 'store']);
@@ -58,8 +62,25 @@ Route::prefix('v1')->group(function () {
 
         // User Management
         Route::apiResource('users', \App\Http\Controllers\Api\Admin\AdminUserController::class);
+        Route::put('/users/{id}/role', [\App\Http\Controllers\Api\Admin\UserRoleController::class, 'update']);
         Route::post('/users/{id}/reset-2fa', [\App\Http\Controllers\Api\Admin\AdminUserController::class, 'resetTwoFactor']);
 
+        // Team Management
+        Route::get('teams', [\App\Http\Controllers\Api\Teams\TeamController::class, 'index']);
+        Route::post('teams', [\App\Http\Controllers\Api\Teams\TeamController::class, 'store']);
+        Route::get('teams/{team}', [\App\Http\Controllers\Api\Teams\TeamController::class, 'show']);
+        Route::patch('teams/{team}', [\App\Http\Controllers\Api\Teams\TeamController::class, 'update']);
+        Route::delete('teams/{team}', [\App\Http\Controllers\Api\Teams\TeamController::class, 'destroy']);
+        Route::post('teams/{team}/members', [\App\Http\Controllers\Api\Teams\TeamController::class, 'addMember']);
+        Route::delete('teams/{team}/members/{agent}', [\App\Http\Controllers\Api\Teams\TeamController::class, 'removeMember']);
+        Route::patch('teams/{team}/members/{agent}', [\App\Http\Controllers\Api\Teams\TeamController::class, 'updateMemberRole']);
+
+        // System Settings
+        Route::get('/settings', [\App\Http\Controllers\Api\Admin\SystemSettingsController::class, 'index']);
+        Route::post('/settings', [\App\Http\Controllers\Api\Admin\SystemSettingsController::class, 'store']);
+
+        // Manual Push Notifications
+        Route::post('/devices/{device}/push', [\App\Http\Controllers\Api\Admin\DevicePushNotificationController::class, 'store']);
     });
 
     // 2FA Management (Session based)

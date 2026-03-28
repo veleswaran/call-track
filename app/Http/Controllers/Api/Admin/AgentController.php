@@ -10,21 +10,32 @@ use App\Domain\Agents\Models\Agent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreAgentRequest;
 use App\Http\Requests\UpdateAgentRequest;
+use App\Http\Resources\AgentResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class AgentController extends Controller
 {
     public function __construct(
-        protected AgentManagementServiceInterface $service
+        protected AgentManagementServiceInterface $service,
+        private readonly \App\Domain\Auth\Actions\GetAgentAccessScopeAction $getAgentAccessScopeAction,
     ) {}
 
-    public function index(Request $request): JsonResponse
+    public function index(Request $request): AnonymousResourceCollection
     {
+        $this->authorize('viewAny', Agent::class);
+
+        /** @var \App\Domain\Users\Models\User $user */
+        $user = $request->user();
+        $allowedAgentIds = $this->getAgentAccessScopeAction->execute($user);
+
         $search = $request->input('search');
         $perPage = (int) $request->input('per_page', 20);
 
-        return response()->json($this->service->getAgentsList($perPage, $search));
+        $paginator = $this->service->getAgentsList($allowedAgentIds, $perPage, $search);
+
+        return AgentResource::collection($paginator);
     }
 
     public function store(StoreAgentRequest $request): JsonResponse

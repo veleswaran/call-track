@@ -6,13 +6,23 @@ export interface User {
     name: string;
     email: string;
     email_verified_at: string | null;
-    roles?: string[];
+    roles: string[];
+    permissions: string[];
     two_factor_enabled?: boolean;
     two_factor_confirmed_at?: string | null;
+    is_agent?: boolean;
+    agent?: Agent | null;
     created_at: string;
     updated_at: string;
 }
 
+
+export interface Role {
+    id: number;
+    name: string;
+    created_at: string;
+    updated_at: string;
+}
 /**
  * Call log entry from the API
  */
@@ -26,6 +36,7 @@ export interface CallLog {
     contact_name?: string | null;
     contact_notes?: string | null;
     call_type: "incoming" | "outgoing" | "missed" | "rejected" | "blocked" | "unknown";
+    call_outcome: "Connected" | "Missed" | "No Answer";
     duration: number;
     timestamp: string;
     sim_slot?: number | null;
@@ -62,12 +73,14 @@ export interface Device {
     device_model: string | null;
     os_version: string | null;
     app_version: string | null;
-    status: "active" | "inactive";
+    status: "active" | "suspended";
     agent_id: number | null;
     agent: { id: number; name: string } | null;
     battery_level: number | null;
+    has_fcm_token?: boolean;
     tracked_sim_slots: number[] | null;
     last_sync_at: string | null;
+    metadata?: Record<string, unknown> | null;
     created_at: string;
     updated_at: string;
 }
@@ -80,6 +93,8 @@ export interface Agent {
     name: string;
     employee_code: string | null;
     status: "active" | "inactive";
+    user_id?: number | null;
+    user?: User | null;
     devices_count?: number;
     created_at: string;
     updated_at: string;
@@ -152,6 +167,7 @@ export interface DashboardMetrics {
     ignored_calls: number;
     unclassified_calls: number;
     missed_calls: number;
+    total_missed_calls: number;
     total_duration_seconds: number;
     average_call_duration_seconds: number;
     total_devices: number;
@@ -163,15 +179,47 @@ export interface DashboardMetrics {
     missed_calls_change_percent: number | null;
     average_call_duration_change_percent: number | null;
     total_duration_change_percent: number | null;
+    pending_escalations: number | null;
+    unattended_escalations: number | null;
+    resolved_escalations: number | null;
 }
 
 export interface TwoFactorSetupResponse {
     secret: string;
     qr_code_url: string;
+    recovery_codes: string[];
 }
 
-export interface RecoveryCodesResponse {
-    recovery_codes: string[];
+/**
+ * Team Role
+ */
+export type TeamRole = "MANAGER" | "MEMBER";
+
+/**
+ * Team Member (Pivot)
+ */
+export interface TeamMember {
+    id: number;
+    team_id: number;
+    agent_id: number;
+    role: TeamRole;
+    created_at: string;
+    updated_at: string;
+    // Relationships
+    agent?: Agent;
+}
+
+/**
+ * Team entity
+ */
+export interface Team {
+    id: number;
+    name: string;
+    created_at: string;
+    updated_at: string;
+    members?: TeamMember[];
+    members_count?: number;
+    managers_count?: number;
 }
 
 /**

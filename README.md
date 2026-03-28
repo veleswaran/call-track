@@ -70,6 +70,9 @@ Note: Access to docs is gated by `Gate::define('viewApiDocs', ...)`. In this rep
 | `POST` | `/api/v1/admin/devices/{id}/assign-agent` | Assign agent to device | Admin (Sanctum) |
 | `POST` | `/api/v1/admin/devices/{id}/unassign-agent` | Unassign agent from device | Admin (Sanctum) |
 | `API` | `/api/v1/admin/users` | Admin User Management (resource) | Admin (Sanctum) |
+| `GET` | `/api/v1/admin/teams` | List all teams | Admin (Sanctum) |
+| `POST` | `/api/v1/admin/teams` | Create a new team | Admin (Sanctum) |
+| `POST` | `/api/v1/admin/teams/{id}/members` | Add agent to team (or assign manager) | Admin (Sanctum) |
 
 ## 📚 Documentation
 
@@ -138,11 +141,73 @@ Automatically fix code style issues to follow PSR-12 and Laravel best practices:
 ```
 
 
+## 📞 Call Type vs Call Outcome
+
+The platform uses two distinct fields to describe each call:
+
+### Call Type (Raw Android Direction)
+
+The original call direction as reported by the Android device. Stored in `call_logs.direction`.
+
+| Call Type | Description |
+|-----------|-------------|
+| `incoming` | Received call |
+| `outgoing` | Dialed call |
+| `missed` | Missed call (Android-reported) |
+| `rejected` | Call rejected by user |
+| `blocked` | Call blocked by system/user |
+| `unknown` | Unclassified direction |
+
+### Call Outcome (Derived Business Metric)
+
+A unified outcome derived from `direction` + `duration`. Returned as `call_outcome` in the API response.
+
+| Outcome | Rule | Examples |
+|---------|------|----------|
+| **Connected** | `duration > 0` | Any answered call |
+| **Missed** | `direction IN (MISSED, REJECTED, BLOCKED)` OR (`INCOMING` + `duration = 0`) | Unanswered incoming calls |
+| **No Answer** | `OUTGOING` + `duration = 0` | Outgoing calls where nobody picked up |
+
+> **Key insight**: An incoming call with 0 duration is counted as "Missed" (the agent missed it). An outgoing call with 0 duration is "No Answer" (the other party didn't pick up).
+
+### Where Each Field Appears
+
+| Page | Call Type | Call Outcome |
+|------|-----------|-------------|
+| **Call Logs** table | ✅ Column + icon | Filter dropdown |
+| **Reports** charts | — | ✅ Connected/Missed/No Answer breakdown |
+| **API response** | `call_type` field | `call_outcome` field |
+| **Filters** | "Call Type" dropdown (6 values) | "Call Outcome" dropdown (3 values) |
+
+### API Query Parameters
+
+```bash
+# Filter by Call Type (raw direction)
+GET /api/v1/admin/call-logs?types[]=incoming&types[]=outgoing
+
+# Filter by Call Outcome (derived)
+GET /api/v1/admin/call-logs?outcomes[]=Connected&outcomes[]=Missed
+
+# Filter reports by outcome
+GET /api/v1/admin/reports/metrics?outcomes[]=MISSED&outcomes[]=NO_ANSWER
+```
+
 ## 🔒 Security
 
 - **Device Tokens**: Devices authenticate using long-lived `X-Device-Token` headers.
 - **Admin Access**: Standard Bearer token authentication via Sanctum.
 - **Two-Factor Authentication**: Admins can enable 2FA for enhanced account security.
+
+### Teams & Access Control
+
+The platform implements a strict hierarchical access model:
+
+- **Super Admin**: Full access to all data and settings.
+- **Admin**: Full organization management (users, teams, devices).
+- **Team Manager**: Can view agents and call logs **only** for teams they manage.
+- **Agent**: Can view **only** their own call logs.
+
+Access is enforced via Laravel Policies ensuring a manager cannot access data from teams they do not belong to.
 
 ## 🔗 Admin vs Device API — Auth and cURL recipes
 
@@ -275,6 +340,27 @@ curl --request POST \
     "device_id": 1,
     "name": "Ada Lovelace",
     "phone_number": "+15551234567"
+  }'
+```
+
+### Admin: Create Team & Assign Manager
+
+```bash
+# Create Team
+curl --request POST \
+  --url 'http://127.0.0.1:8000/api/v1/admin/teams' \
+  --header 'Content-Type: application/json' \
+  --header 'Authorization: Bearer YOUR_TKN' \
+  --data '{"name": "Sales Alpha"}'
+
+# Add Member (as Manager)
+curl --request POST \
+  --url 'http://127.0.0.1:8000/api/v1/admin/teams/1/members' \
+  --header 'Content-Type: application/json' \
+  --header 'Authorization: Bearer YOUR_TKN' \
+  --data '{
+    "agent_id": 5, 
+    "role": "MANAGER"
   }'
 ```
 

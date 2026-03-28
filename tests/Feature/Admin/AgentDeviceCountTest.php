@@ -20,6 +20,9 @@ class AgentDeviceCountTest extends TestCase
 
         Device::factory()->count(3)->create(['agent_id' => $agentWithDevices->id]);
 
+        $role = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
+        $admin->assignRole($role);
+
         $response = $this->actingAs($admin, 'sanctum')
             ->getJson('/api/v1/admin/agents');
 

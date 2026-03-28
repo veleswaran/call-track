@@ -34,9 +34,13 @@ final class DashboardMetricsResource extends JsonResource
             'total_devices' => $metrics->total_devices,
             'active_devices' => $metrics->active_devices,
             'missed_calls' => $metrics->missed_calls,
+            'total_missed_calls' => $metrics->total_missed_calls,
             'total_agents' => $metrics->total_agents,
             'total_duration_seconds' => $metrics->total_duration_seconds,
             'average_call_duration_seconds' => round($metrics->average_call_duration_seconds, 2),
+            'pending_escalations' => $metrics->pending_escalations,
+            'unattended_escalations' => $metrics->unattended_escalations,
+            'resolved_escalations' => $metrics->resolved_escalations,
             // Week-over-week comparison
             'total_calls_change_percent' => $metrics->total_calls_change_percent,
             'missed_calls_change_percent' => $metrics->missed_calls_change_percent,

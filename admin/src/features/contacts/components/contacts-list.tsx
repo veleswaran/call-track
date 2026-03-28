@@ -13,10 +13,14 @@ import {
 import { Button } from "@shared/components/ui/button";
 import { MoreVertical, Pencil, Trash } from "lucide-react";
 import type { Contact } from "@shared/types";
+import { useAuth } from "@features/auth/hooks/use-auth";
+import { CallLogPagination } from "@features/call-logs/components/call-log-pagination";
 
 export function ContactsList() {
+    const { user } = useAuth(); // RBAC
     const [page, setPage] = useState(1);
-    const { data, isLoading, isError } = useContacts({ page, per_page: 15 });
+    const [perPage, setPerPage] = useState(15);
+    const { data, isLoading, isError } = useContacts({ page, per_page: perPage });
     const [editingContact, setEditingContact] = useState<Contact | null>(null);
     const [deletingContact, setDeletingContact] = useState<Contact | null>(null);
 
@@ -52,7 +56,7 @@ export function ContactsList() {
         );
     }
 
-    const { current_page, last_page } = data.meta;
+    const { total } = data.meta;
 
     return (
         <div className="space-y-4">
@@ -98,13 +102,15 @@ export function ContactsList() {
                                                 <Pencil className="mr-2 h-4 w-4" />
                                                 Edit
                                             </DropdownMenuItem>
-                                            <DropdownMenuItem
-                                                onClick={() => handleDelete(c)}
-                                                className="text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400"
-                                            >
-                                                <Trash className="mr-2 h-4 w-4" />
-                                                Delete
-                                            </DropdownMenuItem>
+                                            {user?.roles?.some(role => ['super-admin', 'admin'].includes(role)) && (
+                                                <DropdownMenuItem
+                                                    onClick={() => handleDelete(c)}
+                                                    className="text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400"
+                                                >
+                                                    <Trash className="mr-2 h-4 w-4" />
+                                                    Delete
+                                                </DropdownMenuItem>
+                                            )}
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </td>
@@ -114,26 +120,16 @@ export function ContactsList() {
                 </table>
             </div>
 
-            <div className="flex items-center justify-between">
-                <p className="text-sm text-zinc-500">
-                    Page {current_page} of {last_page}
-                </p>
-                <div className="flex gap-2">
-                    <button
-                        className="rounded-md border px-3 py-1.5 text-sm disabled:opacity-50"
-                        onClick={() => setPage((p) => Math.max(1, p - 1))}
-                        disabled={current_page <= 1}
-                    >
-                        Previous
-                    </button>
-                    <button
-                        className="rounded-md border px-3 py-1.5 text-sm disabled:opacity-50"
-                        onClick={() => setPage((p) => Math.min(last_page, p + 1))}
-                        disabled={current_page >= last_page}
-                    >
-                        Next
-                    </button>
-                </div>
+            <div className="py-2 border-t border-zinc-200 dark:border-zinc-800">
+                <CallLogPagination
+                    page={page}
+                    perPage={perPage}
+                    total={total}
+                    onChange={(p, pp) => {
+                        setPage(p);
+                        setPerPage(pp);
+                    }}
+                />
             </div>
 
             {editingContact && (

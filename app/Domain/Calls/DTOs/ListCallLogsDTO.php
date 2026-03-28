@@ -19,11 +19,15 @@ final readonly class ListCallLogsDTO
         public array $agentIds = [],
         public array $callTypes = [], // incoming, outgoing, missed
         public array $classifications = [], // business, personal, ignored
-        public array $statuses = [], // Connected, Missed, No Answer
+        public array $outcomes = [], // Connected, Missed, No Answer
 
         public ?string $dateFrom = null,
         public ?string $dateTo = null,
         public ?string $search = null,
+        public ?\App\Domain\Users\Models\User $user = null,
+        public ?int $teamId = null,
+        /** @var int[]|null Null = full access, array = restricted to these agent IDs */
+        public ?array $allowedAgentIds = null,
         public ?int $simSlot = null,
     ) {}
 
@@ -59,10 +63,12 @@ final readonly class ListCallLogsDTO
             agentIds: array_map('intval', (array) $agentIds),
             callTypes: (array) $callTypes,
             classifications: (array) $classifications,
-            statuses: (array) $request->input('statuses', []),
+            outcomes: (array) $request->input('outcomes', []),
             dateFrom: $dateFrom ? (string) $dateFrom : null,
             dateTo: $dateTo ? (string) $dateTo : null,
             search: $request->string('search')->toString() ?: null,
+            user: $request->user(),
+            teamId: $request->integer('team_id') ?: null,
             simSlot: $request->has('sim_slot') ? $request->integer('sim_slot') : null,
         );
     }

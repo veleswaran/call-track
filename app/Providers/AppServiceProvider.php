@@ -11,6 +11,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->singleton(\Kreait\Firebase\Contract\Messaging::class, function ($app) {
+            $factory = (new \Kreait\Firebase\Factory)
+                ->withServiceAccount(config('firebase.credentials_path'));
+
+            return $factory->createMessaging();
+        });
+
         $this->app->bind(
             \App\Contracts\Services\CallLogQueryServiceContract::class,
             \App\Services\CallLogQueryService::class
@@ -77,8 +84,41 @@ class AppServiceProvider extends ServiceProvider
         );
 
         $this->app->bind(
+            \App\Contracts\Services\Teams\TeamManagementServiceInterface::class,
+            \App\Services\Teams\TeamManagementService::class
+        );
+        $this->app->bind(
+            \App\Contracts\Services\Teams\TeamMemberServiceInterface::class,
+            \App\Services\Teams\TeamMemberService::class
+        );
+        $this->app->bind(
+            \App\Contracts\Services\Teams\TeamQueryServiceInterface::class,
+            \App\Services\Teams\TeamQueryService::class
+        );
+
+        $this->app->bind(
             \App\Contracts\Services\DeviceEventServiceInterface::class,
             \App\Services\Devices\DeviceEventService::class
+        );
+
+        $this->app->bind(
+            \App\Contracts\Services\Users\UserRoleServiceInterface::class,
+            \App\Services\Users\UserRoleService::class
+        );
+
+        $this->app->bind(
+            \App\Contracts\Services\SettingsServiceInterface::class,
+            \App\Services\Settings\SettingsService::class
+        );
+
+        $this->app->bind(
+            \App\Contracts\Services\FcmNotificationServiceInterface::class,
+            \App\Services\Devices\FcmNotificationService::class
+        );
+
+        $this->app->bind(
+            \App\Contracts\Services\EscalationServiceContract::class,
+            \App\Services\EscalationService::class
         );
     }
 
@@ -90,5 +130,10 @@ class AppServiceProvider extends ServiceProvider
         \Illuminate\Support\Facades\Gate::define('viewApiDocs', function (?\App\Domain\Users\Models\User $user) {
             return true; // Simplistic for now. Restrict in production.
         });
+
+        \Illuminate\Support\Facades\Gate::policy(\App\Domain\Teams\Models\Team::class, \App\Policies\TeamPolicy::class);
+        \Illuminate\Support\Facades\Gate::policy(\App\Domain\Agents\Models\Agent::class, \App\Policies\AgentPolicy::class);
+        \Illuminate\Support\Facades\Gate::policy(\App\Domain\Calls\Models\CallLog::class, \App\Policies\CallLogPolicy::class);
+        \Illuminate\Support\Facades\Gate::policy(\App\Domain\Settings\Models\SystemSetting::class, \App\Policies\SystemSettingPolicy::class);
     }
 }

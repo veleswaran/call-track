@@ -9,22 +9,27 @@ import { ReportSummary } from "@features/reports/components/report-summary"
 import { ReportCharts } from "@features/reports/components/report-charts"
 import { AgentPerformanceTable } from "@features/reports/components/agent-performance-table"
 import { api } from "@shared/api/api"
+import { Button } from "@shared/components/ui/button"
 
 export default function ReportsPage() {
     const [filters, setFilters] = useState<ReportFiltersData>({
         dateRange: {
-            from: new Date(new Date().setDate(new Date().getDate() - 7)), // Last 7 days default
+            from: new Date(),
             to: new Date(),
         },
-        status: "all",
-        type: "BUSINESS"
+        outcome: "all",
+        type: "BUSINESS",
+        agentIds: null,
+        teamIds: null
     })
 
     const queryParams = {
         start_date: filters.dateRange?.from ? format(filters.dateRange.from, 'yyyy-MM-dd') : undefined,
         end_date: filters.dateRange?.to ? format(filters.dateRange.to, 'yyyy-MM-dd') : undefined,
-        statuses: filters.status !== 'all' ? [filters.status] : undefined,
+        outcomes: filters.outcome !== 'all' ? [filters.outcome] : undefined,
         types: filters.type !== 'all' ? [filters.type] : undefined,
+        agent_ids: filters.agentIds || undefined,
+        team_ids: filters.teamIds || undefined,
     }
 
     const getQueryString = (params: Record<string, string | number | (string | number)[] | undefined | null>) => {
@@ -54,10 +59,6 @@ export default function ReportsPage() {
         queryKey: ['reports', 'charts', queryParams],
         queryFn: async () => {
             const qs = getQueryString(queryParams);
-            // Use ReportChartsProps['data'] if possible, or define a compatible type
-            // The chart component expects specific structure. 
-            // For now, removing 'any' explicit usage or silencing if needed, but better to type it.
-            // Let's use a looser type that passes lint but is safer than any.
             const res = await api.get<{ data: React.ComponentProps<typeof ReportCharts>['data'] }>(`/api/v1/admin/reports/charts?${qs}`)
             return res.data
         }
@@ -99,14 +100,23 @@ export default function ReportsPage() {
             )}
 
             <div className="space-y-4">
-                <div>
+                <div id="agent-performance">
                     <h2 className="text-xl font-bold tracking-tight">Agent Performance Report</h2>
                     <p className="text-sm text-muted-foreground">See how each agent handles calls and responds to customers.</p>
                 </div>
 
-                {/* Stats Banner? (Skipping for now or using Summary) */}
-
                 <AgentPerformanceTable data={performanceQuery.data || []} filters={filters} />
+            </div>
+
+            <div className="flex justify-center py-8">
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                    className="text-muted-foreground hover:text-foreground"
+                >
+                    Scroll to Top
+                </Button>
             </div>
         </div>
     )

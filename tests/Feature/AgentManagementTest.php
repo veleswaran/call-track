@@ -105,6 +105,8 @@ class AgentManagementTest extends TestCase
     public function test_admin_can_list_agents()
     {
         $admin = User::factory()->create();
+        $role = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
+        $admin->assignRole($role);
         Sanctum::actingAs($admin, ['*']);
 
         Agent::factory()->count(3)->create();

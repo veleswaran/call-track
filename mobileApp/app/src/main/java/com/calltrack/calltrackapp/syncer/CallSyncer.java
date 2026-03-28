@@ -1,5 +1,6 @@
 package com.calltrack.calltrackapp.syncer;
 
+import android.app.Notification;
 import android.content.Context;
 import android.util.Log;
 
@@ -17,6 +18,7 @@ import com.calltrack.calltrackapp.db.bundles.CallRecord;
 import com.calltrack.calltrackapp.db.bundles.EventRecord;
 import com.calltrack.calltrackapp.db.bundles.TokenEntity;
 import com.calltrack.calltrackapp.utilities.Utility;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -31,12 +33,16 @@ import java.util.Locale;
 import java.util.Objects;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.NotificationCompat;
+import androidx.work.ForegroundInfo;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 import retrofit2.Call;
 import retrofit2.Response;
 
 public class CallSyncer extends Worker {
+
+    private static final String CHANNEL_ID = "call_monitor_channel";
 
     public CallSyncer(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
@@ -68,14 +74,13 @@ public class CallSyncer extends Worker {
                 Call<EventResponse> res = ev.store(te.token, ep);
                 try {
                     Response<EventResponse> response = res.execute(); // synchronous
-                    Log.d("Event Api response", String.valueOf(response.code()));
-                    Log.d("Event Api response", response.body().toString());
                     if (response.isSuccessful() || response.code() == 201) {
                         evr.synced = true;
                         db.eventDAO().update(evr);
                     }
                 } catch (IOException e) {
                     Log.d("Error", e.toString());
+                    FirebaseCrashlytics.getInstance().recordException(e);
                 }
             }
         }
@@ -122,6 +127,7 @@ public class CallSyncer extends Worker {
             return response.isSuccessful();
         } catch (Exception e) {
             Log.e("CallSyncer -> callAPi", "Exception occurred", e);
+            FirebaseCrashlytics.getInstance().recordException(e);
         }
         return false;
     }
@@ -144,6 +150,18 @@ public class CallSyncer extends Worker {
         extra.note = record.notes;
         item.extra = extra;
         return item;
+    }
+
+    @NonNull
+    @Override
+    public ForegroundInfo getForegroundInfo() {
+        Notification notification = new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID)
+            .setContentTitle("Syncing data")
+            .setContentText("Data is being synced...")
+            .setSmallIcon(android.R.drawable.ic_menu_save) // replace with your own icon
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .build();
+        return new ForegroundInfo(1, notification);
     }
 
 }

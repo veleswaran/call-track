@@ -25,8 +25,8 @@ export interface CallLogFilters {
 
     // Array filters support
     agents?: number[];    // Replaces single agent_id
-    types?: ("incoming" | "outgoing" | "missed" | "rejected" | "blocked" | "unknown")[]; // Replaces single call_type
-    statuses?: ("Connected" | "Missed" | "No Answer" | "Rejected" | "Blocked")[];
+    types?: ("incoming" | "outgoing" | "missed" | "rejected" | "blocked" | "unknown")[]; // Call Type (Android direction)
+    outcomes?: ("Connected" | "Missed" | "No Answer")[]; // Call Outcome (derived)
     classifications?: ("business" | "personal" | "ignored")[];
 
     // Date range
@@ -37,6 +37,9 @@ export interface CallLogFilters {
     agent_id?: number;
     call_type?: "incoming" | "outgoing" | "missed" | "rejected" | "blocked" | "unknown";
     classification?: "business" | "personal" | "ignored";
+
+    // Team Filter
+    team_id?: number;
 }
 
 /**

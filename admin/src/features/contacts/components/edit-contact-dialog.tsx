@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@shared/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@shared/components/ui/dialog";
 import { Button } from "@shared/components/ui/button";
 import { Input } from "@shared/components/ui/input";
 import { useUpdateContact } from "@features/contacts/hooks/use-update-contact";
@@ -45,6 +45,9 @@ export function EditContactDialog({ contact, open, onOpenChange }: EditContactDi
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Edit Contact</DialogTitle>
+                    <DialogDescription>
+                        Update the contact information for this person.
+                    </DialogDescription>
                 </DialogHeader>
 
                 <div className="space-y-4 py-4">

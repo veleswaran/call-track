@@ -13,13 +13,16 @@ import { CreateUserDialog } from "@features/users/components/create-user-dialog"
 import { UserActions } from "@features/users/components/user-actions";
 import { Badge } from "@shared/components/ui/badge";
 import { formatDate } from "@shared/utils/date";
+import { useState } from "react";
+import { CallLogPagination } from "@features/call-logs/components/call-log-pagination";
 
 export default function UsersPage() {
-    const { data, isLoading } = useUsers();
+    const [page, setPage] = useState(1);
+    const [perPage, setPerPage] = useState(25);
+    const { data, isLoading } = useUsers(page, perPage);
 
-    if (isLoading) {
-        return <div className="p-8">Loading...</div>;
-    }
+    const users = data?.data ?? [];
+    const meta = data?.meta;
 
     return (
         <div className="flex flex-col gap-6 p-6">
@@ -40,24 +43,40 @@ export default function UsersPage() {
                             <TableHead>Name</TableHead>
                             <TableHead>Email</TableHead>
                             <TableHead>Roles</TableHead>
+                            <TableHead>Agent</TableHead>
                             <TableHead>2FA</TableHead>
                             <TableHead>Created At</TableHead>
                             <TableHead className="w-[70px]"></TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {data?.data.map((user) => (
+                        {isLoading ? (
+                            <TableRow>
+                                <TableCell colSpan={7} className="h-24 text-center">
+                                    Loading...
+                                </TableCell>
+                            </TableRow>
+                        ) : users.map((user) => (
                             <TableRow key={user.id}>
                                 <TableCell className="font-medium">{user.name}</TableCell>
                                 <TableCell>{user.email}</TableCell>
                                 <TableCell>
                                     <div className="flex gap-1">
-                                        {user.roles?.map((role) => (
+                                        {user.roles?.map((role: string) => (
                                             <Badge key={role} variant="secondary" className="text-xs">
                                                 {role}
                                             </Badge>
                                         ))}
                                     </div>
+                                </TableCell>
+                                <TableCell>
+                                    {user.agent ? (
+                                        <div className="flex flex-col">
+                                            <span className="font-medium">{user.agent.name}</span>
+                                        </div>
+                                    ) : (
+                                        <span className="text-muted-foreground">-</span>
+                                    )}
                                 </TableCell>
                                 <TableCell>
                                     {user.two_factor_enabled ? (
@@ -72,9 +91,9 @@ export default function UsersPage() {
                                 </TableCell>
                             </TableRow>
                         ))}
-                        {data?.data.length === 0 && (
+                        {!isLoading && users.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={6} className="h-24 text-center">
+                                <TableCell colSpan={7} className="h-24 text-center">
                                     No users found.
                                 </TableCell>
                             </TableRow>
@@ -82,6 +101,20 @@ export default function UsersPage() {
                     </TableBody>
                 </Table>
             </div>
+
+            {meta && (
+                <div className="py-4 border-t">
+                    <CallLogPagination
+                        page={page}
+                        perPage={perPage}
+                        total={meta.total}
+                        onChange={(p, pp) => {
+                            setPage(p);
+                            setPerPage(pp);
+                        }}
+                    />
+                </div>
+            )}
         </div>
     );
 }

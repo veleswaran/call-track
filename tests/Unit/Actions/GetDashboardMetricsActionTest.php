@@ -6,6 +6,7 @@ namespace Tests\Unit\Actions;
 
 use App\Domain\Calls\Models\CallLog;
 use App\Domain\Dashboard\Actions\GetDashboardMetricsAction;
+use App\Domain\Dashboard\DTOs\DashboardFilterDTO;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
@@ -38,7 +39,7 @@ class GetDashboardMetricsActionTest extends TestCase
             'duration' => 60,
         ]);
 
-        $metrics = $this->action->execute();
+        $metrics = $this->action->execute(new DashboardFilterDTO);
 
         $this->assertEquals(5, $metrics->total_calls);
         $this->assertEquals(600, $metrics->total_duration_seconds); // 5 * 120
@@ -59,7 +60,7 @@ class GetDashboardMetricsActionTest extends TestCase
             'duration' => 100,
         ]);
 
-        $metrics = $this->action->execute();
+        $metrics = $this->action->execute(new DashboardFilterDTO);
 
         $this->assertEquals(5, $metrics->total_calls);
         $this->assertEquals(25.0, $metrics->total_calls_change_percent);
@@ -80,7 +81,7 @@ class GetDashboardMetricsActionTest extends TestCase
             'duration' => 100,
         ]);
 
-        $metrics = $this->action->execute();
+        $metrics = $this->action->execute(new DashboardFilterDTO);
 
         $this->assertEquals(8, $metrics->total_calls);
         $this->assertEquals(-20.0, $metrics->total_calls_change_percent);
@@ -95,7 +96,7 @@ class GetDashboardMetricsActionTest extends TestCase
             'duration' => 100,
         ]);
 
-        $metrics = $this->action->execute();
+        $metrics = $this->action->execute(new DashboardFilterDTO);
 
         $this->assertEquals(5, $metrics->total_calls);
         // When previous is 0 and current > 0, return 100%
@@ -106,7 +107,7 @@ class GetDashboardMetricsActionTest extends TestCase
     public function it_returns_null_when_no_data(): void
     {
         // No calls at all
-        $metrics = $this->action->execute();
+        $metrics = $this->action->execute(new DashboardFilterDTO);
 
         $this->assertEquals(0, $metrics->total_calls);
         $this->assertNull($metrics->total_calls_change_percent);

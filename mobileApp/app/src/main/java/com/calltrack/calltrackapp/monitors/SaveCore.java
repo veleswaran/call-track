@@ -15,6 +15,7 @@ import com.calltrack.calltrackapp.db.bundles.CallRecord;
 import com.calltrack.calltrackapp.db.bundles.TokenEntity;
 import com.calltrack.calltrackapp.settings.LocalSettings;
 import com.calltrack.calltrackapp.utilities.Utility;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import java.util.List;
 
@@ -31,15 +32,17 @@ public class SaveCore {
     }
 
     public void ProcessCalls() {
+        localSettings.resetToCurrentCallId();
         long lastProcessedId = localSettings.getLastProcessedCallId();
         if (lastProcessedId > 0) {
             String selection = CallLog.Calls._ID + " > ?";
             String[] selectionArgs = new String[]{String.valueOf(lastProcessedId)};
-            String[] projection = {CallLog.Calls.NUMBER, CallLog.Calls.TYPE, CallLog.Calls.DATE, CallLog.Calls.DURATION, "subscription_id", CallLog.Calls._ID, CallLog.Calls.CACHED_NAME, "block_reason"};
+            String[] projection = {CallLog.Calls.NUMBER, CallLog.Calls.TYPE, CallLog.Calls.DATE, CallLog.Calls.DURATION, "subscription_id", CallLog.Calls._ID, CallLog.Calls.CACHED_NAME};
             try (Cursor cursor = context.getContentResolver().query(CallLog.Calls.CONTENT_URI, projection, selection, selectionArgs, CallLog.Calls._ID + " ASC")) {
                 if (cursor == null) return;
                 int batteryLevel = Utility.getBatteryPercentage(context);
                 while (cursor.moveToNext()) {
+                    Log.e("CallMonitor -> ProcessCalls", "Data fetched");
                     CallRecord record = new CallRecord();
                     record.synced = false;
                     record.batteryLevel = batteryLevel;
@@ -50,16 +53,20 @@ public class SaveCore {
                     record.duration = getStringSafe(cursor, CallLog.Calls.DURATION);
                     int type = getIntSafe(cursor, CallLog.Calls.TYPE);
                     record.type = mapCallType(type);
-                    int blockReason = getIntSafe(cursor, "block_reason");
+//                    int blockReason = getIntSafe(cursor, "block_reason");
+                    int blockReason = -1;
                     record.metaData = buildMetadata(type, blockReason);
                     int subId = getIntSafe(cursor, "subscription_id");
                     fillSubscriptionInfo(context, record, subId);
                     persistRecord(context.getApplicationContext(), record);
                     lastProcessedId = record.callLocalId;
+                    Log.e("CallMonitor -> saveLatestCall", "SIM " + record.simSlot);
+                    FirebaseCrashlytics.getInstance().log("SIM -> " + record.simSlot);
                 }
                 localSettings.setLastProcessedCallId(lastProcessedId);
             } catch (Exception e) {
                 Log.e("CallMonitor -> saveLatestCall", "Exception occurred", e);
+                FirebaseCrashlytics.getInstance().recordException(e);
             }
         }
     }
@@ -109,15 +116,24 @@ public class SaveCore {
 
     private String mapBlockReason(int reason) {
         switch (reason) {
-            case 0: return "not_blocked";
-            case 1: return "call_screening_service";
-            case 2: return "direct_to_voicemail";
-            case 3: return "blocked_number";
-            case 4: return "unknown_number";
-            case 5: return "restricted_number";
-            case 6: return "pay_phone";
-            case 7: return "not_in_contacts";
-            default: return "unknown";
+            case 0:
+                return "not_blocked";
+            case 1:
+                return "call_screening_service";
+            case 2:
+                return "direct_to_voicemail";
+            case 3:
+                return "blocked_number";
+            case 4:
+                return "unknown_number";
+            case 5:
+                return "restricted_number";
+            case 6:
+                return "pay_phone";
+            case 7:
+                return "not_in_contacts";
+            default:
+                return "unknown";
         }
     }
 

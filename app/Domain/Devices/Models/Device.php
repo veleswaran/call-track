@@ -48,6 +48,7 @@ class Device extends Model
         'tracked_sim_slots',
         'battery_level',
         'last_heartbeat_at',
+        'fcm_token',
         'metadata',
     ];
 
@@ -61,7 +62,7 @@ class Device extends Model
         return [
             'tracked_sim_slots' => 'array',
             'last_heartbeat_at' => 'datetime',
-            'metadata' => 'string',
+            'metadata' => 'array',
         ];
     }
 

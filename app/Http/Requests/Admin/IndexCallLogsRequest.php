@@ -42,8 +42,8 @@ class IndexCallLogsRequest extends FormRequest
             'types' => ['sometimes', 'array'],
             'types.*' => ['string', 'in:incoming,outgoing,missed,rejected,blocked,unknown'],
 
-            'statuses' => ['sometimes', 'array'],
-            'statuses.*' => ['string', 'in:Connected,Missed,No Answer'],
+            'outcomes' => ['sometimes', 'array'],
+            'outcomes.*' => ['string', 'in:Connected,Missed,No Answer'],
 
             // Dates (support both old and new keys)
             'date_from' => ['sometimes', 'date'],

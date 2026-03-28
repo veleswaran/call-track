@@ -22,7 +22,7 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { ReportFiltersData } from "./report-filters";
 
-interface AgentPerformance {
+export interface AgentPerformance {
     id: number
     agent: string
     employee_code: string
@@ -160,14 +160,14 @@ export function AgentPerformanceTable({ data, filters }: AgentPerformanceTablePr
             params.append('classifications[]', filters.type.toLowerCase());
         }
 
-        // Status
-        if (filters.status && filters.status !== 'all') {
-            let statusValue = filters.status;
-            if (filters.status === 'CONNECTED') statusValue = 'Connected';
-            if (filters.status === 'MISSED') statusValue = 'Missed';
-            if (filters.status === 'NO_ANSWER') statusValue = 'No Answer';
+        // Outcome
+        if (filters.outcome && filters.outcome !== 'all') {
+            params.append('outcomes[]', filters.outcome);
+        }
 
-            params.append('statuses[]', statusValue);
+        // Team Filter
+        if (filters.teamIds && filters.teamIds.length > 0) {
+            filters.teamIds.forEach(id => params.append('team_ids[]', id));
         }
 
         return `/call-logs?${params.toString()}`;

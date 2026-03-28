@@ -17,9 +17,11 @@ class RevokeDeviceTokensController extends Controller
     /**
      * Revoke all active tokens for the specified device.
      */
-    public function __invoke(int $deviceId): JsonResponse
+    public function __invoke(\App\Domain\Devices\Models\Device $device): JsonResponse
     {
-        $count = $this->service->revokeAllActiveTokens($deviceId);
+        $this->authorize('update', $device);
+
+        $count = $this->service->revokeAllActiveTokens($device->id);
 
         return response()->json([
             'message' => 'Tokens revoked successfully.',

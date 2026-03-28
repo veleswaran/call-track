@@ -16,8 +16,10 @@ class SearchTest extends TestCase
     public function test_can_search_devices()
     {
         $admin = \App\Domain\Users\Models\User::factory()->create();
-        $device1 = Device::factory()->create(['name' => 'Pixel 7', 'device_uuid' => 'uuid-1']);
-        $device2 = Device::factory()->create(['name' => 'iPhone 15', 'device_uuid' => 'uuid-2']);
+        $role = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
+        $admin->assignRole($role);
+        $device1 = Device::factory()->create(['name' => 'Pixel 7']);
+        $device2 = Device::factory()->create(['name' => 'iPhone 15']);
 
         $response = $this->actingAs($admin)->getJson('/api/v1/admin/devices?search=Pixel');
 
@@ -32,6 +34,8 @@ class SearchTest extends TestCase
     public function test_can_search_agents()
     {
         $admin = \App\Domain\Users\Models\User::factory()->create();
+        $role = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
+        $admin->assignRole($role);
         $agent1 = Agent::factory()->create(['name' => 'John Doe', 'employee_code' => 'EMP001']);
         $agent2 = Agent::factory()->create(['name' => 'Jane Smith', 'employee_code' => 'EMP002']);
 

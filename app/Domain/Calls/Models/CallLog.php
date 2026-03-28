@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property int $duration
  * @property \Illuminate\Support\Carbon $timestamp
  * @property \Illuminate\Support\Carbon $created_at
+ * @property-read string|null $call_outcome
  * @property-read Device $device
  * @property-read Agent|null $agent
  * @property-read CallClassification|null $classification
@@ -70,5 +71,13 @@ class CallLog extends Model
     public function classification(): HasOne
     {
         return $this->hasOne(CallClassification::class);
+    }
+
+    /**
+     * @return HasOne<\App\Domain\Calls\Models\CallEscalation, $this>
+     */
+    public function escalation(): HasOne
+    {
+        return $this->hasOne(CallEscalation::class);
     }
 }

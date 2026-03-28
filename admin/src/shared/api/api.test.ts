@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { api, type ApiError } from "./api";
 
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
 describe("api client", () => {
     const mockFetch = vi.fn();
     const originalFetch = global.fetch;
@@ -16,7 +18,7 @@ describe("api client", () => {
 
     describe("baseUrl", () => {
         it("should have the correct base URL", () => {
-            expect(api.baseUrl).toBe("http://localhost:8000");
+            expect(api.baseUrl).toBe(BASE_URL);
         });
     });
 
@@ -27,7 +29,7 @@ describe("api client", () => {
             await api.getCsrfCookie();
 
             expect(mockFetch).toHaveBeenCalledWith(
-                "http://localhost:8000/sanctum/csrf-cookie",
+                `${BASE_URL}/sanctum/csrf-cookie`,
                 { credentials: "include" }
             );
         });
@@ -43,7 +45,7 @@ describe("api client", () => {
 
             const result = await api.get("/api/v1/test");
 
-            expect(mockFetch).toHaveBeenCalledWith("http://localhost:8000/api/v1/test", {
+            expect(mockFetch).toHaveBeenCalledWith(`${BASE_URL}/api/v1/test`, {
                 credentials: "include",
                 headers: { Accept: "application/json" },
             });
@@ -81,7 +83,7 @@ describe("api client", () => {
             expect(mockFetch).toHaveBeenCalledTimes(2);
             expect(mockFetch).toHaveBeenNthCalledWith(
                 1,
-                "http://localhost:8000/sanctum/csrf-cookie",
+                `${BASE_URL}/sanctum/csrf-cookie`,
                 { credentials: "include" }
             );
         });
@@ -98,7 +100,7 @@ describe("api client", () => {
 
             expect(mockFetch).toHaveBeenNthCalledWith(
                 2,
-                "http://localhost:8000/api/v1/test",
+                `${BASE_URL}/api/v1/test`,
                 {
                     method: "POST",
                     credentials: "include",
@@ -124,7 +126,7 @@ describe("api client", () => {
 
             expect(mockFetch).toHaveBeenNthCalledWith(
                 2,
-                "http://localhost:8000/api/v1/logout",
+                `${BASE_URL}/api/v1/logout`,
                 {
                     method: "POST",
                     credentials: "include",
@@ -165,7 +167,7 @@ describe("api client", () => {
 
             expect(mockFetch).toHaveBeenNthCalledWith(
                 1,
-                "http://localhost:8000/sanctum/csrf-cookie",
+                `${BASE_URL}/sanctum/csrf-cookie`,
                 { credentials: "include" }
             );
         });
@@ -182,7 +184,7 @@ describe("api client", () => {
 
             expect(mockFetch).toHaveBeenNthCalledWith(
                 2,
-                "http://localhost:8000/api/v1/test/1",
+                `${BASE_URL}/api/v1/test/1`,
                 {
                     method: "PUT",
                     credentials: "include",
@@ -208,7 +210,7 @@ describe("api client", () => {
 
             expect(mockFetch).toHaveBeenNthCalledWith(
                 2,
-                "http://localhost:8000/api/v1/test/1",
+                `${BASE_URL}/api/v1/test/1`,
                 {
                     method: "PUT",
                     credentials: "include",
@@ -247,7 +249,7 @@ describe("api client", () => {
 
             expect(mockFetch).toHaveBeenNthCalledWith(
                 1,
-                "http://localhost:8000/sanctum/csrf-cookie",
+                `${BASE_URL}/sanctum/csrf-cookie`,
                 { credentials: "include" }
             );
         });
@@ -264,7 +266,7 @@ describe("api client", () => {
 
             expect(mockFetch).toHaveBeenNthCalledWith(
                 2,
-                "http://localhost:8000/api/v1/test/1",
+                `${BASE_URL}/api/v1/test/1`,
                 {
                     method: "DELETE",
                     credentials: "include",

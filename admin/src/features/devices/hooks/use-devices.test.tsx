@@ -33,17 +33,20 @@ const mockDevice: Device = {
     device_identifier: "device-123",
     device_name: "Pixel 7",
     device_model: "Pixel 7",
+    device_uuid: "uuid-123",
     os_version: "Android 14",
     app_version: "1.0.0",
     status: "active",
     agent_id: 1,
     tracked_sim_slots: null,
+    battery_level: 100,
     last_sync_at: "2023-01-01T00:00:00Z",
     created_at: "2024-01-01T00:00:00Z",
     updated_at: "2024-01-01T00:00:00Z",
-    device_uuid: "uuid-123",
-    agent: null,
-    battery_level: 100,
+    agent: {
+        id: 1,
+        name: "Test Agent",
+    }
 };
 
 describe("useDevices", () => {
@@ -138,5 +141,26 @@ describe("useGenerateDeviceCode", () => {
             expires_in_hours: 24,
         });
         expect(result.current.data).toEqual(mockResponse);
+    });
+});
+
+describe("useSendPushNotification", () => {
+    it("should send push notification and invalidate details query", async () => {
+        const { useSendPushNotification } = await import("./use-devices");
+
+        vi.mocked(api.post).mockResolvedValueOnce({ message: "Notification sent" });
+
+        const { result } = renderHook(() => useSendPushNotification(1), {
+            wrapper: createWrapper(),
+        });
+
+        result.current.mutate({ title: "Test", body: "Test body" });
+
+        await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+        expect(api.post).toHaveBeenCalledWith("/api/v1/admin/devices/1/push", {
+            title: "Test",
+            body: "Test body",
+        });
     });
 });

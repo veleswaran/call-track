@@ -33,6 +33,7 @@ const mockCallLog: CallLog = {
     phone_number: "+1234567890",
     contact_name: "John Doe",
     call_type: "incoming",
+    call_outcome: "Connected",
     duration: 120,
     timestamp: "2024-01-01T10:00:00Z",
     classification: {
