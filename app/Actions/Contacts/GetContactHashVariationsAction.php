@@ -21,18 +21,20 @@ class GetContactHashVariationsAction
         return Cache::remember('contact_hash_variations', 3600, function () {
             $allHashes = [];
 
-            // Use cursor to iterate and ensure phone_number is decrypted via model casting
-            foreach (Contact::whereNotNull('phone_number')->cursor() as $contact) {
-                $variations = PhoneNormalizer::generateHashVariations($contact->phone_number);
-                foreach ($variations as $hash) {
-                    $allHashes[] = $hash;
+            // A single loop over internal contacts is more efficient.
+            foreach (Contact::where('is_internal', true)->cursor() as $contact) {
+                // Generate variations if a phone number is present.
+                if ($contact->phone_number) {
+                    $variations = PhoneNormalizer::generateHashVariations($contact->phone_number);
+                    foreach ($variations as $hash) {
+                        $allHashes[] = $hash;
+                    }
                 }
-            }
 
-            // Also include existing phone_hash as a fallback for old contacts without phone_number
-            $existingHashes = Contact::pluck('phone_hash')->all();
-            foreach ($existingHashes as $hash) {
-                $allHashes[] = $hash;
+                // Always include the existing phone_hash as a primary/fallback identifier.
+                if ($contact->phone_hash) {
+                    $allHashes[] = $contact->phone_hash;
+                }
             }
 
             return array_values(array_unique($allHashes));
