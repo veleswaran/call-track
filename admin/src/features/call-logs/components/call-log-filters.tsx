@@ -15,6 +15,7 @@ import {
     SelectValue,
 } from "@shared/components/ui/select";
 import { AsyncSelect } from "@shared/components/async-select";
+import { MultiSelectAsync } from "@shared/components/multi-select-async";
 import { cn } from "@shared/utils";
 import { format, subDays, startOfDay, endOfDay, startOfMonth, endOfMonth, subMonths } from "date-fns";
 import { CalendarIcon, X } from "lucide-react";
@@ -44,7 +45,7 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
         (filters.types && filters.types.length > 0) ||
         (filters.outcomes && filters.outcomes.length > 0) ||
         (filters.classifications && filters.classifications.length > 0) ||
-        filters.team_id ||
+        (filters.team_ids && filters.team_ids.length > 0) ||
         filters.contact_filter;
 
     const clearFilters = () => {
@@ -171,29 +172,44 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
 
             {/* Team Filter - Only for Admins/Managers and if enabled in settings */}
             {canViewTeams && settings?.enable_call_log_team_filter && (
-                <AsyncSelect
+                <MultiSelectAsync
                     label="Team"
-                    placeholder="Team..."
-                    value={filters.team_id?.toString()}
-                    onChange={(val) => updateNumericFilter("team_id", val)}
-                    loadOptions={async () => {
+                    placeholder="All Teams"
+                    value={filters.team_ids?.map(id => id.toString()) || []}
+                    onChange={(val) => {
+                        onChange({
+                            ...filters,
+                            page: 1,
+                            team_ids: val.map((v) => parseInt(v)),
+                        });
+                    }}
+                    loadOptions={async (search) => {
                         try {
-                            // Dynamically import to avoid circular dependencies if any, though likely fine
                             const { teamsApi } = await import("@features/teams/api/teams-api");
+                            // Pass search directly to API for server-side case-insensitive filtering
                             const response = await teamsApi.getTeams({
+                                search: search || undefined,
                                 page: 1,
                                 per_page: 20,
                             });
-                            return response.data.map((t) => ({
+                            
+                            const options = response.data.map((t) => ({
                                 label: t.name,
                                 value: t.id.toString(),
                             }));
+
+                            // Include 'All Teams' only when not searching
+                            if (!search) {
+                                return [{ label: "All Teams", value: "all" }, ...options];
+                            }
+                            
+                            return options;
                         } catch (e) {
                             console.error(e);
                             return [];
                         }
                     }}
-                    className="w-[160px]"
+                    className="w-[180px]"
                 />
             )}
 
@@ -257,7 +273,7 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="all">All Records</SelectItem>
-                        <SelectItem value="internal">Include Internal</SelectItem>
+                        <SelectItem value="internal">Show Internal</SelectItem>
                         <SelectItem value="external">Exclude Internal</SelectItem>
                     </SelectContent>
                 </Select>

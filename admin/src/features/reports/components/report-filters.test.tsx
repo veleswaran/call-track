@@ -11,6 +11,13 @@ vi.mock("@shared/api/api", () => ({
     },
 }))
 
+// Mock dynamic import for teamsApi
+vi.mock("@features/teams/api/teams-api", () => ({
+    teamsApi: {
+        getTeams: vi.fn().mockResolvedValue({ data: [] }),
+    },
+}))
+
 interface MockSelectProps {
     children: React.ReactNode;
     onValueChange: (value: string) => void;
@@ -42,16 +49,38 @@ interface MockAsyncSelectProps {
 
 // Mock AsyncSelect to be test-friendly
 vi.mock("@shared/components/async-select", () => ({
-    AsyncSelect: ({ value, onChange, label }: MockAsyncSelectProps) => (
-        <div data-testid={`async-select-${label}`}>
-            <label>{label}</label>
-            <input 
-                data-testid={`input-${label}`}
-                value={value} 
-                onChange={(e) => onChange(e.target.value)} 
-            />
-        </div>
-    ),
+    AsyncSelect: ({ value, onChange, label, loadOptions }: any) => {
+        // Trigger loadOptions for coverage
+        loadOptions?.("");
+        return (
+            <div data-testid={`async-select-${label}`}>
+                <label>{label}</label>
+                <input 
+                    data-testid={`input-${label}`}
+                    value={value} 
+                    onChange={(e) => onChange(e.target.value)} 
+                />
+            </div>
+        )
+    },
+}))
+
+// Mock MultiSelectAsync to be test-friendly
+vi.mock("@shared/components/multi-select-async", () => ({
+    MultiSelectAsync: ({ value, onChange, label, loadOptions }: any) => {
+        // Trigger loadOptions for coverage
+        loadOptions?.("");
+        return (
+            <div data-testid={`async-select-${label}`}>
+                <label>{label}</label>
+                <input 
+                    data-testid={`input-${label}`}
+                    value={value.join(",")} 
+                    onChange={(e) => onChange(e.target.value.split(",").filter(Boolean))} 
+                />
+            </div>
+        )
+    },
 }))
 
 const createWrapper = () => {

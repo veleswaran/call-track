@@ -25,6 +25,7 @@ import {
 import { api } from "@shared/api/api"
 import { Agent, Team, PaginatedResponse } from "@shared/types"
 import { AsyncSelect } from "@shared/components/async-select"
+import { MultiSelectAsync } from "@shared/components/multi-select-async"
 import { useSettingsQuery } from "@features/settings/hooks/use-settings"
 
 export interface ReportFiltersData {
@@ -51,7 +52,7 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
     const [outcome, setOutcome] = useState("all")
     const [type, setType] = useState("BUSINESS")
     const [agentId, setAgentId] = useState<string>("")
-    const [teamId, setTeamId] = useState<string>("all")
+    const [teamIds, setTeamIds] = useState<string[]>([])
     const [contactFilter, setContactFilter] = useState<string>("all")
     const [quickDate, setQuickDate] = useState<string>("today")
     const { data: settings } = useSettingsQuery()
@@ -99,7 +100,7 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
             outcome,
             type,
             agentIds: agentId && agentId !== "all" ? [agentId] : null,
-            teamIds: teamId !== "all" ? [teamId] : null,
+            teamIds: teamIds.length > 0 ? teamIds : null,
             contactFilter: contactFilter === "all" ? null : contactFilter as "internal" | "external"
         })
     }
@@ -110,7 +111,7 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
         setOutcome("all");
         setType("BUSINESS");
         setAgentId("");
-        setTeamId("all");
+        setTeamIds([]);
         setContactFilter("all");
         onFilterChange({
             dateRange: defaultDateRange,
@@ -196,16 +197,26 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
             )}
 
             {settings?.enable_report_team_filter && (
-                <AsyncSelect
-                    value={teamId}
-                    onChange={setTeamId}
+                <MultiSelectAsync
+                    value={teamIds}
+                    onChange={(val) => setTeamIds(val)}
                     loadOptions={async (search) => {
-                        const res = await api.get<PaginatedResponse<Team>>(`/api/v1/admin/teams?search=${search}&per_page=100`)
+                        const { teamsApi } = await import("@features/teams/api/teams-api");
+                        const res = await teamsApi.getTeams({
+                            search: search || undefined,
+                            per_page: 50
+                        });
                         const options = res.data.map((team: Team) => ({
                             label: team.name,
                             value: team.id.toString()
                         }))
-                        return [{ label: "All Teams", value: "all" }, ...options]
+                        
+                        // Include 'All Teams' only when not searching
+                        if (!search) {
+                            return [{ label: "All Teams", value: "all" }, ...options];
+                        }
+                        
+                        return options;
                     }}
                     placeholder="All Teams"
                     label="Team"
@@ -252,7 +263,7 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="all">All Records</SelectItem>
-                        <SelectItem value="internal">Include Internal</SelectItem>
+                        <SelectItem value="internal">Show Internal</SelectItem>
                         <SelectItem value="external">Exclude Internal</SelectItem>
                     </SelectContent>
                 </Select>

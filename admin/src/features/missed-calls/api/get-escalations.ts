@@ -8,7 +8,9 @@ import {
 export const getEscalations = async (params: GetEscalationsParams): Promise<EscalationInsightsResponse> => {
     const searchParams = new URLSearchParams();
 
-    if (params.team_id) searchParams.append("team_id", params.team_id.toString());
+    if (params.team_ids && params.team_ids.length > 0) {
+        params.team_ids.forEach(id => searchParams.append("team_ids[]", id.toString()));
+    }
     if (params.agent_id) searchParams.append("agent_id", params.agent_id.toString());
     if (params.status && params.status !== "all") {
         if (Array.isArray(params.status)) {

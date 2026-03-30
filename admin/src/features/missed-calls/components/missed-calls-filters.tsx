@@ -24,6 +24,7 @@ import { api } from "@shared/api/api";
 import { Agent, Team, PaginatedResponse } from "@shared/types";
 import { EscalationStatus, GetEscalationsParams } from "../types/escalation";
 import { AsyncSelect } from "@shared/components/async-select";
+import { MultiSelectAsync } from "@shared/components/multi-select-async";
 import { useSettingsQuery } from "@features/settings/hooks/use-settings";
 
 interface MissedCallsFiltersProps {
@@ -39,7 +40,7 @@ export function MissedCallsFilters({ onFilterChange }: MissedCallsFiltersProps) 
     const [date, setDate] = useState<DateRange | undefined>(defaultDateRange);
     const [status, setStatus] = useState<string>("all");
     const [agentId, setAgentId] = useState<string>("all");
-    const [teamId, setTeamId] = useState<string>("all");
+    const [teamIds, setTeamIds] = useState<string[]>([]);
     const [contactFilter, setContactFilter] = useState<string>("all");
     const [quickDate, setQuickDate] = useState<string>("today");
     const { data: settings } = useSettingsQuery();
@@ -84,7 +85,7 @@ export function MissedCallsFilters({ onFilterChange }: MissedCallsFiltersProps) 
         onFilterChange({
             status: status === "all" ? null : status as EscalationStatus,
             agent_id: agentId === "all" ? null : agentId,
-            team_id: teamId === "all" ? null : teamId,
+            team_ids: teamIds.length > 0 ? teamIds.map(id => parseInt(id)) : null,
             contact_filter: contactFilter === "all" ? null : contactFilter as "internal" | "external",
             date_from: date?.from ? format(date.from, "yyyy-MM-dd") : null,
             date_to: date?.to ? format(date.to, "yyyy-MM-dd") : null,
@@ -94,14 +95,14 @@ export function MissedCallsFilters({ onFilterChange }: MissedCallsFiltersProps) 
     const handleReset = () => {
         setStatus("all");
         setAgentId("all");
-        setTeamId("all");
+        setTeamIds([]);
         setContactFilter("all");
         setDate(defaultDateRange);
         setQuickDate("today");
         onFilterChange({
             status: "all",
             agent_id: null,
-            team_id: null,
+            team_ids: null,
             contact_filter: "all",
             date_from: format(defaultDateRange.from!, "yyyy-MM-dd"),
             date_to: format(defaultDateRange.to!, "yyyy-MM-dd"),
@@ -186,23 +187,33 @@ export function MissedCallsFilters({ onFilterChange }: MissedCallsFiltersProps) 
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="all">All Records</SelectItem>
-                        <SelectItem value="internal">Include Internal</SelectItem>
+                        <SelectItem value="internal">Show Internal</SelectItem>
                         <SelectItem value="external">Exclude Internal</SelectItem>
                     </SelectContent>
                 </Select>
             )}
 
             {settings?.enable_missed_call_team_filter && (
-                <AsyncSelect
-                    value={teamId}
-                    onChange={setTeamId}
+                <MultiSelectAsync
+                    value={teamIds}
+                    onChange={(val) => setTeamIds(val)}
                     loadOptions={async (search) => {
-                        const res = await api.get<PaginatedResponse<Team>>(`/api/v1/admin/teams?search=${search}&per_page=100`);
+                        const { teamsApi } = await import("@features/teams/api/teams-api");
+                        const res = await teamsApi.getTeams({
+                            search: search || undefined,
+                            per_page: 100
+                        });
                         const options = res.data.map((team: Team) => ({
                             label: team.name,
                             value: team.id.toString(),
                         }));
-                        return [{ label: "All Teams", value: "all" }, ...options];
+
+                        // Include 'All Teams' only when not searching
+                        if (!search) {
+                            return [{ label: "All Teams", value: "all" }, ...options];
+                        }
+
+                        return options;
                     }}
                     placeholder="All Teams"
                     label="Team"

@@ -15,15 +15,18 @@ export function ScrollToTopButton() {
 
     React.useEffect(() => {
         const toggleVisibility = () => {
-            if (window.pageYOffset > 300) {
-                setIsVisible(true);
-            } else {
-                setIsVisible(false);
-            }
+            setIsVisible(window.scrollY > 300);
         };
 
-        window.addEventListener("scroll", toggleVisibility);
-        return () => window.removeEventListener("scroll", toggleVisibility);
+        // Use { passive: true } for better scroll performance as we don't call preventDefault.
+        window.addEventListener("scroll", toggleVisibility, { passive: true });
+
+        // Immediately check visibility on mount in case the page is already scrolled.
+        toggleVisibility();
+
+        return () => {
+            window.removeEventListener("scroll", toggleVisibility);
+        };
     }, []);
 
     const scrollToTop = () => {

@@ -63,9 +63,9 @@ class GetEscalationInsightsAction
             });
         }
 
-        if ($dto->team_id) {
+        if (! empty($dto->team_ids)) {
             $query->whereHas('callLog.agent.teams', function ($q) use ($dto) {
-                $q->where('teams.id', $dto->team_id);
+                $q->whereIn('teams.id', $dto->team_ids);
             });
         }
 

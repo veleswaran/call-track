@@ -37,7 +37,7 @@ export default function CallLogsPage() {
         outcomes: searchParams.getAll("outcomes[]") as ("Connected" | "Missed" | "No Answer")[] | undefined,
         classifications: searchParams.getAll("classifications[]") as ("business" | "personal" | "ignored")[] | undefined,
         agents: searchParams.getAll("agents[]").map(Number).filter(n => !isNaN(n)),
-        team_id: searchParams.get("team_id") ? Number(searchParams.get("team_id")) : undefined,
+        team_ids: searchParams.getAll("team_ids[]").map(Number).filter(n => !isNaN(n)),
     };
 
     // If arrays are empty from getAll, they should be undefined to avoid sending empty params to API if that's how hooks work
@@ -46,6 +46,7 @@ export default function CallLogsPage() {
     if (initialFilters.outcomes?.length === 0) delete initialFilters.outcomes;
     if (initialFilters.classifications?.length === 0) delete initialFilters.classifications;
     if (initialFilters.agents?.length === 0) delete initialFilters.agents;
+    if (initialFilters.team_ids?.length === 0) delete initialFilters.team_ids;
 
     const [filters, setFilters] = useState<FilterTypes>(initialFilters);
 
