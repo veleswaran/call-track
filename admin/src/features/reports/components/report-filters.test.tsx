@@ -41,15 +41,23 @@ vi.mock("@shared/components/ui/select", () => ({
     SelectValue: ({ placeholder }: { placeholder: string }) => <span>{placeholder}</span>,
 }))
 
-interface MockAsyncSelectProps {
+interface AsyncSelectMockProps {
     value: string;
     onChange: (value: string) => void;
     label: string;
+    loadOptions?: (input: string) => Promise<unknown>;
+}
+
+interface MultiSelectAsyncMockProps {
+    value: string[];
+    onChange: (value: string[]) => void;
+    label: string;
+    loadOptions?: (input: string) => Promise<unknown>;
 }
 
 // Mock AsyncSelect to be test-friendly
 vi.mock("@shared/components/async-select", () => ({
-    AsyncSelect: ({ value, onChange, label, loadOptions }: any) => {
+    AsyncSelect: ({ value, onChange, label, loadOptions }: AsyncSelectMockProps) => {
         // Trigger loadOptions for coverage
         loadOptions?.("");
         return (
@@ -67,7 +75,7 @@ vi.mock("@shared/components/async-select", () => ({
 
 // Mock MultiSelectAsync to be test-friendly
 vi.mock("@shared/components/multi-select-async", () => ({
-    MultiSelectAsync: ({ value, onChange, label, loadOptions }: any) => {
+    MultiSelectAsync: ({ value, onChange, label, loadOptions }: MultiSelectAsyncMockProps) => {
         // Trigger loadOptions for coverage
         loadOptions?.("");
         return (
