@@ -9,7 +9,6 @@ import { ReportSummary } from "@features/reports/components/report-summary"
 import { ReportCharts } from "@features/reports/components/report-charts"
 import { AgentPerformanceTable } from "@features/reports/components/agent-performance-table"
 import { api } from "@shared/api/api"
-import { Button } from "@shared/components/ui/button"
 
 export default function ReportsPage() {
     const [filters, setFilters] = useState<ReportFiltersData>({
@@ -109,16 +108,6 @@ export default function ReportsPage() {
                 <AgentPerformanceTable data={performanceQuery.data || []} filters={filters} />
             </div>
 
-            <div className="flex justify-center py-8">
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                    className="text-muted-foreground hover:text-foreground"
-                >
-                    Scroll to Top
-                </Button>
-            </div>
         </div>
     )
 }
