@@ -100,14 +100,12 @@ describe("MissedCallsFilters", () => {
             }
             if (url.includes("agents")) {
                 return Promise.resolve({
-                    data: {
-                        data: [
-                            { id: 1, name: "Agent 1" },
-                        ],
-                    }
+                    data: [
+                        { id: 1, name: "Agent 1" },
+                    ],
                 })
             }
-            return Promise.resolve({ data: { data: [] } })
+            return Promise.resolve({ data: [] })
         })
     })
 

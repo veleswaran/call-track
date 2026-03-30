@@ -123,7 +123,7 @@ describe("ReportFilters", () => {
                     }
                 })
             }
-            return Promise.resolve({ data: { data: [] } })
+            return Promise.resolve({ data: [] })
         })
     })
 
