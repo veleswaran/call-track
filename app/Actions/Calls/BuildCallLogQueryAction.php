@@ -131,9 +131,9 @@ final class BuildCallLogQueryAction
         }
 
         // Filter by Team
-        if ($dto->teamId !== null) {
+        if (! empty($dto->teamIds)) {
             $query->whereHas('device.agent.teams', function (Builder $q) use ($dto): void {
-                $q->where('teams.id', $dto->teamId);
+                $q->whereIn('teams.id', $dto->teamIds);
             });
         }
 

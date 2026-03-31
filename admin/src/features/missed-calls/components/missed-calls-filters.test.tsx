@@ -54,6 +54,20 @@ vi.mock("@shared/components/async-select", () => ({
     ),
 }))
 
+// Mock MultiSelectAsync to be test-friendly
+vi.mock("@shared/components/multi-select-async", () => ({
+    MultiSelectAsync: ({ value, onChange, label }: { value: string[]; onChange: (val: string[]) => void; label: string }) => (
+        <div data-testid={`async-select-${label}`}>
+            <label>{label}</label>
+            <input 
+                data-testid={`input-${label}`}
+                value={value.join(",")} 
+                onChange={(e) => onChange(e.target.value.split(",").filter(Boolean))} 
+            />
+        </div>
+    ),
+}))
+
 const createWrapper = () => {
     const queryClient = new QueryClient({
         defaultOptions: {
@@ -86,14 +100,12 @@ describe("MissedCallsFilters", () => {
             }
             if (url.includes("agents")) {
                 return Promise.resolve({
-                    data: {
-                        data: [
-                            { id: 1, name: "Agent 1" },
-                        ],
-                    }
+                    data: [
+                        { id: 1, name: "Agent 1" },
+                    ],
                 })
             }
-            return Promise.resolve({ data: { data: [] } })
+            return Promise.resolve({ data: [] })
         })
     })
 
@@ -138,7 +150,7 @@ describe("MissedCallsFilters", () => {
 
         expect(onFilterChange).toHaveBeenCalledWith(expect.objectContaining({
             status: "pending",
-            team_id: "5",
+            team_ids: [5],
             agent_id: "10"
         }))
     })
@@ -174,7 +186,7 @@ describe("MissedCallsFilters", () => {
         expect(onFilterChange).toHaveBeenCalledWith(expect.objectContaining({
             status: "all",
             agent_id: null,
-            team_id: null
+            team_ids: null
         }))
     })
 })

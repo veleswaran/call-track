@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 class EscalationFilterDTO
 {
     public function __construct(
-        public ?int $team_id = null,
+        public array $team_ids = [],
         public ?int $agent_id = null,
         public string|array|null $status = null, // pending, unattended, resolved
         public ?string $date_from = null,
@@ -23,7 +23,7 @@ class EscalationFilterDTO
     public static function fromRequest(Request $request, ?array $allowed_agent_ids = null): self
     {
         return new self(
-            team_id: $request->filled('team_id') ? (int) $request->input('team_id') : null,
+            team_ids: array_map('intval', (array) ($request->input('team_ids') ?? ($request->has('team_id') ? [$request->input('team_id')] : []))),
             agent_id: $request->filled('agent_id') ? (int) $request->input('agent_id') : null,
             status: $request->input('status'),
             date_from: $request->input('date_from'),

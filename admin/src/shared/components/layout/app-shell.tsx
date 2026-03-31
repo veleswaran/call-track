@@ -4,6 +4,7 @@ import * as React from "react";
 import { SidebarNav } from "./sidebar-nav";
 import { Header } from "./header";
 import { BottomNav } from "./bottom-nav";
+import { ScrollToTopButton } from "./scroll-to-top-button";
 import { useMobile } from "@shared/hooks/use-mobile";
 import { User } from "../../types";
 import { cn } from "@shared/utils";
@@ -57,6 +58,9 @@ export function AppShell({ children, user, onLogout }: AppShellProps) {
 
             {/* Mobile bottom navigation */}
             {isMobile && <BottomNav onLogout={onLogout} />}
+
+            {/* Global scroll to top button */}
+            <ScrollToTopButton />
         </div>
     );
 }

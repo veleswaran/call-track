@@ -41,7 +41,7 @@ export interface EscalationInsightsResponse {
 }
 
 export interface GetEscalationsParams {
-    team_id?: string | number | null;
+    team_ids?: (string | number)[] | null;
     agent_id?: string | number | null;
     status?: EscalationStatus | EscalationStatus[] | "all" | null;
     date_from?: string | null;

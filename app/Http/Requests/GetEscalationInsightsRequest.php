@@ -15,6 +15,8 @@ class GetEscalationInsightsRequest extends FormRequest
     {
         return [
             'team_id' => ['nullable', 'integer', 'exists:teams,id'],
+            'team_ids' => ['nullable', 'array'],
+            'team_ids.*' => ['integer', 'exists:teams,id'],
             'agent_id' => ['nullable', 'integer', 'exists:agents,id'],
             'status' => ['nullable', function ($attribute, $value, $fail) {
                 $allowed = ['pending', 'unattended', 'resolved'];

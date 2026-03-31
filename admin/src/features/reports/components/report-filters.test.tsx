@@ -11,6 +11,13 @@ vi.mock("@shared/api/api", () => ({
     },
 }))
 
+// Mock dynamic import for teamsApi
+vi.mock("@features/teams/api/teams-api", () => ({
+    teamsApi: {
+        getTeams: vi.fn().mockResolvedValue({ data: [] }),
+    },
+}))
+
 interface MockSelectProps {
     children: React.ReactNode;
     onValueChange: (value: string) => void;
@@ -34,24 +41,54 @@ vi.mock("@shared/components/ui/select", () => ({
     SelectValue: ({ placeholder }: { placeholder: string }) => <span>{placeholder}</span>,
 }))
 
-interface MockAsyncSelectProps {
+interface AsyncSelectMockProps {
     value: string;
     onChange: (value: string) => void;
     label: string;
+    loadOptions?: (input: string) => Promise<unknown>;
+}
+
+interface MultiSelectAsyncMockProps {
+    value: string[];
+    onChange: (value: string[]) => void;
+    label: string;
+    loadOptions?: (input: string) => Promise<unknown>;
 }
 
 // Mock AsyncSelect to be test-friendly
 vi.mock("@shared/components/async-select", () => ({
-    AsyncSelect: ({ value, onChange, label }: MockAsyncSelectProps) => (
-        <div data-testid={`async-select-${label}`}>
-            <label>{label}</label>
-            <input 
-                data-testid={`input-${label}`}
-                value={value} 
-                onChange={(e) => onChange(e.target.value)} 
-            />
-        </div>
-    ),
+    AsyncSelect: ({ value, onChange, label, loadOptions }: AsyncSelectMockProps) => {
+        // Trigger loadOptions for coverage
+        loadOptions?.("");
+        return (
+            <div data-testid={`async-select-${label}`}>
+                <label>{label}</label>
+                <input 
+                    data-testid={`input-${label}`}
+                    value={value} 
+                    onChange={(e) => onChange(e.target.value)} 
+                />
+            </div>
+        )
+    },
+}))
+
+// Mock MultiSelectAsync to be test-friendly
+vi.mock("@shared/components/multi-select-async", () => ({
+    MultiSelectAsync: ({ value, onChange, label, loadOptions }: MultiSelectAsyncMockProps) => {
+        // Trigger loadOptions for coverage
+        loadOptions?.("");
+        return (
+            <div data-testid={`async-select-${label}`}>
+                <label>{label}</label>
+                <input 
+                    data-testid={`input-${label}`}
+                    value={value.join(",")} 
+                    onChange={(e) => onChange(e.target.value.split(",").filter(Boolean))} 
+                />
+            </div>
+        )
+    },
 }))
 
 const createWrapper = () => {
@@ -86,7 +123,7 @@ describe("ReportFilters", () => {
                     }
                 })
             }
-            return Promise.resolve({ data: { data: [] } })
+            return Promise.resolve({ data: [] })
         })
     })
 
