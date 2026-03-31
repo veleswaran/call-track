@@ -6,6 +6,12 @@ export interface CreateUserData {
     email: string;
     password: string;
     password_confirmation: string;
+    is_agent?: boolean;
+    is_team?: boolean;
+    status?: string;
+    employee_code?: string;
+    team_id?: number;
+    role?: string;
 }
 
 export const usersApi = {

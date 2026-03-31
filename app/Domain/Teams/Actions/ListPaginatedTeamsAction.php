@@ -23,7 +23,7 @@ class ListPaginatedTeamsAction
         ]);
 
         if ($search) {
-            $query->where('name', 'like', "%{$search}%");
+            $query->where('name', 'ilike', "%{$search}%");
         }
 
         // Scoping: If user is provided and NOT an admin, filter by manager role

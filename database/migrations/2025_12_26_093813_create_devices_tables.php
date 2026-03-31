@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('model')->nullable();
             $table->string('os_version')->nullable();
             $table->string('app_version')->nullable();
+            $table->string('status')->default('active'); // active, inactive, maintenance
             $table->timestamps();
         });
 

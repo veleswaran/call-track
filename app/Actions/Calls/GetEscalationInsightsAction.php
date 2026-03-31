@@ -12,6 +12,10 @@ use Illuminate\Support\Carbon;
 
 class GetEscalationInsightsAction
 {
+    public function __construct(
+        protected \App\Actions\Contacts\GetContactHashVariationsAction $getContactHashesAction
+    ) {}
+
     public function execute(EscalationFilterDTO $dto): LengthAwarePaginator
     {
         $query = CallEscalation::with(['callLog', 'callLog.agent', 'callLog.device', 'resolvedByCall']);
@@ -34,7 +38,11 @@ class GetEscalationInsightsAction
         });
 
         if ($dto->status) {
-            $query->where('status', $dto->status);
+            if (is_array($dto->status)) {
+                $query->whereIn('status', $dto->status);
+            } else {
+                $query->where('status', $dto->status);
+            }
         }
 
         if ($dto->date_from) {
@@ -55,9 +63,9 @@ class GetEscalationInsightsAction
             });
         }
 
-        if ($dto->team_id) {
+        if (! empty($dto->team_ids)) {
             $query->whereHas('callLog.agent.teams', function ($q) use ($dto) {
-                $q->where('teams.id', $dto->team_id);
+                $q->whereIn('teams.id', $dto->team_ids);
             });
         }
 
@@ -65,6 +73,20 @@ class GetEscalationInsightsAction
             $query->whereHas('callLog', function ($q) use ($dto) {
                 $q->whereIn('agent_id', $dto->allowed_agent_ids);
             });
+        }
+
+        if ($dto->contact_filter !== null && $dto->contact_filter !== 'all') {
+            $contactHashes = $this->getContactHashesAction->execute();
+
+            if ($dto->contact_filter === 'internal') {
+                $query->whereHas('callLog', function ($q) use ($contactHashes) {
+                    $q->whereIn('phone_number_hash', $contactHashes);
+                });
+            } else {
+                $query->whereHas('callLog', function ($q) use ($contactHashes) {
+                    $q->whereNotIn('phone_number_hash', $contactHashes);
+                });
+            }
         }
 
         return $query;

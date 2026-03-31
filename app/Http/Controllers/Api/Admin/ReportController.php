@@ -61,6 +61,7 @@ final class ReportController extends Controller
             types: $base->types,
             search: $base->search,
             allowedAgentIds: $allowedAgentIds,
+            contactFilter: $base->contactFilter,
         );
     }
 }

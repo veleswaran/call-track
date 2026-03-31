@@ -45,9 +45,10 @@ class CallLogController extends Controller
             dateTo: $dto->dateTo,
             search: $dto->search,
             user: $dto->user,
-            teamId: $dto->teamId,
+            teamIds: $dto->teamIds,
             allowedAgentIds: $allowedAgentIds,
             simSlot: $dto->simSlot,
+            contactFilter: $dto->contactFilter,
         );
 
         $paginator = $this->service->list($scopedDto);

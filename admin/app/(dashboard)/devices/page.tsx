@@ -1,6 +1,15 @@
 "use client";
 
-import { useDevices } from "@features/devices/hooks/use-devices";
+import { useDevices, useRevokeDeviceTokens } from "@features/devices/hooks/use-devices";
+import { useSettingsQuery } from "@features/settings/hooks/use-settings";
+import { Input } from "@shared/components/ui/input";
+import { Button } from "@shared/components/ui/button";
+import { DeviceMetadataDialog } from "@features/devices/components/device-metadata-dialog";
+import { DevicePushNotificationDialog } from "@features/devices/components/device-push-notification-dialog";
+
+import { useAuth } from "@features/auth/hooks/use-auth";
+
+import { useEffect, useState } from "react";
 import {
     Table,
     TableBody,
@@ -9,30 +18,57 @@ import {
     TableHeader,
     TableRow,
 } from "@shared/components/ui/table";
-import { Smartphone } from "lucide-react";
+import { DevicePagination } from "@features/devices/components/device-pagination";
 import { DeviceHeartbeatBadge } from "@features/devices/components/device-heartbeat-badge";
 import { DeviceStatusBadge } from "@features/devices/components/device-status-badge";
 import { DeviceEventsDialog } from "@features/devices/components/device-events-dialog";
 import { isDeviceStale } from "@features/devices/utils/device-utils";
 import { DeviceRegistrationCodeDialog } from "@features/devices/components/device-registration-code-dialog";
-import { useRevokeDeviceTokens } from "@features/devices/hooks/use-devices";
-import { Button } from "@shared/components/ui/button";
-import { LogOut } from "lucide-react";
-import { DeviceMetadataDialog } from "@features/devices/components/device-metadata-dialog";
-import { DevicePushNotificationDialog } from "@features/devices/components/device-push-notification-dialog";
-
-import { useAuth } from "@features/auth/hooks/use-auth";
-
-import { useState } from "react";
-import { DevicePagination } from "@features/devices/components/device-pagination";
+import { Smartphone, LogOut, Search, X } from "lucide-react";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@shared/components/ui/select";
 
 /**
  * Devices page - displays device list using API hook
  */
 export default function DevicesPage() {
     const { user } = useAuth();
+    const { data: settings } = useSettingsQuery();
+    const statuses = [
+        { id: 'active', name: 'Active' },
+        { id: 'inactive', name: 'Inactive' },
+    ];
+    const [search, setSearch] = useState("");
+    const [status, setStatus] = useState<string>("all");
+    const [debouncedSearch, setDebouncedSearch] = useState("");
     const [pagination, setPagination] = useState({ page: 1, per_page: 20 });
-    const { data, isLoading, isError } = useDevices(pagination);
+    
+    // Debounce search input
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(search);
+            setPagination(prev => ({ ...prev, page: 1 })); // Reset to first page on search
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [search]);
+
+    const [prevStatus, setPrevStatus] = useState(status);
+
+    // Reset page on status change
+    if (status !== prevStatus) {
+        setPrevStatus(status);
+        setPagination(prev => ({ ...prev, page: 1 }));
+    }
+    const { data, isLoading, isError } = useDevices({ 
+        ...pagination, 
+        search: debouncedSearch,
+        status: status === "all" ? undefined : status
+    });
     const revokeDeviceTokens = useRevokeDeviceTokens();
 
     const devices = data?.data ?? [];
@@ -57,6 +93,44 @@ export default function DevicesPage() {
                     </p>
                 </div>
                 {canGenerateCodes && <DeviceRegistrationCodeDialog />}
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                <div className="relative flex-1 max-w-sm">
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                        placeholder="Search devices by name, model, identifier or agent..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="pl-9"
+                    />
+                    {search && (
+                        <button
+                            onClick={() => setSearch("")}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+                        >
+                            <X className="h-4 w-4" />
+                        </button>
+                    )}
+                </div>
+
+                {settings?.enable_device_status_filter && (
+                    <div className="w-full sm:w-[180px]">
+                        <Select value={status} onValueChange={setStatus}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Statuses</SelectItem>
+                                {statuses?.map((s) => (
+                                    <SelectItem key={s.id} value={s.id}>
+                                        {s.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                )}
             </div>
 
             <div className="space-y-4 rounded-md border border-zinc-200 p-4 dark:border-zinc-800">

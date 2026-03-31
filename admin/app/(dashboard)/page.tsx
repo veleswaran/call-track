@@ -6,7 +6,6 @@ import {
     CardHeader,
     CardTitle,
 } from "@shared/components/ui/card";
-import { Button } from "@shared/components/ui/button";
 import { Phone, Clock, Timer, TrendingUp, TrendingDown, ArrowRight } from "lucide-react";
 import { useDashboardMetrics, useDashboardCharts } from "@features/dashboard/hooks/use-dashboard";
 import { CallVolumeTrendsChart } from "@features/dashboard/components/CallVolumeTrendsChart";
@@ -183,16 +182,6 @@ export default function DashboardPage() {
                 />
             </div>
 
-            <div className="flex justify-center py-8">
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                    className="text-muted-foreground hover:text-foreground"
-                >
-                    Scroll to Top
-                </Button>
-            </div>
         </div>
     );
 }

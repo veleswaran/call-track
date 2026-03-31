@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property bool|null $active_tokens_exists
  * @property array|null $tracked_sim_slots
  * @property \Illuminate\Support\Carbon|null $last_heartbeat_at
+ * @property string $status
  */
 class Device extends Model
 {
@@ -50,6 +51,7 @@ class Device extends Model
         'last_heartbeat_at',
         'fcm_token',
         'metadata',
+        'status',
     ];
 
     /**

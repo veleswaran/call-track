@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\DB;
 
 final class GetAgentPerformanceAction
 {
+    public function __construct(
+        protected \App\Actions\Contacts\GetContactHashVariationsAction $getContactHashesAction
+    ) {}
+
     public function execute(ReportFilterDTO $filters): array
     {
         // Should join users/agents.
@@ -83,6 +87,16 @@ final class GetAgentPerformanceAction
                     });
                 }
             });
+        }
+
+        if ($filters->contactFilter !== null && $filters->contactFilter !== 'all') {
+            $contactHashes = $this->getContactHashesAction->execute();
+
+            if ($filters->contactFilter === 'internal') {
+                $query->whereIn('call_logs.phone_number_hash', $contactHashes);
+            } else {
+                $query->whereNotIn('call_logs.phone_number_hash', $contactHashes);
+            }
         }
 
         // Group by Agent

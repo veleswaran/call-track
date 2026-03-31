@@ -11,6 +11,13 @@ vi.mock("@shared/api/api", () => ({
     },
 }))
 
+// Mock dynamic import for teamsApi
+vi.mock("@features/teams/api/teams-api", () => ({
+    teamsApi: {
+        getTeams: vi.fn().mockResolvedValue({ data: [] }),
+    },
+}))
+
 interface MockSelectProps {
     children: React.ReactNode;
     onValueChange: (value: string) => void;
@@ -34,24 +41,54 @@ vi.mock("@shared/components/ui/select", () => ({
     SelectValue: ({ placeholder }: { placeholder: string }) => <span>{placeholder}</span>,
 }))
 
-interface MockAsyncSelectProps {
+interface AsyncSelectMockProps {
     value: string;
     onChange: (value: string) => void;
     label: string;
+    loadOptions?: (input: string) => Promise<unknown>;
+}
+
+interface MultiSelectAsyncMockProps {
+    value: string[];
+    onChange: (value: string[]) => void;
+    label: string;
+    loadOptions?: (input: string) => Promise<unknown>;
 }
 
 // Mock AsyncSelect to be test-friendly
 vi.mock("@shared/components/async-select", () => ({
-    AsyncSelect: ({ value, onChange, label }: MockAsyncSelectProps) => (
-        <div data-testid={`async-select-${label}`}>
-            <label>{label}</label>
-            <input 
-                data-testid={`input-${label}`}
-                value={value} 
-                onChange={(e) => onChange(e.target.value)} 
-            />
-        </div>
-    ),
+    AsyncSelect: ({ value, onChange, label, loadOptions }: AsyncSelectMockProps) => {
+        // Trigger loadOptions for coverage
+        loadOptions?.("");
+        return (
+            <div data-testid={`async-select-${label}`}>
+                <label>{label}</label>
+                <input 
+                    data-testid={`input-${label}`}
+                    value={value} 
+                    onChange={(e) => onChange(e.target.value)} 
+                />
+            </div>
+        )
+    },
+}))
+
+// Mock MultiSelectAsync to be test-friendly
+vi.mock("@shared/components/multi-select-async", () => ({
+    MultiSelectAsync: ({ value, onChange, label, loadOptions }: MultiSelectAsyncMockProps) => {
+        // Trigger loadOptions for coverage
+        loadOptions?.("");
+        return (
+            <div data-testid={`async-select-${label}`}>
+                <label>{label}</label>
+                <input 
+                    data-testid={`input-${label}`}
+                    value={value.join(",")} 
+                    onChange={(e) => onChange(e.target.value.split(",").filter(Boolean))} 
+                />
+            </div>
+        )
+    },
 }))
 
 const createWrapper = () => {
@@ -74,46 +111,66 @@ describe("ReportFilters", () => {
 
     beforeEach(() => {
         vi.clearAllMocks()
-        vi.mocked(api.get).mockImplementation(() => Promise.resolve({ data: { data: [] } }))
+        vi.mocked(api.get).mockImplementation((url) => {
+            if (url.includes("settings")) {
+                return Promise.resolve({
+                    data: {
+                        enable_report_agent_filter: true,
+                        enable_report_team_filter: true,
+                        enable_report_class_filter: true,
+                        enable_report_outcome_filter: true,
+                        enable_report_internal_filter: true,
+                    }
+                })
+            }
+            return Promise.resolve({ data: [] })
+        })
     })
 
-    it("renders correctly with initial states", () => {
+    it("renders correctly with initial states", async () => {
         render(<ReportFilters onFilterChange={onFilterChange} />, {
             wrapper: createWrapper(),
         })
 
-        expect(screen.getAllByTestId("mock-select")).toHaveLength(3)
+        // Wait for dynamic elements to appear first
+        await screen.findByTestId("async-select-Team")
+        await screen.findByTestId("async-select-Agent")
+
+        expect(screen.getAllByTestId("mock-select")).toHaveLength(4)
         expect(screen.getByTestId("async-select-Team")).toBeInTheDocument()
         expect(screen.getByTestId("async-select-Agent")).toBeInTheDocument()
     })
 
-    it("calls onFilterChange when filter button is clicked", () => {
+    it("calls onFilterChange when filter button is clicked", async () => {
         render(<ReportFilters onFilterChange={onFilterChange} />, {
             wrapper: createWrapper(),
         })
 
-        const filterButton = screen.getByText("Filter").closest("button")!
+        const filterButton = (await screen.findByText("Filter")).closest("button")!
         fireEvent.click(filterButton)
 
         expect(onFilterChange).toHaveBeenCalled()
     })
 
-    it("resets filters when clear button is clicked", () => {
+    it("resets filters when clear button is clicked", async () => {
         render(<ReportFilters onFilterChange={onFilterChange} />, {
             wrapper: createWrapper(),
         })
 
-        const clearButton = screen.getByTitle("Reset Filters")
+        const clearButton = await screen.findByTitle("Reset Filters")
         fireEvent.click(clearButton)
 
         expect(onFilterChange).toHaveBeenCalled()
     })
 
-    it("handles all quick date selection branches", () => {
+    it("handles all quick date selection branches", async () => {
         render(<ReportFilters onFilterChange={onFilterChange} />, {
             wrapper: createWrapper(),
         })
 
+        // Wait for dynamic elements
+        await screen.findByTestId("async-select-Team")
+        
         const periodSelect = screen.getAllByTestId("mock-select")[0]
         const periods = ["yesterday", "this_week", "this_month", "last_7_days", "last_30_days", "today", "custom", "unknown"]
         
@@ -124,10 +181,14 @@ describe("ReportFilters", () => {
         }
     })
 
-    it("updates other filter values correctly", () => {
+    it("updates other filter values correctly", async () => {
         render(<ReportFilters onFilterChange={onFilterChange} />, {
             wrapper: createWrapper(),
         })
+
+        // Wait for dynamic elements first
+        await screen.findByTestId("async-select-Team")
+        await screen.findByTestId("async-select-Agent")
 
         const selects = screen.getAllByTestId("mock-select")
         const outcomeSelect = selects[1]

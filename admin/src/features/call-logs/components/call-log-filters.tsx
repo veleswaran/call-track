@@ -15,13 +15,15 @@ import {
     SelectValue,
 } from "@shared/components/ui/select";
 import { AsyncSelect } from "@shared/components/async-select";
+import { MultiSelectAsync } from "@shared/components/multi-select-async";
 import { cn } from "@shared/utils";
-import { format } from "date-fns";
+import { format, subDays, startOfDay, endOfDay, startOfMonth, endOfMonth, subMonths } from "date-fns";
 import { CalendarIcon, X } from "lucide-react";
 import type { CallLogFilters as FilterTypes } from "../hooks/use-call-logs";
 import { api } from "@shared/api/api";
-import type { PaginatedResponse, Device, Agent } from "@shared/types";
+import type { Agent } from "@shared/types";
 import { useAuth } from "@features/auth/hooks/use-auth";
+import { useSettingsQuery } from "@features/settings/hooks/use-settings";
 
 interface CallLogFiltersProps {
     filters: FilterTypes;
@@ -30,19 +32,21 @@ interface CallLogFiltersProps {
 
 export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
     const { user } = useAuth();
+    const { data: settings } = useSettingsQuery();
+
     // Allow if user is admin or can manage team
     const canViewTeams = user?.roles?.includes('admin') || user?.roles?.includes('super-admin') || user?.permissions?.includes('manage team');
 
     const hasActiveFilters =
         filters.start_date ||
         filters.end_date ||
-        filters.device_id ||
         filters.sim_slot !== undefined ||
         (filters.agents && filters.agents.length > 0) ||
         (filters.types && filters.types.length > 0) ||
         (filters.outcomes && filters.outcomes.length > 0) ||
         (filters.classifications && filters.classifications.length > 0) ||
-        filters.team_id;
+        (filters.team_ids && filters.team_ids.length > 0) ||
+        filters.contact_filter;
 
     const clearFilters = () => {
         onChange({
@@ -77,31 +81,57 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
         });
     };
 
-    // Load functions for AsyncSelect
-    const loadDevices = async (search: string) => {
-        try {
-            const response = await api.get<PaginatedResponse<Device>>(
-                `/api/v1/admin/devices?page=1&per_page=20&search=${encodeURIComponent(search)}`
-            );
-            return response.data.map((d) => ({
-                label: d.device_name || d.device_model || `Device ${d.id}`,
-                value: d.id.toString(),
-            }));
-        } catch (e) {
-            console.error(e);
-            return [];
+    const handleQuickDateChange = (preset: string) => {
+        const today = new Date();
+        let start: Date | undefined;
+        let end: Date | undefined = endOfDay(today);
+
+        switch (preset) {
+            case "today":
+                start = startOfDay(today);
+                break;
+            case "yesterday":
+                start = startOfDay(subDays(today, 1));
+                end = endOfDay(subDays(today, 1));
+                break;
+            case "last7":
+                start = startOfDay(subDays(today, 6)); // Last 7 days including today
+                break;
+            case "last30":
+                start = startOfDay(subDays(today, 29));
+                break;
+            case "thisMonth":
+                start = startOfMonth(today);
+                break;
+            case "lastMonth":
+                start = startOfMonth(subMonths(today, 1));
+                end = endOfMonth(subMonths(today, 1));
+                break;
+            case "all":
+            default:
+                start = undefined;
+                end = undefined;
+                break;
         }
+
+        onChange({
+            ...filters,
+            page: 1,
+            start_date: start ? format(start, 'yyyy-MM-dd') : undefined,
+            end_date: end ? format(end, 'yyyy-MM-dd') : undefined,
+        });
     };
 
     const loadAgents = async (search: string) => {
         try {
             const response = await api.get<{ data: Agent[] }>(
-                `/api/v1/admin/agents?page=1&per_page=20&search=${encodeURIComponent(search)}`
+                `/api/v1/admin/agents?page=1&per_page=20&search=${encodeURIComponent(search)}&sort_by=name`
             );
-            return response.data.map((u: Agent) => ({
+            const options = response.data.map((u: Agent) => ({
                 label: u.name,
                 value: u.id.toString(),
             }));
+            return [{ label: "All Agents", value: "all" }, ...options];
         } catch (e) {
             console.error(e);
             return [];
@@ -110,20 +140,11 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
 
     return (
         <div className="flex flex-wrap items-center gap-2">
-            <AsyncSelect
-                label="Device"
-                placeholder="Device..."
-                value={filters.device_id?.toString()}
-                onChange={(val) => updateNumericFilter("device_id", val)}
-                loadOptions={loadDevices}
-                className="w-[160px]"
-            />
-
-            {/* Agent Filter - Only for Admins/Managers */}
-            {canViewTeams && (
+            {/* Agent Filter - Only for Admins/Managers and if enabled in settings */}
+            {canViewTeams && settings?.enable_call_log_agent_filter && (
                 <AsyncSelect
                     label="Agent"
-                    placeholder="Agent..."
+                    placeholder="All Agents"
                     value={filters.agents?.[0]?.toString()}
                     onChange={updateAgentFilter}
                     loadOptions={loadAgents}
@@ -149,75 +170,127 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
                 </SelectContent>
             </Select>
 
-            {/* Team Filter - Only for Admins/Managers */}
-            {canViewTeams && (
-                <AsyncSelect
+            {/* Team Filter - Only for Admins/Managers and if enabled in settings */}
+            {canViewTeams && settings?.enable_call_log_team_filter && (
+                <MultiSelectAsync
                     label="Team"
-                    placeholder="Team..."
-                    value={filters.team_id?.toString()}
-                    onChange={(val) => updateNumericFilter("team_id", val)}
-                    loadOptions={async () => {
+                    placeholder="All Teams"
+                    value={filters.team_ids?.map(id => id.toString()) || []}
+                    onChange={(val) => {
+                        onChange({
+                            ...filters,
+                            page: 1,
+                            team_ids: val.map((v) => parseInt(v)),
+                        });
+                    }}
+                    loadOptions={async (search) => {
                         try {
-                            // Dynamically import to avoid circular dependencies if any, though likely fine
                             const { teamsApi } = await import("@features/teams/api/teams-api");
+                            // Pass search directly to API for server-side case-insensitive filtering
                             const response = await teamsApi.getTeams({
+                                search: search || undefined,
                                 page: 1,
                                 per_page: 20,
                             });
-                            return response.data.map((t) => ({
+                            
+                            const options = response.data.map((t) => ({
                                 label: t.name,
                                 value: t.id.toString(),
                             }));
+
+                            // Include 'All Teams' only when not searching
+                            if (!search) {
+                                return [{ label: "All Teams", value: "all" }, ...options];
+                            }
+                            
+                            return options;
                         } catch (e) {
                             console.error(e);
                             return [];
                         }
                     }}
-                    className="w-[160px]"
+                    className="w-[180px]"
                 />
             )}
 
-            <Select
-                value={filters.outcomes?.[0] ?? "all"}
-                onValueChange={(val) => updateArrayFilter("outcomes", val)}
-            >
-                <SelectTrigger className="w-[160px]">
-                    <SelectValue placeholder="Call Outcome" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="all">All Outcomes</SelectItem>
-                    <SelectItem value="Connected">Connected</SelectItem>
-                    <SelectItem value="Missed">Missed</SelectItem>
-                    <SelectItem value="No Answer">No Answer</SelectItem>
-                </SelectContent>
-            </Select>
+            {settings?.enable_call_log_outcome_filter && (
+                <Select
+                    value={filters.outcomes?.[0] ?? "all"}
+                    onValueChange={(val) => updateArrayFilter("outcomes", val)}
+                >
+                    <SelectTrigger className="w-[160px]">
+                        <SelectValue placeholder="Call Outcome" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Outcomes</SelectItem>
+                        <SelectItem value="Connected">Connected</SelectItem>
+                        <SelectItem value="Missed">Missed</SelectItem>
+                        <SelectItem value="No Answer">No Answer</SelectItem>
+                    </SelectContent>
+                </Select>
+            )}
 
-            <Select
-                value={filters.classifications?.[0] ?? "all"}
-                onValueChange={(val) => updateArrayFilter("classifications", val)}
-            >
+            {settings?.enable_call_log_class_filter && (
+                <Select
+                    value={filters.classifications?.[0] ?? "all"}
+                    onValueChange={(val) => updateArrayFilter("classifications", val)}
+                >
+                    <SelectTrigger className="w-[140px]">
+                        <SelectValue placeholder="Classification" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Classes</SelectItem>
+                        <SelectItem value="business">Business</SelectItem>
+                        <SelectItem value="personal">Personal</SelectItem>
+                        <SelectItem value="ignored">Ignored</SelectItem>
+                    </SelectContent>
+                </Select>
+            )}
+
+            {settings?.enable_call_log_sim_filter && (
+                <Select
+                    value={filters.sim_slot?.toString() ?? "all"}
+                    onValueChange={(val) => updateNumericFilter("sim_slot", val)}
+                >
+                    <SelectTrigger className="w-[120px]">
+                        <SelectValue placeholder="SIM Slot" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All SIMs</SelectItem>
+                        <SelectItem value="0">SIM 1</SelectItem>
+                        <SelectItem value="1">SIM 2</SelectItem>
+                    </SelectContent>
+                </Select>
+            )}
+
+            {settings?.enable_call_log_internal_filter && (
+                <Select
+                    value={filters.contact_filter ?? "all"}
+                    onValueChange={(val) => onChange({ ...filters, page: 1, contact_filter: val as "internal" | "external" })}
+                >
+                    <SelectTrigger className="w-[140px]">
+                        <SelectValue placeholder="Contact Type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Records</SelectItem>
+                        <SelectItem value="internal">Show Internal</SelectItem>
+                        <SelectItem value="external">Exclude Internal</SelectItem>
+                    </SelectContent>
+                </Select>
+            )}
+
+            <Select onValueChange={handleQuickDateChange}>
                 <SelectTrigger className="w-[140px]">
-                    <SelectValue placeholder="Classification" />
+                    <SelectValue placeholder="All Time" />
                 </SelectTrigger>
                 <SelectContent>
-                    <SelectItem value="all">All Classes</SelectItem>
-                    <SelectItem value="business">Business</SelectItem>
-                    <SelectItem value="personal">Personal</SelectItem>
-                    <SelectItem value="ignored">Ignored</SelectItem>
-                </SelectContent>
-            </Select>
-
-            <Select
-                value={filters.sim_slot?.toString() ?? "all"}
-                onValueChange={(val) => updateNumericFilter("sim_slot", val)}
-            >
-                <SelectTrigger className="w-[120px]">
-                    <SelectValue placeholder="SIM Slot" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="all">All SIMs</SelectItem>
-                    <SelectItem value="0">SIM 1</SelectItem>
-                    <SelectItem value="1">SIM 2</SelectItem>
+                    <SelectItem value="all">All Time</SelectItem>
+                    <SelectItem value="today">Today</SelectItem>
+                    <SelectItem value="yesterday">Yesterday</SelectItem>
+                    <SelectItem value="last7">Last 7 Days</SelectItem>
+                    <SelectItem value="last30">Last 30 Days</SelectItem>
+                    <SelectItem value="thisMonth">This Month</SelectItem>
+                    <SelectItem value="lastMonth">Last Month</SelectItem>
                 </SelectContent>
             </Select>
 

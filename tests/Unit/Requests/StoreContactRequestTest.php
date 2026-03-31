@@ -41,6 +41,7 @@ class StoreContactRequestTest extends TestCase
         $this->assertFalse($validator->passes());
         $this->assertTrue($validator->errors()->has('name'));
         $this->assertTrue($validator->errors()->has('phone_number'));
+        $this->assertTrue($validator->errors()->has('is_internal'));
     }
 
     public function test_it_passes_validation_with_valid_data(): void
@@ -51,6 +52,7 @@ class StoreContactRequestTest extends TestCase
         $validator = Validator::make([
             'name' => 'John Doe',
             'phone_number' => '+1234567890',
+            'is_internal' => false,
         ], $rules);
 
         $this->assertTrue($validator->passes());
@@ -64,6 +66,7 @@ class StoreContactRequestTest extends TestCase
         $validator = Validator::make([
             'name' => str_repeat('a', 256), // Exceeds max 255
             'phone_number' => '+1234567890',
+            'is_internal' => false,
         ], $rules);
 
         $this->assertFalse($validator->passes());
@@ -78,6 +81,7 @@ class StoreContactRequestTest extends TestCase
         $validator = Validator::make([
             'name' => 'Test',
             'phone_number' => str_repeat('1', 21), // Exceeds max 20
+            'is_internal' => false,
         ], $rules);
 
         $this->assertFalse($validator->passes());

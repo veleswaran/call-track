@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useDevices, useDevice, deviceKeys } from "./use-devices";
+import { useDevices, useDevice, deviceKeys, useRevokeDeviceTokens } from "./use-devices";
 import { api } from "@shared/api/api";
 import type { Device, PaginatedResponse } from "@shared/types";
 
@@ -112,6 +112,22 @@ describe("deviceKeys", () => {
         expect(deviceKeys.all).toEqual(["devices"]);
         expect(deviceKeys.lists()).toEqual(["devices", "list"]);
         expect(deviceKeys.detail(1)).toEqual(["devices", "detail", 1]);
+    });
+});
+
+describe("useRevokeDeviceTokens", () => {
+    it("should revoke device tokens and invalidate queries", async () => {
+        vi.mocked(api.post).mockResolvedValueOnce({ message: "Tokens revoked", revoked_count: 5 });
+
+        const { result } = renderHook(() => useRevokeDeviceTokens(), {
+            wrapper: createWrapper(),
+        });
+
+        result.current.mutate(1);
+
+        await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+        expect(api.post).toHaveBeenCalledWith("/api/v1/admin/devices/1/revoke-tokens");
     });
 });
 

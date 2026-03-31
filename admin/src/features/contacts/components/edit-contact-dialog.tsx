@@ -7,6 +7,7 @@ import { Input } from "@shared/components/ui/input";
 import { useUpdateContact } from "@features/contacts/hooks/use-update-contact";
 import type { Contact } from "@shared/types";
 import { Loader2 } from "lucide-react";
+import { Checkbox } from "@shared/components/ui/checkbox";
 
 interface EditContactDialogProps {
     contact: Contact | null;
@@ -17,6 +18,7 @@ interface EditContactDialogProps {
 export function EditContactDialog({ contact, open, onOpenChange }: EditContactDialogProps) {
     const [name, setName] = useState(contact?.name || "");
     const [phoneNumber, setPhoneNumber] = useState(contact?.phone_number || "");
+    const [isInternal, setIsInternal] = useState(contact?.is_internal ?? false);
     const { mutate: updateContact, isPending } = useUpdateContact();
 
     // Removed useEffect. Parent component must conditionally render this dialog
@@ -32,6 +34,7 @@ export function EditContactDialog({ contact, open, onOpenChange }: EditContactDi
             data: {
                 name: name.trim(),
                 phone_number: phoneNumber.trim(),
+                is_internal: isInternal,
             },
         }, {
             onSuccess: () => {
@@ -66,6 +69,19 @@ export function EditContactDialog({ contact, open, onOpenChange }: EditContactDi
                             onChange={(e) => setName(e.target.value)}
                             placeholder="John Doe"
                         />
+                    </div>
+                    <div className="flex items-center space-x-2 pt-2">
+                        <Checkbox
+                            id="edit_is_internal"
+                            checked={isInternal}
+                            onCheckedChange={(checked) => setIsInternal(!!checked)}
+                        />
+                        <label
+                            htmlFor="edit_is_internal"
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                        >
+                            Internal Contact
+                        </label>
                     </div>
                 </div>
 

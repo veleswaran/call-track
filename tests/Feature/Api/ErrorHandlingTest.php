@@ -31,6 +31,7 @@ class ErrorHandlingTest extends TestCase
         $response = $this->putJson('/api/v1/admin/contacts/99999', [
             'name' => 'Ghost Contact',
             'phone_number' => '5550000000',
+            'is_internal' => false,
         ]);
 
         $response->assertStatus(404)

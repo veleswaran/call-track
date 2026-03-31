@@ -17,13 +17,18 @@ export const deviceKeys = {
 /**
  * Fetch paginated devices list
  */
-export function useDevices(params?: { page?: number; per_page?: number }) {
+export function useDevices(params?: { page?: number; per_page?: number; search?: string; status?: string }) {
     return useQuery({
         queryKey: deviceKeys.list(params ?? {}),
-        queryFn: () =>
-            api.get<PaginatedResponse<Device>>(
-                `/api/v1/admin/devices?page=${params?.page ?? 1}&per_page=${params?.per_page ?? 15}`
-            ),
+        queryFn: () => {
+            const queryParams = new URLSearchParams();
+            queryParams.append("page", (params?.page ?? 1).toString());
+            queryParams.append("per_page", (params?.per_page ?? 15).toString());
+            if (params?.search) queryParams.append("search", params.search);
+            if (params?.status) queryParams.append("status", params.status);
+            
+            return api.get<PaginatedResponse<Device>>(`/api/v1/admin/devices?${queryParams.toString()}`);
+        },
     });
 }
 

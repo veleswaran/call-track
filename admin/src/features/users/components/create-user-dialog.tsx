@@ -53,7 +53,7 @@ const formSchema = z
         role: z.string().optional(),
 
         employee_code: z.string().optional(),
-        status: z.enum(["active", "inactive"]).optional(),
+        status: z.string().optional(),
         team_id: z.string().optional(),
     })
     .refine((data) => data.password === data.password_confirmation, {
@@ -95,6 +95,11 @@ export function CreateUserDialog() {
         queryFn: () => teamsApi.getTeams({ page }),
     });
 
+    const statuses = [
+        { id: 'active', name: 'Active', color: '#10b981' },
+        { id: 'inactive', name: 'Inactive', color: '#6b7280' }
+    ];
+
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -110,6 +115,7 @@ export function CreateUserDialog() {
             role: "member"
         },
     });
+
     const isAgent = useWatch({ control: form.control, name: "is_agent" });
     const isTeam = useWatch({ control: form.control, name: "is_team" });
 
@@ -122,7 +128,12 @@ export function CreateUserDialog() {
     }, [isAgent, form]);
 
     function onSubmit(values: z.infer<typeof formSchema>) {
-        createUser(values, {
+        const payload = {
+            ...values,
+            team_id: values.team_id ? parseInt(values.team_id) : undefined,
+        };
+
+        createUser(payload, {
             onSuccess: () => {
                 setOpen(false);
                 form.reset();
@@ -230,15 +241,21 @@ export function CreateUserDialog() {
                                 <FormField control={form.control} name="status" render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Status</FormLabel>
-                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <Select onValueChange={field.onChange} value={field.value}>
                                             <FormControl>
                                                 <SelectTrigger>
                                                     <SelectValue placeholder="Select status" />
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
-                                                <SelectItem value="active">Active</SelectItem>
-                                                <SelectItem value="inactive">Inactive</SelectItem>
+                                                {statuses.map((s) => (
+                                                    <SelectItem key={s.id} value={s.id}>
+                                                        <span className="flex items-center gap-2">
+                                                            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: s.color }} />
+                                                            {s.name}
+                                                        </span>
+                                                    </SelectItem>
+                                                ))}
                                             </SelectContent>
                                         </Select>
                                         <FormMessage />

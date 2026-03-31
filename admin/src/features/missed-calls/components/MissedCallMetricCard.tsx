@@ -26,8 +26,6 @@ export function MissedCallMetricCard({
     title = "Missed Calls",
     total,
     grandTotal = total,
-    pending, // Future use case
-    unattended, // Future use case
     resolved,
     changePercent,
     isLoading = false,

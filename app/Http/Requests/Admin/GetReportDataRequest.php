@@ -29,6 +29,7 @@ final class GetReportDataRequest extends FormRequest
             'types' => ['nullable', 'array'],
             'types.*' => ['string', 'in:BUSINESS,PERSONAL,IGNORED'], // Based on ReportFilterDTO logic
             'search' => ['nullable', 'string', 'max:255'],
+            'contact_filter' => ['nullable', 'string', 'in:all,internal,external'],
         ];
     }
 }

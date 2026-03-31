@@ -108,6 +108,7 @@ class Phase8Test extends TestCase
             ->postJson('/api/v1/admin/contacts', [
                 'name' => 'John Doe',
                 'phone_number' => '+15559998888',
+                'is_internal' => false,
             ]);
 
         $response->assertCreated();
