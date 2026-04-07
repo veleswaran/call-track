@@ -38,7 +38,12 @@ public class SaveCore {
             String selection = CallLog.Calls._ID + " > ?";
             String[] selectionArgs = new String[]{String.valueOf(lastProcessedId)};
             // Include vendor-specific columns: simid (OPPO/Realme), phone_account_address (OPPO phone number)
-            String[] projection = {CallLog.Calls.NUMBER, CallLog.Calls.TYPE, CallLog.Calls.DATE, CallLog.Calls.DURATION, "subscription_id", "simid", "phone_account_address", CallLog.Calls._ID, CallLog.Calls.CACHED_NAME};
+            String[] projection = {CallLog.Calls.NUMBER, CallLog.Calls.TYPE, CallLog.Calls.DATE, CallLog.Calls.DURATION, "subscription_id", "phone_account_address", CallLog.Calls._ID, CallLog.Calls.CACHED_NAME};
+            String manufacturer = android.os.Build.MANUFACTURER.toLowerCase();
+            int sdkInt = android.os.Build.VERSION.SDK_INT;
+            if (sdkInt <= 30 && (manufacturer.contains("oppo") || manufacturer.contains("realme"))) {
+                projection = new String[]{CallLog.Calls.NUMBER, CallLog.Calls.TYPE, CallLog.Calls.DATE, CallLog.Calls.DURATION, "subscription_id", "simid", "phone_account_address", CallLog.Calls._ID, CallLog.Calls.CACHED_NAME};
+            }
             try (Cursor cursor = context.getContentResolver().query(CallLog.Calls.CONTENT_URI, projection, selection, selectionArgs, CallLog.Calls._ID + " ASC")) {
                 if (cursor == null) return;
                 int batteryLevel = Utility.getBatteryPercentage(context);
@@ -208,7 +213,7 @@ public class SaveCore {
 
     /**
      * Fill SIM info from vendor-specific simid (OPPO/Realme)
-     *
+     * <p>
      * Known patterns:
      * - OPPO Qualcomm: single SIM (simid=1→slot0), dual SIM (simid=5→slot0, simid=1→slot1)
      * - Realme MediaTek: simid=8→slot0, simid=9→slot1
@@ -296,8 +301,8 @@ public class SaveCore {
             crashlytics.setCustomKey("has_phone_account_address", phoneAddr != null && !phoneAddr.isEmpty());
 
             String logMessage = String.format("SIM detection failed: reason=%s, mfr=%s, model=%s, sdk=%d, subId=%d, simId=%d",
-                    reason, android.os.Build.MANUFACTURER, android.os.Build.MODEL,
-                    android.os.Build.VERSION.SDK_INT, subId, simId);
+                reason, android.os.Build.MANUFACTURER, android.os.Build.MODEL,
+                android.os.Build.VERSION.SDK_INT, subId, simId);
 
             crashlytics.log(logMessage);
 
@@ -336,7 +341,7 @@ public class SaveCore {
     private void persistRecord(Context context, CallRecord record) {
         AppDB db = AppDB.getInstance(context);
         TokenEntity te = db.tokenDao().getOne();
-        if (te.simSlots.contains(record.simSlot) || record.simSlot == null) {
+        if (te != null && (te.simSlots.contains(record.simSlot) || record.simSlot == null)) {
             db.callRecordDao().insert(record);
 //            Log.d("CallMonitor", "Call record persisted: " + record.type + " " + record.number);
         } else {
