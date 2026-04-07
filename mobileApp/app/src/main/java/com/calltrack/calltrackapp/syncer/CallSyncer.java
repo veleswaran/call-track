@@ -4,6 +4,7 @@ import android.app.Notification;
 import android.content.Context;
 import android.util.Log;
 
+import com.calltrack.calltrackapp.BuildConfig;
 import com.calltrack.calltrackapp.api.ApiUtilities;
 import com.calltrack.calltrackapp.api.CallLogsApi;
 import com.calltrack.calltrackapp.api.EventApi;
@@ -115,6 +116,7 @@ public class CallSyncer extends Worker {
             }
             CallLogRequest payload = new CallLogRequest(items);
             payload.battery_level = Utility.getBatteryPercentage(context);
+            payload.app_version = BuildConfig.VERSION_NAME;
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
             String jsonString = gson.toJson(payload);
 //            Log.d("REQUEST_PAYLOAD", jsonString);

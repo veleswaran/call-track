@@ -29,7 +29,7 @@ describe("useUpdateContact", () => {
             wrapper: createTestWrapper(),
         });
 
-        const variables = { id: 1, data: { name: "Updated Name", phone_number: "1234567890" } };
+        const variables = { id: 1, data: { name: "Updated Name", phone_number: "1234567890", is_internal: false } };
 
         result.current.mutate(variables);
 
@@ -37,6 +37,7 @@ describe("useUpdateContact", () => {
             expect(api.put).toHaveBeenCalledWith("/api/v1/admin/contacts/1", {
                 name: "Updated Name",
                 phone_number: "1234567890",
+                is_internal: false,
             });
         });
     });

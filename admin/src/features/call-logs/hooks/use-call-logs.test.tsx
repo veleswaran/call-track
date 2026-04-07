@@ -85,7 +85,7 @@ describe("useCallLogs", () => {
         const { result } = renderHook(
             () =>
                 useCallLogs({
-                    device_id: 1,
+                    agent_id: 1,
                     classification: "business",
                     page: 2,
                 }),
@@ -97,7 +97,7 @@ describe("useCallLogs", () => {
         await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
         expect(api.get).toHaveBeenCalledWith(
-            expect.stringContaining("device_id=1")
+            expect.stringContaining("agent_id=1")
         );
         expect(api.get).toHaveBeenCalledWith(
             expect.stringContaining("classification=business")

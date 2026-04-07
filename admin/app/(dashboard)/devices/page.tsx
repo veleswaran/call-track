@@ -143,6 +143,7 @@ export default function DevicesPage() {
                                 <TableHead>Model</TableHead>
                                 <TableHead>Agent</TableHead>
                                 <TableHead>Battery</TableHead>
+                                <TableHead>App Version</TableHead>
                                 <TableHead>Tracked SIMs</TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead>Last Sync</TableHead>
@@ -152,19 +153,19 @@ export default function DevicesPage() {
                         <TableBody>
                             {isLoading ? (
                                 <TableRow>
-                                    <TableCell colSpan={9} className="h-24 text-center">
+                                    <TableCell colSpan={10} className="h-24 text-center">
                                         Loading...
                                     </TableCell>
                                 </TableRow>
                             ) : isError ? (
                                 <TableRow>
-                                    <TableCell colSpan={9} className="h-24 text-center text-red-500">
+                                    <TableCell colSpan={10} className="h-24 text-center text-red-500">
                                         Failed to load devices
                                     </TableCell>
                                 </TableRow>
                             ) : devices.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={9} className="h-24 text-center">
+                                    <TableCell colSpan={10} className="h-24 text-center">
                                         No devices found
                                     </TableCell>
                                 </TableRow>
@@ -197,6 +198,15 @@ export default function DevicesPage() {
                                                             'text-red-600 dark:text-red-400'
                                                         }`}>
                                                         {device.battery_level}%
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-zinc-400">—</span>
+                                                )}
+                                            </TableCell>
+                                            <TableCell>
+                                                {device.app_version ? (
+                                                    <span className="font-mono text-sm">
+                                                        v{device.app_version}
                                                     </span>
                                                 ) : (
                                                     <span className="text-zinc-400">—</span>
