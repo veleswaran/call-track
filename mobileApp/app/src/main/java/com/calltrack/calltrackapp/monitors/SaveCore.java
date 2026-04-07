@@ -291,6 +291,26 @@ public class SaveCore {
             int simId = getIntSafe(cursor, "simid");
             String phoneAddr = getStringSafe(cursor, "phone_account_address");
 
+            StringBuilder availableColumns = new StringBuilder("Available columns: ");
+            StringBuilder columnValues = new StringBuilder("\nColumn values: ");
+
+            for (String columnName : cursor.getColumnNames()) {
+                availableColumns.append(columnName).append(", ");
+
+                // Try to get column value for diagnostics
+                try {
+                    int columnIndex = cursor.getColumnIndex(columnName);
+                    if (columnIndex >= 0) {
+                        String value = cursor.getString(columnIndex);
+                        if (value != null && !value.isEmpty()) {
+                            columnValues.append("\n  ").append(columnName).append(" = ").append(value);
+                        }
+                    }
+                } catch (Exception e) {
+                    // Skip columns that can't be read as strings
+                }
+            }
+
             FirebaseCrashlytics crashlytics = FirebaseCrashlytics.getInstance();
             crashlytics.setCustomKey("sim_detection_failure", reason);
             crashlytics.setCustomKey("manufacturer", android.os.Build.MANUFACTURER);
@@ -299,6 +319,8 @@ public class SaveCore {
             crashlytics.setCustomKey("subscription_id_value", subId);
             crashlytics.setCustomKey("simid_value", simId);
             crashlytics.setCustomKey("has_phone_account_address", phoneAddr != null && !phoneAddr.isEmpty());
+            crashlytics.setCustomKey("available_columns", availableColumns.toString());
+            crashlytics.setCustomKey("column_values", columnValues.toString());
 
             String logMessage = String.format("SIM detection failed: reason=%s, mfr=%s, model=%s, sdk=%d, subId=%d, simId=%d",
                 reason, android.os.Build.MANUFACTURER, android.os.Build.MODEL,
