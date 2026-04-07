@@ -30,6 +30,7 @@ class AgentManagementTest extends TestCase
         $this->assertDatabaseHas('agents', [
             'name' => 'John Doe',
             'employee_code' => 'EMP-001',
+            'status' => 'active',
         ]);
     }
 

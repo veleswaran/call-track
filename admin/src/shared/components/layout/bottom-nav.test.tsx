@@ -144,8 +144,8 @@ describe("BottomNav", () => {
 });
 
 describe("navItems", () => {
-    it("should have 9 navigation items (4 primary + 5 overflow)", () => {
-        expect(navItems).toHaveLength(9);
+    it("should have 10 navigation items (4 primary + 6 overflow)", () => {
+        expect(navItems).toHaveLength(10);
     });
 
     it("should have Dashboard as first item", () => {

@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\DB;
 
 final class GetReportChartsAction
 {
+    public function __construct(
+        protected \App\Actions\Contacts\GetContactHashVariationsAction $getContactHashesAction
+    ) {}
+
     public function execute(ReportFilterDTO $filters): array
     {
         return [
@@ -95,6 +99,16 @@ final class GetReportChartsAction
                     }
                 }
             });
+        }
+
+        if ($filters->contactFilter !== null && $filters->contactFilter !== 'all') {
+            $contactHashes = $this->getContactHashesAction->execute();
+
+            if ($filters->contactFilter === 'internal') {
+                $query->whereIn('call_logs.phone_number_hash', $contactHashes);
+            } else {
+                $query->whereNotIn('call_logs.phone_number_hash', $contactHashes);
+            }
         }
 
         return $query;
@@ -272,8 +286,8 @@ final class GetReportChartsAction
         }
 
         $stats = $query->selectRaw("
-                SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active,
-                SUM(CASE WHEN status = 'inactive' THEN 1 ELSE 0 END) as inactive
+                SUM(CASE WHEN agents.status = 'active' THEN 1 ELSE 0 END) as active,
+                SUM(CASE WHEN agents.status = 'inactive' THEN 1 ELSE 0 END) as inactive
             ")
             ->toBase()
             ->first();

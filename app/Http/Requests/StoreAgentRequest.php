@@ -16,7 +16,7 @@ class StoreAgentRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'employee_code' => ['nullable', 'string', 'max:50', 'unique:agents,employee_code'],
-            'status' => ['required', 'in:active,inactive'],
+            'status' => ['required', 'string', 'in:active,inactive'],
         ];
     }
 }

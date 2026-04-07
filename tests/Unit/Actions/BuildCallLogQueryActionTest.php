@@ -22,7 +22,9 @@ class BuildCallLogQueryActionTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->action = new BuildCallLogQueryAction;
+        $this->action = new BuildCallLogQueryAction(
+            new \App\Actions\Contacts\GetContactHashVariationsAction
+        );
     }
 
     public function it_filters_by_search_term_matching_phone_number(): void

@@ -53,34 +53,37 @@ class PhoneNormalizer
     {
         $variations = [];
 
-        // 1. Original search term (as-is)
-        $variations[] = $search;
+        // Remove all non-digit characters except +
+        $clean = preg_replace('/[^\d+]/', '', $search);
 
-        // 2. Digits only
-        $digitsOnly = self::normalize($search);
-        if ($digitsOnly !== $search) {
-            $variations[] = $digitsOnly;
-        }
+        // 1. As-is (cleaned)
+        $variations[] = $clean;
 
-        // 3. With +91 prefix (if not already present)
-        if (! str_starts_with($search, '+91') && ! str_starts_with($search, '91')) {
-            $variations[] = '+91'.$digitsOnly;
-            $variations[] = '91'.$digitsOnly;
-        }
+        // 2. Digits only (no +)
+        $digits = preg_replace('/\D/', '', $clean);
+        $variations[] = $digits;
 
-        // 4. Without +91 prefix (if present)
-        if (str_starts_with($search, '+91')) {
-            $without91 = substr($digitsOnly, 2); // Remove '91' from digits
-            if (strlen($without91) === 10) { // Valid Indian mobile number
+        // 3. Fully normalized
+        $normalized = self::normalize($clean);
+        $variations[] = $normalized;
+        $variations[] = ltrim($normalized, '+'); // Normalized without +
+
+        // 4. Handle Country Code (+91)
+        if (str_starts_with($normalized, '+91')) {
+            $without91 = substr($normalized, 3); // Remove +91
+            if (strlen($without91) >= 10) {
                 $variations[] = $without91;
+                $variations[] = '0'.$without91; // Common local format
             }
-        } elseif (str_starts_with($search, '91') && strlen($digitsOnly) === 12) {
-            $without91 = substr($digitsOnly, 2);
-            $variations[] = $without91;
+        } elseif (strlen($digits) === 10) {
+            // Local 10-digit number
+            $variations[] = '+91'.$digits;
+            $variations[] = '91'.$digits;
+            $variations[] = '0'.$digits;
         }
 
-        // Remove duplicates
-        return array_unique($variations);
+        // Remove duplicates and empty strings
+        return array_values(array_unique(array_filter($variations)));
     }
 
     /**

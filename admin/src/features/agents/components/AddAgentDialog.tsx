@@ -33,9 +33,13 @@ export function AddAgentDialog({ trigger }: AddAgentDialogProps) {
     const [open, setOpen] = useState(false);
     const [name, setName] = useState("");
     const [employeeCode, setEmployeeCode] = useState("");
-    const [status, setStatus] = useState<"active" | "inactive">("active");
+    const [status, setStatus] = useState<string>("active");
 
     const createAgent = useCreateAgent();
+    const statuses = [
+        { id: 'active', name: 'Active', color: '#10b981' },
+        { id: 'inactive', name: 'Inactive', color: '#6b7280' }
+    ];
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -46,7 +50,7 @@ export function AddAgentDialog({ trigger }: AddAgentDialogProps) {
             await createAgent.mutateAsync({
                 name: name.trim(),
                 employee_code: employeeCode.trim() || undefined,
-                status,
+                status: status,
             });
 
             // Reset form and close
@@ -98,13 +102,19 @@ export function AddAgentDialog({ trigger }: AddAgentDialogProps) {
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="status">Status</Label>
-                        <Select value={status} onValueChange={(v) => setStatus(v as "active" | "inactive")}>
+                        <Select value={status} onValueChange={setStatus}>
                             <SelectTrigger>
                                 <SelectValue placeholder="Select status" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="active">Active</SelectItem>
-                                <SelectItem value="inactive">Inactive</SelectItem>
+                                {statuses.map((s) => (
+                                    <SelectItem key={s.id} value={s.id}>
+                                        <span className="flex items-center gap-2">
+                                            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: s.color }} />
+                                            {s.name}
+                                        </span>
+                                    </SelectItem>
+                                ))}
                             </SelectContent>
                         </Select>
                     </div>

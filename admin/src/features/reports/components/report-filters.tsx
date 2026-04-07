@@ -25,6 +25,8 @@ import {
 import { api } from "@shared/api/api"
 import { Agent, Team, PaginatedResponse } from "@shared/types"
 import { AsyncSelect } from "@shared/components/async-select"
+import { MultiSelectAsync } from "@shared/components/multi-select-async"
+import { useSettingsQuery } from "@features/settings/hooks/use-settings"
 
 export interface ReportFiltersData {
     dateRange: DateRange | undefined
@@ -32,6 +34,7 @@ export interface ReportFiltersData {
     type: string
     agentIds?: string[] | null
     teamIds?: string[] | null
+    contactFilter?: "all" | "internal" | "external" | null
 }
 
 interface ReportFiltersProps {
@@ -49,9 +52,10 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
     const [outcome, setOutcome] = useState("all")
     const [type, setType] = useState("BUSINESS")
     const [agentId, setAgentId] = useState<string>("")
-    const [teamId, setTeamId] = useState<string>("all")
+    const [teamIds, setTeamIds] = useState<string[]>([])
+    const [contactFilter, setContactFilter] = useState<string>("all")
     const [quickDate, setQuickDate] = useState<string>("today")
-
+    const { data: settings } = useSettingsQuery()
     const handleQuickDateChange = (value: string) => {
         setQuickDate(value)
         const today = new Date()
@@ -96,7 +100,8 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
             outcome,
             type,
             agentIds: agentId && agentId !== "all" ? [agentId] : null,
-            teamIds: teamId !== "all" ? [teamId] : null
+            teamIds: teamIds.length > 0 ? teamIds : null,
+            contactFilter: contactFilter === "all" ? null : contactFilter as "internal" | "external"
         })
     }
 
@@ -106,13 +111,15 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
         setOutcome("all");
         setType("BUSINESS");
         setAgentId("");
-        setTeamId("all");
+        setTeamIds([]);
+        setContactFilter("all");
         onFilterChange({
             dateRange: defaultDateRange,
             outcome: "all",
             type: "BUSINESS",
             agentIds: null,
-            teamIds: null
+            teamIds: null,
+            contactFilter: null
         });
     }
 
@@ -175,61 +182,92 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
                 </PopoverContent>
             </Popover>
 
-            <Select value={outcome} onValueChange={setOutcome}>
-                <SelectTrigger className="w-[150px]">
-                    <SelectValue placeholder="All Outcomes" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="all">All Outcomes</SelectItem>
-                    <SelectItem value="Connected">Connected</SelectItem>
-                    <SelectItem value="Missed">Missed</SelectItem>
-                    <SelectItem value="No Answer">No Answer</SelectItem>
-                </SelectContent>
-            </Select>
+            {settings?.enable_report_outcome_filter && (
+                <Select value={outcome} onValueChange={setOutcome}>
+                    <SelectTrigger className="w-[150px]">
+                        <SelectValue placeholder="All Outcomes" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Outcomes</SelectItem>
+                        <SelectItem value="Connected">Connected</SelectItem>
+                        <SelectItem value="Missed">Missed</SelectItem>
+                        <SelectItem value="No Answer">No Answer</SelectItem>
+                    </SelectContent>
+                </Select>
+            )}
 
-            <AsyncSelect
-                value={teamId}
-                onChange={setTeamId}
-                loadOptions={async (search) => {
-                    const res = await api.get<PaginatedResponse<Team>>(`/api/v1/admin/teams?search=${search}&per_page=100`)
-                    const options = res.data.map((team: Team) => ({
-                        label: team.name,
-                        value: team.id.toString()
-                    }))
-                    return [{ label: "All Teams", value: "all" }, ...options]
-                }}
-                placeholder="All Teams"
-                label="Team"
-                className="w-[180px]"
-            />
+            {settings?.enable_report_team_filter && (
+                <MultiSelectAsync
+                    value={teamIds}
+                    onChange={(val) => setTeamIds(val)}
+                    loadOptions={async (search) => {
+                        const { teamsApi } = await import("@features/teams/api/teams-api");
+                        const res = await teamsApi.getTeams({
+                            search: search || undefined,
+                            per_page: 50
+                        });
+                        const options = res.data.map((team: Team) => ({
+                            label: team.name,
+                            value: team.id.toString()
+                        }))
+                        
+                        // Include 'All Teams' only when not searching
+                        if (!search) {
+                            return [{ label: "All Teams", value: "all" }, ...options];
+                        }
+                        
+                        return options;
+                    }}
+                    placeholder="All Teams"
+                    label="Team"
+                    className="w-[180px]"
+                />
+            )}
 
-            <AsyncSelect
-                value={agentId}
-                onChange={setAgentId}
-                loadOptions={async (search) => {
-                    const res = await api.get<PaginatedResponse<Agent>>(`/api/v1/admin/agents?search=${search}&per_page=100`)
-                    const options = res.data.map((agent: Agent) => ({
-                        label: agent.name,
-                        value: agent.id.toString()
-                    }))
-                    return [{ label: "All Agents", value: "all" }, ...options]
-                }}
-                placeholder="All Agents"
-                label="Agent"
-                className="w-[180px]"
-            />
+            {settings?.enable_report_agent_filter && (
+                <AsyncSelect
+                    value={agentId}
+                    onChange={setAgentId}
+                    loadOptions={async (search) => {
+                        const res = await api.get<PaginatedResponse<Agent>>(`/api/v1/admin/agents?search=${search}&per_page=100&sort_by=name`)
+                        const options = res.data.map((agent: Agent) => ({
+                            label: agent.name,
+                            value: agent.id.toString()
+                        }))
+                        return [{ label: "All Agents", value: "all" }, ...options]
+                    }}
+                    placeholder="All Agents"
+                    label="Agent"
+                    className="w-[180px]"
+                />
+            )}
 
-            <Select value={type} onValueChange={setType}>
-                <SelectTrigger className="w-[150px]">
-                    <SelectValue placeholder="All Classes" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="all">All Classes</SelectItem>
-                    <SelectItem value="BUSINESS">Business</SelectItem>
-                    <SelectItem value="PERSONAL">Personal</SelectItem>
-                    <SelectItem value="IGNORED">Ignored</SelectItem>
-                </SelectContent>
-            </Select>
+            {settings?.enable_report_class_filter && (
+                <Select value={type} onValueChange={setType}>
+                    <SelectTrigger className="w-[150px]">
+                        <SelectValue placeholder="All Classes" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Classes</SelectItem>
+                        <SelectItem value="BUSINESS">Business</SelectItem>
+                        <SelectItem value="PERSONAL">Personal</SelectItem>
+                        <SelectItem value="IGNORED">Ignored</SelectItem>
+                    </SelectContent>
+                </Select>
+            )}
+
+            {settings?.enable_report_internal_filter && (
+                <Select value={contactFilter} onValueChange={setContactFilter}>
+                    <SelectTrigger className="w-[150px]">
+                        <SelectValue placeholder="All Records" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Records</SelectItem>
+                        <SelectItem value="internal">Show Internal</SelectItem>
+                        <SelectItem value="external">Exclude Internal</SelectItem>
+                    </SelectContent>
+                </Select>
+            )}
 
             <Button size="icon" variant="ghost" onClick={clearFilters} title="Reset Filters">
                 <X className="h-4 w-4" />

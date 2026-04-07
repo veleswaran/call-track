@@ -54,6 +54,20 @@ vi.mock("@shared/components/async-select", () => ({
     ),
 }))
 
+// Mock MultiSelectAsync to be test-friendly
+vi.mock("@shared/components/multi-select-async", () => ({
+    MultiSelectAsync: ({ value, onChange, label }: { value: string[]; onChange: (val: string[]) => void; label: string }) => (
+        <div data-testid={`async-select-${label}`}>
+            <label>{label}</label>
+            <input 
+                data-testid={`input-${label}`}
+                value={value.join(",")} 
+                onChange={(e) => onChange(e.target.value.split(",").filter(Boolean))} 
+            />
+        </div>
+    ),
+}))
+
 const createWrapper = () => {
     const queryClient = new QueryClient({
         defaultOptions: {
@@ -75,16 +89,23 @@ describe("MissedCallsFilters", () => {
     beforeEach(() => {
         vi.clearAllMocks()
         vi.mocked(api.get).mockImplementation((url) => {
-            if (url.includes("agents")) {
+            if (url.includes("settings")) {
                 return Promise.resolve({
                     data: {
-                        data: [
-                            { id: 1, name: "Agent 1" },
-                        ],
+                        enable_missed_call_team_filter: true,
+                        enable_missed_call_agent_filter: true,
+                        enable_missed_call_internal_filter: true,
                     }
                 })
             }
-            return Promise.resolve({ data: { data: [] } })
+            if (url.includes("agents")) {
+                return Promise.resolve({
+                    data: [
+                        { id: 1, name: "Agent 1" },
+                    ],
+                })
+            }
+            return Promise.resolve({ data: [] })
         })
     })
 
@@ -93,7 +114,11 @@ describe("MissedCallsFilters", () => {
             wrapper: createWrapper(),
         })
 
-        expect(screen.getAllByTestId("mock-select")).toHaveLength(2)
+        // Wait for dynamic elements first
+        await screen.findByTestId("async-select-Team")
+        await screen.findByTestId("async-select-Agent")
+
+        expect(screen.getAllByTestId("mock-select")).toHaveLength(3)
         expect(screen.getByTestId("async-select-Team")).toBeInTheDocument()
         expect(screen.getByTestId("async-select-Agent")).toBeInTheDocument()
     })
@@ -102,6 +127,9 @@ describe("MissedCallsFilters", () => {
         render(<MissedCallsFilters onFilterChange={onFilterChange} />, {
             wrapper: createWrapper(),
         })
+
+        // Wait for dynamic elements first
+        await screen.findByTestId("async-select-Team")
 
         // Change status
         const statusSelects = screen.getAllByTestId("mock-select")
@@ -122,7 +150,7 @@ describe("MissedCallsFilters", () => {
 
         expect(onFilterChange).toHaveBeenCalledWith(expect.objectContaining({
             status: "pending",
-            team_id: "5",
+            team_ids: [5],
             agent_id: "10"
         }))
     })
@@ -158,7 +186,7 @@ describe("MissedCallsFilters", () => {
         expect(onFilterChange).toHaveBeenCalledWith(expect.objectContaining({
             status: "all",
             agent_id: null,
-            team_id: null
+            team_ids: null
         }))
     })
 })

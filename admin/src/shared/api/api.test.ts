@@ -139,20 +139,71 @@ describe("api client", () => {
             );
         });
 
-        it("should throw error on non-ok response", async () => {
+    describe("error handling", () => {
+        it("should handle error with JSON response", async () => {
+             mockFetch.mockResolvedValueOnce({
+                ok: false,
+                status: 422,
+                statusText: "Unprocessable Entity",
+                json: () => Promise.resolve({ message: "Validation failed" }),
+            });
+
+            await expect(api.get("/api/v1/test")).rejects.toThrow("Validation failed");
+        });
+
+        it("should fallback to statusText when JSON parsing fails", async () => {
+            mockFetch.mockResolvedValueOnce({
+                ok: false,
+                status: 500,
+                statusText: "Internal Server Error",
+                json: () => Promise.reject(new Error("Parse error")),
+            });
+
+            await expect(api.get("/api/v1/test")).rejects.toThrow("Internal Server Error");
+        });
+
+        it("should handle 204 No Content as empty object", async () => {
+            mockFetch.mockResolvedValueOnce({
+                ok: true,
+                status: 204,
+            });
+
+            const result = await api.get("/api/v1/test");
+            expect(result).toEqual({});
+        });
+    });
+
+    describe("CSRF handling", () => {
+        it("should include X-XSRF-TOKEN header when cookie is present", async () => {
+            // Mock document.cookie
+            const originalCookie = document.cookie;
+            Object.defineProperty(document, 'cookie', {
+                writable: true,
+                configurable: true,
+                value: 'XSRF-TOKEN=mock-token-xyz',
+            });
+
             mockFetch
                 .mockResolvedValueOnce({ ok: true }) // CSRF
                 .mockResolvedValueOnce({
-                    ok: false,
-                    status: 422,
-                    statusText: "Unprocessable Entity",
+                    ok: true,
+                    json: () => Promise.resolve({ success: true }),
                 });
 
-            await expect(api.post("/api/v1/test", {})).rejects.toThrow(
-                "Unprocessable Entity"
-            );
+            await api.post("/api/v1/test", { foo: "bar" });
+
+            const lastCallArgs = mockFetch.mock.calls[1][1];
+            expect(lastCallArgs.headers["X-XSRF-TOKEN"]).toBe("mock-token-xyz");
+
+            // Restore cookie
+            Object.defineProperty(document, 'cookie', {
+                writable: true,
+                configurable: true,
+                value: originalCookie,
+            });
         });
     });
+});
 
     describe("put", () => {
         it("should fetch CSRF cookie before PUT", async () => {

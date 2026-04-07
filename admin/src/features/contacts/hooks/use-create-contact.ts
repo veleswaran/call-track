@@ -7,13 +7,12 @@ export function useCreateContact() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: async (data: { name: string; phone_number: string }) => {
+        mutationFn: async (data: { name: string; phone_number: string; is_internal: boolean }) => {
             const response = await api.post<{ data: Contact }>("/api/v1/admin/contacts", data);
             return response.data;
         },
         onSuccess: () => {
-            // Invalidate call logs to update "contact_name" if backend returns it (it should if relation exists)
-            // Also refresh contacts list
+            // Invalidate call logs to update "contact_name" if backend returns it
             queryClient.invalidateQueries({ queryKey: ["call-logs"] });
             queryClient.invalidateQueries({ queryKey: contactKeys.lists() });
         },

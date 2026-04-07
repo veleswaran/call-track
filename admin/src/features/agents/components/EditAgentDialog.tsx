@@ -33,9 +33,13 @@ interface EditAgentDialogProps {
 export function EditAgentDialog({ agent, open, onOpenChange }: EditAgentDialogProps) {
     const [name, setName] = useState(agent.name);
     const [employeeCode, setEmployeeCode] = useState(agent.employee_code ?? "");
-    const [status, setStatus] = useState<"active" | "inactive">(agent.status);
+    const [status, setStatus] = useState<string>(agent.status ?? "active");
 
     const updateAgent = useUpdateAgent();
+    const statuses = [
+        { id: 'active', name: 'Active', color: '#10b981' },
+        { id: 'inactive', name: 'Inactive', color: '#6b7280' }
+    ];
 
     // Reset form when dialog opens with new agent
     const handleOpenChange = (isOpen: boolean) => {
@@ -43,7 +47,7 @@ export function EditAgentDialog({ agent, open, onOpenChange }: EditAgentDialogPr
             // Reset form to agent values when opening
             setName(agent.name);
             setEmployeeCode(agent.employee_code ?? "");
-            setStatus(agent.status);
+            setStatus(agent.status ?? "active");
         }
         onOpenChange(isOpen);
     };
@@ -59,7 +63,7 @@ export function EditAgentDialog({ agent, open, onOpenChange }: EditAgentDialogPr
                 data: {
                     name: name.trim(),
                     employee_code: employeeCode.trim() || undefined,
-                    status,
+                    status: status,
                 },
             });
 
@@ -100,13 +104,19 @@ export function EditAgentDialog({ agent, open, onOpenChange }: EditAgentDialogPr
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="edit-status">Status</Label>
-                        <Select value={status} onValueChange={(v) => setStatus(v as "active" | "inactive")}>
+                        <Select value={status} onValueChange={setStatus}>
                             <SelectTrigger>
                                 <SelectValue placeholder="Select status" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="active">Active</SelectItem>
-                                <SelectItem value="inactive">Inactive</SelectItem>
+                                {statuses.map((s) => (
+                                    <SelectItem key={s.id} value={s.id}>
+                                        <span className="flex items-center gap-2">
+                                            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: s.color }} />
+                                            {s.name}
+                                        </span>
+                                    </SelectItem>
+                                ))}
                             </SelectContent>
                         </Select>
                     </div>

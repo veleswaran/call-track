@@ -78,6 +78,7 @@ describe("AddContactDialog", () => {
         expect(screen.getByText("Add Contact")).toBeInTheDocument();
         expect(screen.getByPlaceholderText("9876543210")).toBeEnabled();
         expect(screen.getByPlaceholderText("John Doe")).toBeEnabled();
+        expect(screen.getByLabelText(/Internal Contact/i)).not.toBeChecked();
     });
 
     it("should show correct description in standalone mode", () => {

@@ -8,10 +8,12 @@ export const teamsApi = {
     async getTeams(params?: {
         page?: number;
         per_page?: number;
+        search?: string;
     }): Promise<PaginatedResponse<Team>> {
         const query = new URLSearchParams();
         if (params?.page) query.append("page", params.page.toString());
         if (params?.per_page) query.append("per_page", params.per_page.toString());
+        if (params?.search) query.append("search", params.search);
 
         return api.get<PaginatedResponse<Team>>(`/api/v1/admin/teams?${query.toString()}`);
     },

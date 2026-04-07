@@ -11,12 +11,39 @@ import { Textarea } from "@shared/components/ui/textarea";
 import { Button } from "@shared/components/ui/button";
 import { useSettingsQuery, useUpdateSettingsMutation } from "../hooks/use-settings";
 import { Loader2 } from "lucide-react";
+import { Checkbox } from "@shared/components/ui/checkbox";
+import { Accordion, AccordionItem } from "@shared/components/ui/accordion";
+import { FilterVisibilityMatrix } from "./FilterVisibilityMatrix";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@shared/components/ui/table";
 
 const formSchema = z.object({
     heartbeat_threshold_minutes: z.number().min(5, "Minimum threshold is 5 minutes").max(10080, "Maximum is 1 week"),
     fcm_stale_title: z.string().min(1, "Title is required").max(100, "Title is too long"),
     fcm_stale_body: z.string().min(1, "Message body is required").max(500, "Message body is too long"),
     escalation_sla_hours: z.number().min(1, "Minimum is 1 hour").max(168, "Maximum is 1 week (168 hours)"),
+    enable_call_log_sim_filter: z.boolean(),
+    enable_agent_status_filter: z.boolean(),
+    enable_device_status_filter: z.boolean(),
+    enable_call_log_internal_filter: z.boolean(),
+    enable_report_internal_filter: z.boolean(),
+    enable_missed_call_internal_filter: z.boolean(),
+    enable_call_log_agent_filter: z.boolean(),
+    enable_missed_call_agent_filter: z.boolean(),
+    enable_report_agent_filter: z.boolean(),
+    enable_call_log_team_filter: z.boolean(),
+    enable_missed_call_team_filter: z.boolean(),
+    enable_report_team_filter: z.boolean(),
+    enable_call_log_class_filter: z.boolean(),
+    enable_report_class_filter: z.boolean(),
+    enable_call_log_outcome_filter: z.boolean(),
+    enable_report_outcome_filter: z.boolean(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -32,6 +59,22 @@ export function SettingsPage() {
             fcm_stale_title: "",
             fcm_stale_body: "",
             escalation_sla_hours: 2,
+            enable_call_log_sim_filter: true,
+            enable_agent_status_filter: true,
+            enable_device_status_filter: true,
+            enable_call_log_internal_filter: true,
+            enable_report_internal_filter: true,
+            enable_missed_call_internal_filter: true,
+            enable_call_log_agent_filter: true,
+            enable_missed_call_agent_filter: true,
+            enable_report_agent_filter: true,
+            enable_call_log_team_filter: true,
+            enable_missed_call_team_filter: true,
+            enable_report_team_filter: true,
+            enable_call_log_class_filter: true,
+            enable_report_class_filter: true,
+            enable_call_log_outcome_filter: true,
+            enable_report_outcome_filter: true,
         },
     });
 
@@ -42,6 +85,22 @@ export function SettingsPage() {
                 fcm_stale_title: settings.fcm_stale_title,
                 fcm_stale_body: settings.fcm_stale_body,
                 escalation_sla_hours: Number(settings.escalation_sla_hours ?? 2),
+                enable_call_log_sim_filter: !!settings.enable_call_log_sim_filter,
+                enable_agent_status_filter: !!settings.enable_agent_status_filter,
+                enable_device_status_filter: !!settings.enable_device_status_filter,
+                enable_call_log_internal_filter: !!settings.enable_call_log_internal_filter,
+                enable_report_internal_filter: !!settings.enable_report_internal_filter,
+                enable_missed_call_internal_filter: !!settings.enable_missed_call_internal_filter,
+                enable_call_log_agent_filter: !!settings.enable_call_log_agent_filter,
+                enable_missed_call_agent_filter: !!settings.enable_missed_call_agent_filter,
+                enable_report_agent_filter: !!settings.enable_report_agent_filter,
+                enable_call_log_team_filter: !!settings.enable_call_log_team_filter,
+                enable_missed_call_team_filter: !!settings.enable_missed_call_team_filter,
+                enable_report_team_filter: !!settings.enable_report_team_filter,
+                enable_call_log_class_filter: !!settings.enable_call_log_class_filter,
+                enable_report_class_filter: !!settings.enable_report_class_filter,
+                enable_call_log_outcome_filter: !!settings.enable_call_log_outcome_filter,
+                enable_report_outcome_filter: !!settings.enable_report_outcome_filter,
             });
         }
     }, [settings, form]);
@@ -53,6 +112,22 @@ export function SettingsPage() {
                 fcm_stale_title: values.fcm_stale_title,
                 fcm_stale_body: values.fcm_stale_body,
                 escalation_sla_hours: Number(values.escalation_sla_hours),
+                enable_call_log_sim_filter: values.enable_call_log_sim_filter,
+                enable_agent_status_filter: values.enable_agent_status_filter,
+                enable_device_status_filter: values.enable_device_status_filter,
+                enable_call_log_internal_filter: values.enable_call_log_internal_filter,
+                enable_report_internal_filter: values.enable_report_internal_filter,
+                enable_missed_call_internal_filter: values.enable_missed_call_internal_filter,
+                enable_call_log_agent_filter: values.enable_call_log_agent_filter,
+                enable_missed_call_agent_filter: values.enable_missed_call_agent_filter,
+                enable_report_agent_filter: values.enable_report_agent_filter,
+                enable_call_log_team_filter: values.enable_call_log_team_filter,
+                enable_missed_call_team_filter: values.enable_missed_call_team_filter,
+                enable_report_team_filter: values.enable_report_team_filter,
+                enable_call_log_class_filter: values.enable_call_log_class_filter,
+                enable_report_class_filter: values.enable_report_class_filter,
+                enable_call_log_outcome_filter: values.enable_call_log_outcome_filter,
+                enable_report_outcome_filter: values.enable_report_outcome_filter,
             }
         });
     }
@@ -66,11 +141,11 @@ export function SettingsPage() {
     }
 
     return (
-        <div className="max-w-2xl mx-auto py-6 space-y-6">
+        <div className="max-w-2xl mx-auto space-y-6">
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                     <Card>
-                        <CardHeader>
+                        <CardHeader className="pb-4">
                             <CardTitle>Device Monitoring</CardTitle>
                             <CardDescription>
                                 Configure background sync checking and push notification messages.
@@ -133,7 +208,7 @@ export function SettingsPage() {
                     </Card>
 
                     <Card>
-                        <CardHeader>
+                        <CardHeader className="pb-4">
                             <CardTitle>Missed Call Rules</CardTitle>
                             <CardDescription>
                                 Configure how quickly missed calls are marked as unattended.
@@ -163,6 +238,71 @@ export function SettingsPage() {
                         </CardContent>
                     </Card>
 
+                    <Card>
+                        <Accordion>
+                            <AccordionItem title="Filter Configuration" defaultOpen={true} className="px-6">
+                                <div className="space-y-6 pb-6 pt-2">
+                                    <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                                        Configure which filters are visible on each dashboard page.
+                                    </p>
+                                    
+                                    <FilterVisibilityMatrix />
+
+                                    <div className="pt-6 border-t border-zinc-100 dark:border-zinc-800">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">Management Filters</h3>
+                                        </div>
+                                        <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6">
+                                            Enable or disable status filtering on management pages (Agents, Devices).
+                                        </p>
+
+                                        <div className="rounded-md border border-zinc-200 dark:border-zinc-800 overflow-hidden max-w-2xl">
+                                            <Table>
+                                                <TableHeader>
+                                                    <TableRow className="bg-zinc-50/50 dark:bg-zinc-900/50">
+                                                        <TableHead className="w-[120px] font-bold">Filter</TableHead>
+                                                        <TableHead className="text-center font-bold">Agents</TableHead>
+                                                        <TableHead className="text-center font-bold">Device</TableHead>
+                                                    </TableRow>
+                                                </TableHeader>
+                                                <TableBody>
+                                                    <TableRow>
+                                                        <TableCell className="font-medium">Status</TableCell>
+                                                        <TableCell className="text-center">
+                                                            <FormField
+                                                                control={form.control}
+                                                                name="enable_agent_status_filter"
+                                                                render={({ field }) => (
+                                                                    <FormItem className="flex justify-center">
+                                                                        <FormControl>
+                                                                            <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                                                                        </FormControl>
+                                                                    </FormItem>
+                                                                )}
+                                                            />
+                                                        </TableCell>
+                                                        <TableCell className="text-center">
+                                                            <FormField
+                                                                control={form.control}
+                                                                name="enable_device_status_filter"
+                                                                render={({ field }) => (
+                                                                    <FormItem className="flex justify-center">
+                                                                        <FormControl>
+                                                                            <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                                                                        </FormControl>
+                                                                    </FormItem>
+                                                                )}
+                                                            />
+                                                        </TableCell>
+                                                    </TableRow>
+                                                </TableBody>
+                                            </Table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </AccordionItem>
+                        </Accordion>
+                    </Card>
                     <Button type="submit" disabled={updateSettings.isPending}>
                         {updateSettings.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         Save Settings

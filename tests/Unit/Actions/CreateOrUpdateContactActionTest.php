@@ -24,7 +24,9 @@ class CreateOrUpdateContactActionTest extends TestCase
             phoneNumber: $rawPhone
         );
 
-        $action = new CreateOrUpdateContactAction;
+        $action = new CreateOrUpdateContactAction(
+            new \App\Actions\Contacts\GetContactHashVariationsAction
+        );
         $contact = $action->execute($dto);
 
         $this->assertInstanceOf(Contact::class, $contact);
@@ -32,6 +34,9 @@ class CreateOrUpdateContactActionTest extends TestCase
 
         // Phone is stored in normalized international format
         $this->assertEquals($normalizedPhone, $contact->phone_number);
+
+        // Should default to external (false)
+        $this->assertFalse($contact->is_internal);
 
         // Hash is generated from the normalized phone number
         $this->assertEquals(hash('sha256', $normalizedPhone), $contact->phone_hash);
@@ -53,13 +58,16 @@ class CreateOrUpdateContactActionTest extends TestCase
             phoneNumber: $rawPhone
         );
 
-        $action = new CreateOrUpdateContactAction;
+        $action = new CreateOrUpdateContactAction(
+            new \App\Actions\Contacts\GetContactHashVariationsAction
+        );
         $contact = $action->execute($dto);
 
         // Should update, not create new
         $this->assertEquals($existingContact->id, $contact->id);
         $this->assertEquals('Updated Name', $contact->name);
         $this->assertEquals($normalizedPhone, $contact->phone_number);
+        $this->assertFalse($contact->is_internal);
         $this->assertEquals(1, Contact::count());
     }
 
@@ -78,7 +86,9 @@ class CreateOrUpdateContactActionTest extends TestCase
             phoneNumber: $rawPhone
         );
 
-        $action = new CreateOrUpdateContactAction;
+        $action = new CreateOrUpdateContactAction(
+            new \App\Actions\Contacts\GetContactHashVariationsAction
+        );
         $contact1 = $action->execute($dto1);
         $contact2 = $action->execute($dto2);
 

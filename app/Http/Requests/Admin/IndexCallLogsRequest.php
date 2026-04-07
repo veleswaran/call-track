@@ -32,6 +32,10 @@ class IndexCallLogsRequest extends FormRequest
             'agents' => ['sometimes', 'array'],
             'agents.*' => ['integer', 'min:1'],
 
+            'team_id' => ['sometimes', 'integer', 'min:1'],
+            'team_ids' => ['sometimes', 'array'],
+            'team_ids.*' => ['integer', 'min:1'],
+
             'sim_slot' => ['sometimes', 'integer', 'min:0'],
 
             'classification' => ['sometimes', 'string', 'in:business,personal,ignored'],
@@ -52,6 +56,7 @@ class IndexCallLogsRequest extends FormRequest
             'end_date' => ['sometimes', 'date', 'after_or_equal:start_date'],
 
             'search' => ['sometimes', 'string', 'max:255'],
+            'contact_filter' => ['sometimes', 'string', 'in:all,internal,external'],
         ];
     }
 }

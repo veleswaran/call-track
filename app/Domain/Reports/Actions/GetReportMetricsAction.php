@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\DB;
 
 final class GetReportMetricsAction
 {
+    public function __construct(
+        protected \App\Actions\Contacts\GetContactHashVariationsAction $getContactHashesAction
+    ) {}
+
     public function execute(ReportFilterDTO $filters): array
     {
         $baseQuery = \App\Domain\Calls\Models\CallLog::query()
@@ -38,7 +42,8 @@ final class GetReportMetricsAction
             DB::raw("SUM(CASE WHEN call_escalations.status = 'pending' THEN 1 ELSE 0 END) as pending_escalations"),
             DB::raw("SUM(CASE WHEN call_escalations.status = 'unattended' THEN 1 ELSE 0 END) as unattended_escalations"),
             DB::raw("SUM(CASE WHEN call_escalations.status = 'resolved' THEN 1 ELSE 0 END) as resolved_escalations"),
-            DB::raw("SUM(CASE WHEN call_logs.direction IN ('MISSED', 'REJECTED', 'BLOCKED') THEN 1 ELSE 0 END) as total_missed_calls"),
+            DB::raw("SUM(CASE WHEN call_logs.direction IN ('MISSED', 'REJECTED', 'BLOCKED')
+                OR (call_logs.direction = 'INCOMING' AND call_logs.duration = 0) THEN 1 ELSE 0 END) as total_missed_calls"),
         ])
             ->leftJoin('call_escalations', 'call_logs.id', '=', 'call_escalations.call_log_id')
             ->toBase()->first();
@@ -177,6 +182,16 @@ final class GetReportMetricsAction
                     }
                 }
             });
+        }
+
+        if ($filters->contactFilter !== null && $filters->contactFilter !== 'all') {
+            $contactHashes = $this->getContactHashesAction->execute();
+
+            if ($filters->contactFilter === 'internal') {
+                $query->whereIn('call_logs.phone_number_hash', $contactHashes);
+            } else {
+                $query->whereNotIn('call_logs.phone_number_hash', $contactHashes);
+            }
         }
     }
 

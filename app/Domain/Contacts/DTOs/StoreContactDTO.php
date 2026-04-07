@@ -9,5 +9,6 @@ readonly class StoreContactDTO
     public function __construct(
         public string $name,
         public string $phoneNumber,
+        public bool $isInternal = false,
     ) {}
 }

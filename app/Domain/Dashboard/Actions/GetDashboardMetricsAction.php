@@ -130,7 +130,7 @@ final class GetDashboardMetricsAction
             DB::raw("SUM(CASE WHEN EXISTS (SELECT 1 FROM call_classifications cc WHERE cc.call_log_id = call_logs.id AND cc.type = 'PERSONAL') THEN 1 ELSE 0 END) as personal_calls"),
             DB::raw("SUM(CASE WHEN EXISTS (SELECT 1 FROM call_classifications cc WHERE cc.call_log_id = call_logs.id AND cc.type = 'IGNORED') THEN 1 ELSE 0 END) as ignored_calls"),
             DB::raw("SUM(CASE WHEN EXISTS (SELECT 1 FROM call_escalations ce WHERE ce.call_log_id = call_logs.id AND ce.status IN ('pending', 'unattended')) THEN 1 ELSE 0 END) as missed_calls"),
-            DB::raw("SUM(CASE WHEN call_logs.direction IN ('MISSED', 'REJECTED', 'BLOCKED') THEN 1 ELSE 0 END) as total_missed_calls"),
+            DB::raw("SUM(CASE WHEN call_logs.direction IN ('MISSED', 'REJECTED', 'BLOCKED') OR (call_logs.direction = 'INCOMING' AND call_logs.duration = 0) THEN 1 ELSE 0 END) as total_missed_calls"),
             DB::raw('0 as unclassified_calls'),
             DB::raw('COALESCE(SUM(call_logs.duration), 0) as total_duration_seconds'),
             DB::raw('COALESCE(AVG(call_logs.duration), 0) as average_call_duration_seconds'),

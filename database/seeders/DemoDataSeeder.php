@@ -5,7 +5,12 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Domain\Agents\Models\Agent;
+use App\Domain\Analytics\Actions\UpdateLoyaltyMetricsAction;
+use App\Domain\Calls\Models\CallEscalation;
+use App\Domain\Calls\Models\CallLog;
+use App\Domain\Classification\Models\CallClassification;
 use App\Domain\Devices\Models\Device;
+use App\Domain\Settings\Models\SystemSetting;
 use App\Domain\Users\Models\User;
 use App\Support\PhoneNormalizer;
 use Illuminate\Database\Seeder;
@@ -23,7 +28,20 @@ class DemoDataSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create admin user
+        // 0. Clean up existing data for a fresh demo
+        $this->command->info('Cleaning up existing call data...');
+        DB::table('call_escalations')->delete();
+        DB::table('call_classifications')->delete();
+        DB::table('call_logs')->delete();
+        DB::table('analytics_customer_loyalty')->delete();
+
+        // 0. Ensure System Settings
+        SystemSetting::firstOrCreate(
+            ['key' => 'min_interaction_duration'],
+            ['value' => 10]
+        );
+
+        // 1. Create admin user
         $admin = User::firstOrCreate(
             ['email' => 'admin@calltrack.com'],
             [
@@ -33,119 +51,154 @@ class DemoDataSeeder extends Seeder
             ]
         );
 
-        $admin->assignRole('admin');
+        if (class_exists(\Spatie\Permission\Models\Role::class)) {
+            \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'admin']);
+            $admin->assignRole('admin');
+        }
 
         $this->command->info('Created admin user: admin@calltrack.com / password');
 
-        // Create agents (matching actual schema: name, employee_code, status)
-        $agents = [
-            ['name' => 'John Smith', 'employee_code' => 'EMP001', 'status' => 'active'],
-            ['name' => 'Sarah Johnson', 'employee_code' => 'EMP002', 'status' => 'active'],
-            ['name' => 'Mike Williams', 'employee_code' => 'EMP003', 'status' => 'active'],
-            ['name' => 'Emily Brown', 'employee_code' => 'EMP004', 'status' => 'active'],
+        // 2. Create agents
+        $agentNames = [
+            'John Smith', 'Sarah Johnson', 'Mike Williams', 'Emily Brown',
+            'David Jones', 'Jessica Taylor', 'Chris Evans', 'Amanda White',
+            'Robert Miller', 'Lisa Anderson',
         ];
 
         $createdAgents = [];
-        foreach ($agents as $agentData) {
-            // Create user for agent to allow for Realistic RBAC testing
-            $email = strtolower(str_replace(' ', '.', $agentData['name'])).'@calltrack.com';
+        foreach ($agentNames as $index => $name) {
+            $empCode = 'EMP'.str_pad((string) ($index + 1), 3, '0', STR_PAD_LEFT);
+            $email = strtolower(str_replace(' ', '.', $name)).'@calltrack.com';
+
             $user = User::firstOrCreate(
                 ['email' => $email],
                 [
-                    'name' => $agentData['name'],
+                    'name' => $name,
                     'password' => Hash::make('password'),
                     'email_verified_at' => now(),
                 ]
             );
 
-            if (! $user->hasRole('member')) {
-                $user->assignRole('member');
+            if (class_exists(\Spatie\Permission\Models\Role::class)) {
+                \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'member']);
+                if (! $user->hasRole('member')) {
+                    $user->assignRole('member');
+                }
             }
 
             $createdAgents[] = Agent::firstOrCreate(
-                ['employee_code' => $agentData['employee_code']],
-                array_merge($agentData, ['user_id' => $user->id])
+                ['employee_code' => $empCode],
+                ['name' => $name, 'user_id' => $user->id, 'status' => 'active']
             );
         }
 
         $this->command->info('Created '.count($createdAgents).' agents');
 
-        // Create devices (matching actual schema: name, model, os_version, app_version, agent_id)
-        $devices = [
-            ['name' => 'Pixel 7 Pro', 'model' => 'Pixel 7 Pro', 'os_version' => 'Android 14', 'app_version' => '1.2.0'],
-            ['name' => 'Samsung S23', 'model' => 'Galaxy S23', 'os_version' => 'Android 14', 'app_version' => '1.2.0'],
-            ['name' => 'OnePlus 11', 'model' => 'OnePlus 11', 'os_version' => 'Android 13', 'app_version' => '1.1.5'],
-            ['name' => 'Pixel 6a', 'model' => 'Pixel 6a', 'os_version' => 'Android 14', 'app_version' => '1.2.0'],
-            ['name' => 'Samsung A54', 'model' => 'Galaxy A54', 'os_version' => 'Android 14', 'app_version' => '1.2.0'],
+        // 3. Create devices (some agents have 2 devices)
+        $deviceSpecs = [
+            ['name' => 'Pixel 7 Pro', 'model' => 'Pixel 7 Pro', 'os_version' => 'Android 14'],
+            ['name' => 'Samsung S23', 'model' => 'Galaxy S23', 'os_version' => 'Android 14'],
+            ['name' => 'OnePlus 11', 'model' => 'OnePlus 11', 'os_version' => 'Android 13'],
+            ['name' => 'Pixel 6a', 'model' => 'Pixel 6a', 'os_version' => 'Android 14'],
+            ['name' => 'Samsung A54', 'model' => 'Galaxy A54', 'os_version' => 'Android 14'],
+            ['name' => 'Pixel 8', 'model' => 'Pixel 8', 'os_version' => 'Android 14'],
+            ['name' => 'Nokia G42', 'model' => 'Nokia G42', 'os_version' => 'Android 13'],
+            ['name' => 'Moto G84', 'model' => 'Moto G84', 'os_version' => 'Android 13'],
+            ['name' => 'Xiaomi 13', 'model' => 'Xiaomi 13', 'os_version' => 'Android 14'],
+            ['name' => 'Asus Zenfone 10', 'model' => 'Zenfone 10', 'os_version' => 'Android 13'],
+            ['name' => 'Sony Xperia 5 V', 'model' => 'Xperia 5 V', 'os_version' => 'Android 14'],
+            ['name' => 'Nothing Phone 2', 'model' => 'Phone 2', 'os_version' => 'Android 13'],
+            ['name' => 'Pixel 7a', 'model' => 'Pixel 7a', 'os_version' => 'Android 14'],
+            ['name' => 'Samsung S22', 'model' => 'Galaxy S22', 'os_version' => 'Android 13'],
+            ['name' => 'Pixel 5', 'model' => 'Pixel 5', 'os_version' => 'Android 13'],
         ];
 
         $createdDevices = [];
-        foreach ($devices as $index => $deviceData) {
+        $statuses = ['active', 'inactive', 'maintenance'];
+
+        foreach ($deviceSpecs as $index => $spec) {
+            $agent = $createdAgents[$index % count($createdAgents)];
+            // Mostly active, sometimes inactive/maintenance
+            $status = (rand(1, 10) > 8) ? $statuses[array_rand($statuses)] : 'active';
+
             $device = Device::firstOrCreate(
-                ['name' => $deviceData['name']],
-                array_merge($deviceData, [
-                    'agent_id' => $createdAgents[$index % count($createdAgents)]->id,
+                ['name' => $spec['name'].' ('.$agent->name.')'],
+                array_merge($spec, [
+                    'agent_id' => $agent->id,
                     'device_uuid' => Str::uuid()->toString(),
+                    'app_version' => '1.2.'.rand(0, 9),
+                    'status' => $status,
                 ])
             );
             $createdDevices[] = $device;
 
             // Create device token
-            DB::table('device_tokens')->insertOrIgnore([
-                'device_id' => $device->id,
-                'token_hash' => 'demo_token_'.Str::random(40),
-                'device_name' => $deviceData['name'],
-                'last_used_at' => now()->subHours(rand(1, 48)),
-                'issued_at' => now(),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            DB::table('device_tokens')->updateOrInsert(
+                ['device_id' => $device->id],
+                [
+                    'token_hash' => 'demo_token_'.Str::random(40),
+                    'device_name' => $spec['name'],
+                    'last_used_at' => now()->subHours(rand(1, 48)),
+                    'issued_at' => now()->subDays(30),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
+            );
         }
 
         $this->command->info('Created '.count($createdDevices).' devices');
 
-        // Create call logs
+        // 4. Create call logs over 30 days
         $phoneNumbers = [
-            '+1-555-8000',
-            '+1-555-8001',
-            '+1-555-8002',
-            '+1-555-8003',
-            '+1-555-8004',
-            '+1-555-8005',
-            '+1-555-8006',
-            '+1-555-8007',
-            '+1-555-8008',
-            '+1-555-8009',
-            '+1-555-9000',
-            '+1-555-9001',
-            '+1-555-9002',
-            '+1-555-9003',
-            '+1-555-9004',
+            '+91 98765 43210', '+91 87654 32109', '+91 76543 21098', '+91 65432 10987',
+            '+91 54321 09876', '+91 99887 76655', '+91 88776 65544', '+91 77665 54433',
+            '+91 66554 43322', '+91 55443 32211', '+91 91234 56789', '+91 82345 67890',
+            '+91 73456 78901', '+91 64567 89012', '+91 55678 90123',
         ];
 
-        $directions = ['INCOMING', 'OUTGOING', 'MISSED'];
-        $classifications = ['BUSINESS', 'PERSONAL', 'IGNORED', null, null]; // 40% unclassified
+        $contactNames = [
+            'Rahul Sharma', 'Anjali Gupta', 'Vikram Singh', 'Priya Verma',
+            'Amit Patel', 'Sonia Reddy', 'Rajesh Kumar', 'Deepa Nair',
+            'Arun Joshi', 'Kavita Iyer', null, null, null, null, null,
+        ];
+
+        $directions = ['INCOMING', 'OUTGOING', 'MISSED', 'REJECTED', 'BLOCKED'];
+        $classifications = ['BUSINESS', 'PERSONAL', 'IGNORED'];
 
         $callLogsCount = 0;
-        $classificationsCount = 0;
+        $uniquePhoneHashes = [];
 
         foreach ($createdDevices as $device) {
-            // Create 20-50 calls per device over the past 7 days
-            $numCalls = rand(20, 50);
+            // 50-100 calls per device over 30 days
+            $numCalls = rand(50, 100);
 
             for ($i = 0; $i < $numCalls; $i++) {
-                $phoneNumber = PhoneNormalizer::normalize($phoneNumbers[array_rand($phoneNumbers)]);
-                $direction = $directions[array_rand($directions)];
-                $timestamp = now()->subDays(rand(0, 7))->subHours(rand(0, 23))->subMinutes(rand(0, 59));
-                $duration = $direction === 'MISSED' ? 0 : rand(15, 600);
+                $phoneIdx = array_rand($phoneNumbers);
+                $rawPhone = $phoneNumbers[$phoneIdx];
+                $phoneNumber = PhoneNormalizer::normalize($rawPhone);
+                $phoneHash = hash('sha256', $phoneNumber);
+                $uniquePhoneHashes[$phoneHash] = true;
 
-                /** @var \App\Domain\Calls\Models\CallLog $callLog */
-                $callLog = \App\Domain\Calls\Models\CallLog::create([
+                $direction = $directions[array_rand($directions)];
+                // Higher probability for INCOMING/OUTGOING
+                if (rand(1, 10) > 7) {
+                    $direction = $directions[rand(2, 4)]; // MISSED, REJECTED, BLOCKED
+                } else {
+                    $direction = $directions[rand(0, 1)]; // INCOMING, OUTGOING
+                }
+
+                $timestamp = now()->subDays(rand(0, 30))->subHours(rand(0, 23))->subMinutes(rand(0, 59));
+
+                $isMissed = in_array($direction, ['MISSED', 'REJECTED', 'BLOCKED']) || ($direction === 'INCOMING' && rand(1, 10) > 8);
+                $duration = $isMissed ? 0 : rand(10, 1200);
+
+                $callLog = CallLog::create([
                     'device_id' => $device->id,
-                    'agent_id' => $device->agent_id, // Capture agent at time of ingestion
-                    'call_hash' => md5($device->id.$phoneNumber.$timestamp->timestamp.$i),
-                    'phone_number_hash' => hash('sha256', $phoneNumber),
-                    'phone_number' => $phoneNumber, // Model cast will encrypt this
+                    'agent_id' => $device->agent_id,
+                    'call_hash' => md5($device->id.$phoneNumber.$timestamp->timestamp.$i.Str::random(5)),
+                    'phone_number_hash' => $phoneHash,
+                    'phone_number' => $phoneNumber,
+                    'phone_contact_name' => $contactNames[$phoneIdx],
                     'sim_slot' => rand(0, 1),
                     'direction' => $direction,
                     'duration' => $duration,
@@ -155,30 +208,84 @@ class DemoDataSeeder extends Seeder
 
                 $callLogsCount++;
 
-                // Add classification for some calls
-                // Add classification for some calls
-                $classificationType = $classifications[array_rand($classifications)];
+                // 5. Add Classification
+                $type = $classifications[array_rand($classifications)];
+                // 70% business
+                if (rand(1, 10) <= 7) {
+                    $type = 'BUSINESS';
+                }
 
-                if ($classificationType !== null) {
-                    \App\Domain\Classification\Models\CallClassification::create([
+                CallClassification::create([
+                    'call_log_id' => $callLog->id,
+                    'user_id' => $admin->id,
+                    'type' => $type,
+                    'note' => $type === 'BUSINESS' ? 'Inquiry about service' : ($type === 'PERSONAL' ? 'Personal call' : 'Spam/Ignored'),
+                ]);
+
+                // 6. Handle Escalations for Missed Calls
+                if ($isMissed && $type === 'BUSINESS') {
+                    $status = ['pending', 'unattended', 'resolved'][rand(0, 2)];
+
+                    $escalation = CallEscalation::create([
                         'call_log_id' => $callLog->id,
-                        'user_id' => $admin->id,
-                        'type' => $classificationType,
-                        'note' => $classificationType === 'BUSINESS' ? 'Client call' : ($classificationType === 'PERSONAL' ? 'Family call' : 'Spam'),
+                        'status' => $status,
+                        'response_due_at' => $timestamp->copy()->addHours(4),
                     ]);
-                    $classificationsCount++;
-                } else {
-                    // Default system classification (BUSINESS)
-                    \App\Domain\Classification\Models\CallClassification::create([
-                        'call_log_id' => $callLog->id,
-                        'user_id' => null,
-                        'type' => 'BUSINESS',
-                    ]);
-                    $classificationsCount++;
+
+                    if ($status === 'resolved') {
+                        // Create a follow-up call to resolve it
+                        $resolvedAt = $timestamp->copy()->addMinutes(rand(30, 180));
+                        $followUpCall = CallLog::create([
+                            'device_id' => $device->id,
+                            'agent_id' => $device->agent_id,
+                            'call_hash' => md5($device->id.$phoneNumber.$resolvedAt->timestamp.'followup'.Str::random(5)),
+                            'phone_number_hash' => $phoneHash,
+                            'phone_number' => $phoneNumber,
+                            'direction' => 'OUTGOING',
+                            'duration' => rand(60, 300),
+                            'timestamp' => $resolvedAt,
+                            'created_at' => $resolvedAt,
+                        ]);
+
+                        $escalation->update([
+                            'resolved_at' => $resolvedAt,
+                            'resolved_by_call_id' => $followUpCall->id,
+                        ]);
+                    }
                 }
             }
         }
 
-        $this->command->info("Created {$callLogsCount} call logs with {$classificationsCount} classifications");
+        $this->command->info("Created {$callLogsCount} call logs.");
+
+        // 6.5 Create explicit Contact records for demo numbers
+        $this->command->info('Creating contact records...');
+        foreach ($phoneNumbers as $idx => $rawPhone) {
+            $name = $contactNames[$idx];
+            if (! $name) {
+                continue;
+            }
+
+            $normalized = PhoneNormalizer::normalize($rawPhone);
+
+            \App\Domain\Calls\Models\Contact::updateOrCreate(
+                ['phone_hash' => hash('sha256', $normalized)],
+                [
+                    'name' => $name,
+                    'phone_number' => $normalized,
+                    // Make the first 3 contacts "Internal" for demonstration
+                    'is_internal' => $idx < 3,
+                ]
+            );
+        }
+
+        // 7. Update Loyalty Metrics
+        $this->command->info('Updating loyalty metrics...');
+        $loyaltyAction = app(UpdateLoyaltyMetricsAction::class);
+        foreach (array_keys($uniquePhoneHashes) as $hash) {
+            $loyaltyAction->execute($hash);
+        }
+
+        $this->command->info('Demo data seeding completed successfully!');
     }
 }

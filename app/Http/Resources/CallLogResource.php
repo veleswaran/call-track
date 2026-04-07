@@ -43,6 +43,7 @@ class CallLogResource extends JsonResource
             'phone_contact_name' => $this->phone_contact_name,
             'contact_name' => $contact?->name,
             'contact_notes' => $contact?->notes,
+            'is_internal' => (bool) ($contact->is_internal ?? false),
             'classification' => $this->classification ? [
                 'id' => $this->classification->id,
                 'classification' => strtolower($this->classification->type),
