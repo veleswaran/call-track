@@ -27,10 +27,10 @@ class CallSyncServiceTest extends TestCase
             batteryLevel: 85,
         );
 
-        // Sync state action should be called with device and battery level
+        // Sync state action: device, battery, app version (null when omitted on DTO)
         $syncStateAction->shouldReceive('execute')
             ->once()
-            ->with($device, 85);
+            ->with($device, 85, null);
 
         $ingestAction->shouldReceive('execute')
             ->once()
