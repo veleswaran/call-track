@@ -8,6 +8,7 @@ use App\Actions\Calls\IngestCallLogsAction;
 use App\Actions\Devices\UpdateDeviceSyncStateAction;
 use App\Contracts\Services\CallSyncServiceInterface;
 use App\Domain\Calls\DTOs\SyncCallLogsDTO;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class CallSyncService implements CallSyncServiceInterface
@@ -25,9 +26,11 @@ class CallSyncService implements CallSyncServiceInterface
             'app_version' => $dto->appVersion,
         ]);
 
-        // Update heartbeat, battery, and app version in a single query
-        $this->updateSyncStateAction->execute($dto->device, $dto->batteryLevel, $dto->appVersion);
+        return DB::transaction(function () use ($dto): array {
+            // Update heartbeat, battery, and app version in a single query
+            $this->updateSyncStateAction->execute($dto->device, $dto->batteryLevel, $dto->appVersion);
 
-        return $this->ingestAction->execute($dto);
+            return $this->ingestAction->execute($dto);
+        });
     }
 }

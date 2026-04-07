@@ -164,7 +164,7 @@ public class SaveCore {
 
         // Method 1: Try standard subscription_id (works on most devices)
         int subId = getIntSafe(cursor, "subscription_id");
-        if (subId >= 0 && subId < 1000) { // Valid subscription IDs are small numbers
+        if (subId >= 0) { // Valid subscription IDs are non-negative (INVALID_SUBSCRIPTION_ID = -1)
             if (fillFromSubscriptionId(subs, record, subId)) {
                 return; // Success
             }
