@@ -15,5 +15,6 @@ readonly class SyncCallLogsDTO
         public Device $device,
         public array $logs,
         public ?int $batteryLevel = null,
+        public ?string $appVersion = null,
     ) {}
 }

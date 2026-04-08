@@ -18,6 +18,7 @@ class StoreCallLogsRequest extends FormRequest
     {
         return [
             'battery_level' => ['nullable', 'integer', 'min:0', 'max:100'],
+            'app_version' => ['nullable', 'string', 'max:20'],
             'logs' => ['present', 'array', 'max:1000'],
             'logs.*.call_hash' => ['required', 'string'],
             'logs.*.phone_number' => ['required', 'string'],
