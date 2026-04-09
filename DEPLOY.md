@@ -65,8 +65,10 @@ _If your repository is **Private**, you must allow Coolify to access it._
 2.  Select Repo: `altalya/calltrack`.
 3.  **Configuration**:
     - **Branch**: `main`
-    - **Build Pack**: `Nixpacks`
+    - **Build Pack**: `Dockerfile` ← **Use this, NOT Nixpacks**
     - **Base Directory**: `/`
+    - **Dockerfile Path**: `Dockerfile`
+    - **Exposed Port**: `80` ← Coolify/Traefik will proxy to this port
 
 ### 2. Domain & Routing
 
@@ -125,8 +127,11 @@ Enter these commands in the **Build** tab:
 
 - **Start Command**:
     ```bash
-    php artisan serve --host=0.0.0.0 --port=80
+    /usr/bin/supervisord -c /etc/supervisor/supervisord.conf
     ```
+
+    > **Note**: This starts Supervisor which manages Nginx (port 80), php-fpm (unix socket), and the Laravel queue workers — all inside the same container. Coolify's internal Traefik reverse proxy routes HTTPS traffic → container port 80 → Nginx → php-fpm.
+    > **Do NOT use `php artisan serve`** — it is a development-only single-threaded server that bypasses Nginx and php-fpm entirely.
 
 ### 5. Post-Deployment Command
 
