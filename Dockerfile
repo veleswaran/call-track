@@ -19,10 +19,9 @@ RUN apt-get update && apt-get install -y \
     npm \
     nginx
 
-# Clear cache and default nginx
+# Clear cache and default nginx site
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* && \
-    rm /etc/nginx/sites-enabled/default && \
-    mkdir -p /var/run/php && chown www-data:www-data /var/run/php
+    rm /etc/nginx/sites-enabled/default
 
 # Install PHP extensions
 RUN docker-php-ext-install pdo_mysql pdo_pgsql mbstring exif pcntl bcmath gd
@@ -49,7 +48,6 @@ COPY docker/supervisor/laravel-worker.conf /etc/supervisor/conf.d/laravel-worker
 COPY docker/supervisor/php-fpm.conf /etc/supervisor/conf.d/php-fpm.conf
 COPY docker/supervisor/nginx.conf /etc/supervisor/conf.d/nginx.conf
 COPY docker/nginx/default.conf /etc/nginx/conf.d/default.conf
-COPY docker/php-fpm/www.conf /etc/php/8.4/fpm/pool.d/www.conf
 
 # Set permissions for logs
 RUN touch /var/www/html/storage/logs/worker.log && \
