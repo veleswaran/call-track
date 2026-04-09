@@ -6,6 +6,7 @@ import {
     CardTitle,
 } from "@shared/components/ui/card";
 import { cn } from "@shared/utils";
+import Link from "next/link";
 
 interface MissedCallMetricCardProps {
     title?: string;
@@ -17,6 +18,7 @@ interface MissedCallMetricCardProps {
     changePercent?: number | null;
     isLoading?: boolean;
     className?: string;
+    href?: string;
 }
 
 /**
@@ -30,9 +32,14 @@ export function MissedCallMetricCard({
     changePercent,
     isLoading = false,
     className,
+    href,
 }: MissedCallMetricCardProps) {
-    return (
-        <Card className={cn("overflow-hidden h-full", className)}>
+    const cardContent = (
+        <Card className={cn(
+            "overflow-hidden h-full transition-colors", 
+            href && "hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer",
+            className
+        )}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">{title}</CardTitle>
                 <PhoneMissed className="h-4 w-4 text-zinc-500" />
@@ -70,4 +77,10 @@ export function MissedCallMetricCard({
             </CardContent>
         </Card>
     );
+
+    if (href) {
+        return <Link href={href}>{cardContent}</Link>;
+    }
+
+    return cardContent;
 }
