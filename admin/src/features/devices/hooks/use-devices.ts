@@ -17,7 +17,7 @@ export const deviceKeys = {
 /**
  * Fetch paginated devices list
  */
-export function useDevices(params?: { page?: number; per_page?: number; search?: string; status?: string }) {
+export function useDevices(params?: { page?: number; per_page?: number; search?: string; status?: string; sync_status?: string }) {
     return useQuery({
         queryKey: deviceKeys.list(params ?? {}),
         queryFn: () => {
@@ -26,6 +26,7 @@ export function useDevices(params?: { page?: number; per_page?: number; search?:
             queryParams.append("per_page", (params?.per_page ?? 15).toString());
             if (params?.search) queryParams.append("search", params.search);
             if (params?.status) queryParams.append("status", params.status);
+            if (params?.sync_status) queryParams.append("sync_status", params.sync_status);
             
             return api.get<PaginatedResponse<Device>>(`/api/v1/admin/devices?${queryParams.toString()}`);
         },
