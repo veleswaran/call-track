@@ -153,7 +153,7 @@ export default function DashboardPage() {
                     icon={Phone}
                     changePercent={metrics?.total_calls_change_percent}
                     isLoading={metricsLoading}
-                    href="/call-logs"
+                    href={`/call-logs?start_date=${startDate ?? ""}&end_date=${endDate ?? ""}`}
                 />
                 <MissedCallMetricCard
                     total={missedCalls}
@@ -163,7 +163,7 @@ export default function DashboardPage() {
                     resolved={metrics?.resolved_escalations ?? 0}
                     changePercent={metrics?.missed_calls_change_percent}
                     isLoading={metricsLoading}
-                    href="/reports/missed-calls"
+                    href={`/reports/missed-calls?start_date=${startDate ?? ""}&end_date=${endDate ?? ""}`}
                 />
                 <MetricCard
                     title="Avg Call Duration"
@@ -171,7 +171,7 @@ export default function DashboardPage() {
                     icon={Timer}
                     changePercent={metrics?.average_call_duration_change_percent}
                     isLoading={metricsLoading}
-                    href="/reports"
+                    href={`/reports?start_date=${startDate ?? ""}&end_date=${endDate ?? ""}`}
                 />
                 <MetricCard
                     title="Total Duration"
@@ -179,7 +179,7 @@ export default function DashboardPage() {
                     icon={Clock}
                     changePercent={metrics?.total_duration_change_percent}
                     isLoading={metricsLoading}
-                    href="/reports"
+                    href={`/reports?start_date=${startDate ?? ""}&end_date=${endDate ?? ""}`}
                 />
             </div>
 

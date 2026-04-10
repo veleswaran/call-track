@@ -17,6 +17,7 @@ import {
     type LucideIcon,
 } from "lucide-react";
 import { useAuth } from "@/src/features/auth/hooks/use-auth";
+import { useSettingsQuery } from "@/src/features/settings/hooks/use-settings";
 
 /**
  * Navigation item configuration
@@ -62,9 +63,12 @@ export function SidebarNav({
 }: SidebarNavProps) {
     const pathname = usePathname();
     const { user } = useAuth();
+    const { data: settings } = useSettingsQuery();
 
     const userRoles: string[] = user?.roles || [];
     const userPermissions: string[] = user?.permissions || [];
+
+    const siteName = settings?.app_sitename || "CallTrack AI";
 
     return (
         <aside
@@ -75,25 +79,34 @@ export function SidebarNav({
             )}
         >
             {/* Logo */}
-            <div className="flex h-16 items-center justify-between px-4 border-b border-zinc-200 dark:border-zinc-800">
-                {open && (
-                    <span className="text-lg font-semibold text-zinc-900 dark:text-white">
-                        CallTrack AI
-                    </span>
-                )}
-                <button
-                    onClick={onToggle}
-                    data-testid="sidebar-toggle"
-                    className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                    aria-label={open ? "Collapse sidebar" : "Expand sidebar"}
-                >
-                    <ChevronLeft
-                        className={cn(
-                            "h-4 w-4 transition-transform",
-                            !open && "rotate-180"
-                        )}
-                    />
-                </button>
+            <div className="flex h-16 items-center translate-x-1 px-4 border-b border-zinc-200 dark:border-zinc-800 overflow-hidden">
+                <div className="flex items-center gap-2 min-w-0">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center">
+                        <Smartphone className="h-5 w-5 text-white dark:text-zinc-900" />
+                    </div>
+                    
+                    {open && (
+                        <span className="text-lg font-bold text-zinc-900 dark:text-white truncate">
+                            {siteName}
+                        </span>
+                    )}
+                </div>
+
+                <div className={cn("ml-auto", !open && "hidden")}>
+                    <button
+                        onClick={onToggle}
+                        data-testid="sidebar-toggle"
+                        className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                        aria-label={open ? "Collapse sidebar" : "Expand sidebar"}
+                    >
+                        <ChevronLeft
+                            className={cn(
+                                "h-4 w-4 transition-transform",
+                                !open && "rotate-180"
+                            )}
+                        />
+                    </button>
+                </div>
             </div>
 
             {/* Navigation */}

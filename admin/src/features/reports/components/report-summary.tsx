@@ -29,10 +29,12 @@ const iconMap: Record<string, LucideIcon> = {
 }
 
 const hrefMap: Record<string, string> = {
-    "Total Calls": "/call-logs",
-    "Missed Calls": "/reports/missed-calls",
-    "Total Agents": "/agents",
-    "Agents": "/agents",
+    "total calls": "/call-logs",
+    "missed calls": "/reports/missed-calls",
+    "avg call duration": "/reports",
+    "total duration": "/reports",
+    "total agents": "/agents",
+    "agents": "/agents",
 }
 
 export function ReportSummary({ metrics, isLoading }: ReportSummaryProps) {
@@ -47,7 +49,8 @@ export function ReportSummary({ metrics, isLoading }: ReportSummaryProps) {
     return (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
             {metrics.map((metric, index) => {
-                const href = hrefMap[metric.label];
+                const normalizedLabel = metric.label.toLowerCase();
+                const href = hrefMap[normalizedLabel];
 
                 // If it's a Missed Calls metric with our expected sub-metrics, use the specialized card
                 if (metric.label === "Missed Calls" && metric.sub_metrics) {
