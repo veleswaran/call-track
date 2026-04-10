@@ -3,6 +3,7 @@ import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useSettingsQuery, useUpdateSettingsMutation } from "./use-settings";
 import { settingsApi } from "../api/settings-api";
+import type { SettingsData } from "../types";
 import { toast } from "sonner";
 import React from "react";
 
@@ -43,11 +44,28 @@ describe("use-settings hooks", () => {
 
     describe("useSettingsQuery", () => {
         it("should fetch settings", async () => {
-            const mockData = {
+            const mockData: SettingsData = {
                 heartbeat_threshold_minutes: 60,
                 fcm_stale_title: "Title",
                 fcm_stale_body: "Body",
                 escalation_sla_hours: 2,
+                enable_contact_search: true,
+                enable_call_log_sim_filter: true,
+                enable_agent_status_filter: true,
+                enable_device_status_filter: true,
+                enable_call_log_internal_filter: true,
+                enable_report_internal_filter: true,
+                enable_missed_call_internal_filter: true,
+                enable_call_log_agent_filter: true,
+                enable_missed_call_agent_filter: true,
+                enable_report_agent_filter: true,
+                enable_call_log_team_filter: true,
+                enable_missed_call_team_filter: true,
+                enable_report_team_filter: true,
+                enable_call_log_class_filter: true,
+                enable_report_class_filter: true,
+                enable_call_log_outcome_filter: true,
+                enable_report_outcome_filter: true,
             };
 
             vi.mocked(settingsApi.getSettings).mockResolvedValueOnce({ data: mockData });
