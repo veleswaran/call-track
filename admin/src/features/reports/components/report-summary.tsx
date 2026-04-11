@@ -1,4 +1,5 @@
 import { Phone, CheckCircle, XCircle, PhoneOff, Clock, Users, LucideIcon } from "lucide-react"
+import Link from "next/link"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@shared/components/ui/card"
 import { cn } from "@shared/utils"
@@ -27,6 +28,15 @@ const iconMap: Record<string, LucideIcon> = {
     users: Users
 }
 
+const hrefMap: Record<string, string> = {
+    "total calls": "/call-logs",
+    "missed calls": "/reports/missed-calls",
+    "avg call duration": "/reports",
+    "total duration": "/reports",
+    "total agents": "/agents",
+    "agents": "/agents",
+}
+
 export function ReportSummary({ metrics, isLoading }: ReportSummaryProps) {
     if (isLoading) {
         return <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
@@ -39,6 +49,9 @@ export function ReportSummary({ metrics, isLoading }: ReportSummaryProps) {
     return (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
             {metrics.map((metric, index) => {
+                const normalizedLabel = metric.label.toLowerCase();
+                const href = hrefMap[normalizedLabel];
+
                 // If it's a Missed Calls metric with our expected sub-metrics, use the specialized card
                 if (metric.label === "Missed Calls" && metric.sub_metrics) {
                     const getSubMetric = (labels: string[]) => Number(metric.sub_metrics?.find(s => labels.includes(s.label))?.value ?? 0);
@@ -58,13 +71,14 @@ export function ReportSummary({ metrics, isLoading }: ReportSummaryProps) {
                             resolved={resolved}
                             changePercent={metric.percentage}
                             isLoading={isLoading}
+                            href={href}
                         />
                     );
                 }
 
                 const Icon = iconMap[metric.icon || 'phone'] || Phone
-                return (
-                    <Card key={index}>
+                const cardContent = (
+                    <Card key={index} className={cn(href && "hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer")}>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">
                                 {metric.label}
@@ -96,7 +110,13 @@ export function ReportSummary({ metrics, isLoading }: ReportSummaryProps) {
                             )}
                         </CardContent>
                     </Card>
-                )
+                );
+
+                if (href) {
+                    return <Link key={index} href={href}>{cardContent}</Link>;
+                }
+
+                return cardContent;
             })}
         </div>
     )

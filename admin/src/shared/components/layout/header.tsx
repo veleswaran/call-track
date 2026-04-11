@@ -14,18 +14,22 @@ export interface HeaderProps {
     onLogout?: () => void;
 }
 
+import { useSettingsQuery } from "@/src/features/settings/hooks/use-settings";
+
 /**
  * Top header bar with menu toggle, notifications, and user menu
  */
 export function Header({ onMenuClick, user, onLogout }: HeaderProps) {
     const [userMenuOpen, setUserMenuOpen] = React.useState(false);
+    const { data: settings } = useSettingsQuery();
+    const siteName = settings?.app_sitename || "CallTrack AI";
 
     return (
         <header className="flex h-16 items-center justify-between border-b border-zinc-200 bg-white px-4 dark:border-zinc-800 dark:bg-zinc-900 z-50">
             {/* Left side - Logo on mobile, menu toggle on desktop */}
             <div className="flex items-center gap-4">
                 <span className="text-lg font-semibold text-zinc-900 dark:text-white md:hidden">
-                    CallTrack AI
+                    {siteName}
                 </span>
                 <Button
                     variant="ghost"

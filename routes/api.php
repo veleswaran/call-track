@@ -78,6 +78,7 @@ Route::prefix('v1')->group(function () {
         // System Settings
         Route::get('/settings', [\App\Http\Controllers\Api\Admin\SystemSettingsController::class, 'index']);
         Route::post('/settings', [\App\Http\Controllers\Api\Admin\SystemSettingsController::class, 'store']);
+        Route::post('/settings/logo', [\App\Http\Controllers\Api\Admin\BrandingLogoController::class, 'store']);
 
         // Manual Push Notifications
         Route::post('/devices/{device}/push', [\App\Http\Controllers\Api\Admin\DevicePushNotificationController::class, 'store']);

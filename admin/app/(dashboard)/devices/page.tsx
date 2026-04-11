@@ -43,8 +43,14 @@ export default function DevicesPage() {
         { id: 'active', name: 'Active' },
         { id: 'inactive', name: 'Inactive' },
     ];
+    const syncStatuses = [
+        { id: 'active', name: 'Active' },
+        { id: 'warning', name: 'Warning' },
+        { id: 'stale', name: 'Stale/Offline' },
+    ];
     const [search, setSearch] = useState("");
     const [status, setStatus] = useState<string>("all");
+    const [syncStatus, setSyncStatus] = useState<string>("all");
     const [debouncedSearch, setDebouncedSearch] = useState("");
     const [pagination, setPagination] = useState({ page: 1, per_page: 20 });
     
@@ -58,16 +64,19 @@ export default function DevicesPage() {
     }, [search]);
 
     const [prevStatus, setPrevStatus] = useState(status);
+    const [prevSyncStatus, setPrevSyncStatus] = useState(syncStatus);
 
     // Reset page on status change
-    if (status !== prevStatus) {
+    if (status !== prevStatus || syncStatus !== prevSyncStatus) {
         setPrevStatus(status);
+        setPrevSyncStatus(syncStatus);
         setPagination(prev => ({ ...prev, page: 1 }));
     }
     const { data, isLoading, isError } = useDevices({ 
         ...pagination, 
         search: debouncedSearch,
-        status: status === "all" ? undefined : status
+        status: status === "all" ? undefined : status,
+        sync_status: syncStatus === "all" ? undefined : syncStatus
     });
     const revokeDeviceTokens = useRevokeDeviceTokens();
 
@@ -115,20 +124,37 @@ export default function DevicesPage() {
                 </div>
 
                 {settings?.enable_device_status_filter && (
-                    <div className="w-full sm:w-[180px]">
-                        <Select value={status} onValueChange={setStatus}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">All Statuses</SelectItem>
-                                {statuses?.map((s) => (
-                                    <SelectItem key={s.id} value={s.id}>
-                                        {s.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                    <div className="flex gap-4 w-full sm:w-auto overflow-x-auto">
+                        <div className="w-[180px] shrink-0">
+                            <Select value={status} onValueChange={setStatus}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Statuses</SelectItem>
+                                    {statuses?.map((s) => (
+                                        <SelectItem key={s.id} value={s.id}>
+                                            {s.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="w-[180px] shrink-0">
+                            <Select value={syncStatus} onValueChange={setSyncStatus}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Sync Status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Sync Statuses</SelectItem>
+                                    {syncStatuses?.map((s) => (
+                                        <SelectItem key={s.id} value={s.id}>
+                                            {s.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
                 )}
             </div>
