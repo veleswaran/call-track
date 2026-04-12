@@ -9,16 +9,43 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
-export const metadata: Metadata = {
-  title: "CallTrack AI Admin",
-  description: "Enterprise call analytics admin console",
-  manifest: "/manifest.json",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
-    title: "CallTrack AI",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+  
+  try {
+    // Fetch branding info with no-store to ensure it updates on every refresh
+    const response = await fetch(`${baseUrl}/api/v1/branding`, {
+      cache: 'no-store'
+    });
+    
+    if (!response.ok) throw new Error();
+    
+    const data = await response.json();
+    const sitename = data.app_sitename || "CallTrack AI Admin";
+
+    return {
+      title: sitename,
+      description: "Enterprise call analytics admin console",
+      manifest: "/manifest.json",
+      appleWebApp: {
+        capable: true,
+        statusBarStyle: "default",
+        title: sitename,
+      },
+    };
+  } catch (error) {
+    return {
+      title: "CallTrack AI Admin",
+      description: "Enterprise call analytics admin console",
+      manifest: "/manifest.json",
+      appleWebApp: {
+        capable: true,
+        statusBarStyle: "default",
+        title: "CallTrack AI",
+      },
+    };
+  }
+}
 
 export const viewport: Viewport = {
   width: "device-width",

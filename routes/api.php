@@ -4,12 +4,16 @@ use App\Http\Controllers\Api\Admin\CallClassificationController;
 use App\Http\Middleware\DeviceAuthMiddleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\V1\BrandingController; 
 
 Route::get('/user', function (Request $request) {
     return new \App\Http\Resources\AdminUserResource($request->user());
 })->middleware('auth:sanctum');
 
 Route::prefix('v1')->group(function () {
+    // Public Branding
+    Route::get('/branding', [BrandingController::class, 'index']);
+
     // Device Routes
     Route::post('/devices/register', [\App\Http\Controllers\Api\DeviceRegistrationController::class, 'store'])->name('devices.register'); // Open Registration
 

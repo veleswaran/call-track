@@ -81,7 +81,7 @@ export function SettingsPage() {
     });
 
     useEffect(() => {
-        if (settings) {
+        if (settings && !form.formState.isDirty) {
             form.reset({
                 app_sitename: settings.app_sitename || "CallTrack AI",
                 heartbeat_threshold_minutes: Number(settings.heartbeat_threshold_minutes),
@@ -106,7 +106,7 @@ export function SettingsPage() {
                 enable_report_outcome_filter: !!settings.enable_report_outcome_filter,
             });
         }
-    }, [settings, form]);
+    }, [settings]);
 
     function onSubmit(values: FormValues) {
         updateSettings.mutate({
