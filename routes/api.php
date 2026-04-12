@@ -1,10 +1,10 @@
 <?php
 
 use App\Http\Controllers\Api\Admin\CallClassificationController;
+use App\Http\Controllers\Api\V1\BrandingController;
 use App\Http\Middleware\DeviceAuthMiddleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\V1\BrandingController; 
 
 Route::get('/user', function (Request $request) {
     return new \App\Http\Resources\AdminUserResource($request->user());

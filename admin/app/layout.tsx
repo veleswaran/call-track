@@ -12,38 +12,41 @@ const inter = Inter({
 export async function generateMetadata(): Promise<Metadata> {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL;
   
+  const appleWebAppDefaults = {
+    capable: true,
+    statusBarStyle: "default" as const,
+    title: "CallTrack AI",
+  };
+
+  const defaultMetadata: Metadata = {
+    title: "CallTrack AI Admin",
+    description: "Enterprise call analytics admin console",
+    manifest: "/manifest.json",
+    appleWebApp: appleWebAppDefaults,
+  };
+
+  if (!baseUrl) return defaultMetadata;
+
   try {
-    // Fetch branding info with no-store to ensure it updates on every refresh
     const response = await fetch(`${baseUrl}/api/v1/branding`, {
       cache: 'no-store'
     });
     
-    if (!response.ok) throw new Error();
+    if (!response.ok) return defaultMetadata;
     
     const data = await response.json();
     const sitename = data.app_sitename || "CallTrack AI Admin";
 
     return {
+      ...defaultMetadata,
       title: sitename,
-      description: "Enterprise call analytics admin console",
-      manifest: "/manifest.json",
       appleWebApp: {
-        capable: true,
-        statusBarStyle: "default",
+        ...appleWebAppDefaults,
         title: sitename,
       },
     };
-  } catch (error) {
-    return {
-      title: "CallTrack AI Admin",
-      description: "Enterprise call analytics admin console",
-      manifest: "/manifest.json",
-      appleWebApp: {
-        capable: true,
-        statusBarStyle: "default",
-        title: "CallTrack AI",
-      },
-    };
+  } catch {
+    return defaultMetadata;
   }
 }
 

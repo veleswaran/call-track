@@ -106,7 +106,7 @@ export function SettingsPage() {
                 enable_report_outcome_filter: !!settings.enable_report_outcome_filter,
             });
         }
-    }, [settings]);
+    }, [settings, form]);
 
     function onSubmit(values: FormValues) {
         updateSettings.mutate({
