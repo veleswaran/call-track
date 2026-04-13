@@ -7,8 +7,6 @@ import { Toaster } from "@shared/components/ui/sonner";
 
 import { ThemeProvider } from "@shared/components/theme-provider";
 
-import { SiteTitleUpdater } from "./site-title-updater";
-
 /**
  * Global providers for the application
  * Includes TanStack Query provider and Theme provider
@@ -25,7 +23,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
                 enableSystem
                 disableTransitionOnChange
             >
-                <SiteTitleUpdater />
                 {children}
                 <Toaster />
             </ThemeProvider>
