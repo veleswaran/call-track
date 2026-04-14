@@ -3,6 +3,11 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Header } from "./header";
 import { User } from "../../types";
+import { useSettingsQuery } from "@/src/features/settings/hooks/use-settings";
+
+vi.mock("@/src/features/settings/hooks/use-settings", () => ({
+    useSettingsQuery: vi.fn(),
+}));
 
 const mockUser: User = {
     id: 1,
@@ -17,6 +22,13 @@ const mockUser: User = {
 };
 
 describe("Header", () => {
+    beforeEach(() => {
+        vi.mocked(useSettingsQuery).mockReturnValue({
+            data: { app_sitename: "CallTrack AI" },
+            isLoading: false,
+        } as unknown as ReturnType<typeof useSettingsQuery>);
+    });
+
     it("should render header with menu toggle", () => {
         render(<Header onMenuClick={() => { }} />);
         expect(screen.getByTestId("menu-toggle")).toBeInTheDocument();

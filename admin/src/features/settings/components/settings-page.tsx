@@ -24,6 +24,7 @@ import {
 } from "@shared/components/ui/table";
 
 const formSchema = z.object({
+    app_sitename: z.string().min(1, "Site name is required").max(50, "Site name is too long"),
     heartbeat_threshold_minutes: z.number().min(5, "Minimum threshold is 5 minutes").max(10080, "Maximum is 1 week"),
     fcm_stale_title: z.string().min(1, "Title is required").max(100, "Title is too long"),
     fcm_stale_body: z.string().min(1, "Message body is required").max(500, "Message body is too long"),
@@ -55,6 +56,7 @@ export function SettingsPage() {
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
         defaultValues: {
+            app_sitename: "CallTrack AI",
             heartbeat_threshold_minutes: 60,
             fcm_stale_title: "",
             fcm_stale_body: "",
@@ -79,8 +81,9 @@ export function SettingsPage() {
     });
 
     useEffect(() => {
-        if (settings) {
+        if (settings && !form.formState.isDirty) {
             form.reset({
+                app_sitename: settings.app_sitename || "CallTrack AI",
                 heartbeat_threshold_minutes: Number(settings.heartbeat_threshold_minutes),
                 fcm_stale_title: settings.fcm_stale_title,
                 fcm_stale_body: settings.fcm_stale_body,
@@ -108,6 +111,7 @@ export function SettingsPage() {
     function onSubmit(values: FormValues) {
         updateSettings.mutate({
             settings: {
+                app_sitename: values.app_sitename,
                 heartbeat_threshold_minutes: Number(values.heartbeat_threshold_minutes),
                 fcm_stale_title: values.fcm_stale_title,
                 fcm_stale_body: values.fcm_stale_body,
@@ -144,6 +148,33 @@ export function SettingsPage() {
         <div className="max-w-2xl mx-auto space-y-6">
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                    <Card>
+                        <CardHeader className="pb-4">
+                            <CardTitle>Application Branding</CardTitle>
+                            <CardDescription>
+                                Customize the platform name and logo.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            <FormField
+                                control={form.control}
+                                name="app_sitename"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Site Name</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="e.g. CallTrack AI" {...field} />
+                                        </FormControl>
+                                        <FormDescription>
+                                            This name will appear in the sidebar and browser title.
+                                        </FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </CardContent>
+                    </Card>
+
                     <Card>
                         <CardHeader className="pb-4">
                             <CardTitle>Device Monitoring</CardTitle>

@@ -24,6 +24,12 @@ vi.mock("@features/auth/hooks/use-auth", () => ({
     useAuth: () => mockUseAuth(),
 }));
 
+// Mock Settings
+import { useSettingsQuery } from "@features/settings/hooks/use-settings";
+vi.mock("@features/settings/hooks/use-settings", () => ({
+    useSettingsQuery: vi.fn(),
+}));
+
 // Mock Components
 vi.mock("@features/devices/components/device-registration-code-dialog", () => ({
     DeviceRegistrationCodeDialog: () => <div data-testid="registration-dialog">Registration Dialog</div>,
@@ -53,7 +59,11 @@ describe("DevicesPage", () => {
         mockUseAuth.mockReturnValue({
             user: { roles: ["admin"], permissions: ["manage devices", "generate registration codes"] },
         });
-        mockUseDevices.mockReturnValue({ data: { data: mockDevices }, isLoading: false });
+        vi.mocked(useSettingsQuery).mockReturnValue({
+            data: { enable_device_status_filter: true },
+            isLoading: false,
+        } as unknown as ReturnType<typeof useSettingsQuery>);
+        mockUseDevices.mockReturnValue({ data: { data: mockDevices }, isLoading: false } as unknown as ReturnType<typeof useDevices>);
 
         render(
             <QueryClientProvider client={queryClient}>
@@ -70,7 +80,31 @@ describe("DevicesPage", () => {
         mockUseAuth.mockReturnValue({
             user: { roles: ["manager"], permissions: ["view device sync logs"] }, // No manage devices
         });
-        mockUseDevices.mockReturnValue({ data: { data: mockDevices }, isLoading: false });
+        vi.mocked(useSettingsQuery).mockReturnValue({
+            data: { enable_device_status_filter: true },
+            isLoading: false,
+        } as unknown as ReturnType<typeof useSettingsQuery>);
+        mockUseDevices.mockReturnValue({ data: { data: mockDevices }, isLoading: false } as unknown as ReturnType<typeof useDevices>);
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <DevicesPage />
+            </QueryClientProvider>
+        );
+        expect(screen.queryByTitle("Revoke Tokens")).not.toBeInTheDocument();
+        expect(screen.queryByTestId("registration-dialog")).not.toBeInTheDocument();
+    });
+
+    it("calls useDevices with sync_status when selected", async () => {
+        const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+        mockUseAuth.mockReturnValue({
+            user: { roles: ["admin"] },
+        });
+        vi.mocked(useSettingsQuery).mockReturnValue({
+            data: { enable_device_status_filter: true },
+            isLoading: false,
+        } as unknown as ReturnType<typeof useSettingsQuery>);
+        mockUseDevices.mockReturnValue({ data: { data: mockDevices }, isLoading: false } as unknown as ReturnType<typeof useDevices>);
 
         render(
             <QueryClientProvider client={queryClient}>
@@ -78,7 +112,54 @@ describe("DevicesPage", () => {
             </QueryClientProvider>
         );
 
-        expect(screen.queryByTitle("Revoke Tokens")).not.toBeInTheDocument();
-        expect(screen.queryByTestId("registration-dialog")).not.toBeInTheDocument();
+        // Check if "Sync Status" trigger is present
+        // Since it's a shadcn Select and it has a default value 'all', it shows the label for 'all'
+        const syncStatusTrigger = screen.getByText("All Sync Statuses");
+        expect(syncStatusTrigger).toBeInTheDocument();
+    });
+
+    it("shows loading message when devices are loading", () => {
+        const queryClient = new QueryClient();
+        mockUseAuth.mockReturnValue({ user: { roles: ["admin"] } });
+        vi.mocked(useSettingsQuery).mockReturnValue({ data: { enable_device_status_filter: true }, isLoading: false } as unknown as ReturnType<typeof useSettingsQuery>);
+        mockUseDevices.mockReturnValue({ data: null, isLoading: true } as unknown as ReturnType<typeof useDevices>);
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <DevicesPage />
+            </QueryClientProvider>
+        );
+
+        expect(screen.getByText("Loading...")).toBeInTheDocument();
+    });
+
+    it("shows error message when device loading fails", () => {
+        const queryClient = new QueryClient();
+        mockUseAuth.mockReturnValue({ user: { roles: ["admin"] } });
+        vi.mocked(useSettingsQuery).mockReturnValue({ data: { enable_device_status_filter: true }, isLoading: false } as unknown as ReturnType<typeof useSettingsQuery>);
+        mockUseDevices.mockReturnValue({ data: null, isLoading: false, isError: true } as unknown as ReturnType<typeof useDevices>);
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <DevicesPage />
+            </QueryClientProvider>
+        );
+
+        expect(screen.getByText("Failed to load devices")).toBeInTheDocument();
+    });
+
+    it("shows empty state message when no devices are found", () => {
+        const queryClient = new QueryClient();
+        mockUseAuth.mockReturnValue({ user: { roles: ["admin"] } });
+        vi.mocked(useSettingsQuery).mockReturnValue({ data: { enable_device_status_filter: true }, isLoading: false } as unknown as ReturnType<typeof useSettingsQuery>);
+        mockUseDevices.mockReturnValue({ data: { data: [] }, isLoading: false } as unknown as ReturnType<typeof useDevices>);
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <DevicesPage />
+            </QueryClientProvider>
+        );
+
+        expect(screen.getByText("No devices found")).toBeInTheDocument();
     });
 });

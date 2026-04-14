@@ -14,6 +14,7 @@ import { DashboardFilters, DashboardFiltersData } from "@features/dashboard/comp
 import { MissedCallMetricCard } from "@features/missed-calls/components/MissedCallMetricCard";
 import { format } from "date-fns";
 import Link from "next/link";
+import { cn } from "@shared/utils";
 import { useState } from "react";
 
 /**
@@ -49,6 +50,7 @@ function MetricCard({
     description,
     changePercent,
     isLoading = false,
+    href,
 }: {
     title: string;
     value: string | number;
@@ -56,9 +58,10 @@ function MetricCard({
     description?: string;
     changePercent?: number | null;
     isLoading?: boolean;
+    href?: string;
 }) {
-    return (
-        <Card>
+    const cardContent = (
+        <Card className={cn(href && "hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer")}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">{title}</CardTitle>
                 <Icon className="h-4 w-4 text-zinc-500" />
@@ -80,6 +83,12 @@ function MetricCard({
             </CardContent>
         </Card>
     );
+
+    if (href) {
+        return <Link href={href}>{cardContent}</Link>;
+    }
+
+    return cardContent;
 }
 
 /**
@@ -144,6 +153,7 @@ export default function DashboardPage() {
                     icon={Phone}
                     changePercent={metrics?.total_calls_change_percent}
                     isLoading={metricsLoading}
+                    href={`/call-logs?start_date=${startDate ?? ""}&end_date=${endDate ?? ""}`}
                 />
                 <MissedCallMetricCard
                     total={missedCalls}
@@ -153,6 +163,7 @@ export default function DashboardPage() {
                     resolved={metrics?.resolved_escalations ?? 0}
                     changePercent={metrics?.missed_calls_change_percent}
                     isLoading={metricsLoading}
+                    href={`/reports/missed-calls?start_date=${startDate ?? ""}&end_date=${endDate ?? ""}`}
                 />
                 <MetricCard
                     title="Avg Call Duration"
@@ -160,6 +171,7 @@ export default function DashboardPage() {
                     icon={Timer}
                     changePercent={metrics?.average_call_duration_change_percent}
                     isLoading={metricsLoading}
+                    href={`/reports?start_date=${startDate ?? ""}&end_date=${endDate ?? ""}`}
                 />
                 <MetricCard
                     title="Total Duration"
@@ -167,6 +179,7 @@ export default function DashboardPage() {
                     icon={Clock}
                     changePercent={metrics?.total_duration_change_percent}
                     isLoading={metricsLoading}
+                    href={`/reports?start_date=${startDate ?? ""}&end_date=${endDate ?? ""}`}
                 />
             </div>
 

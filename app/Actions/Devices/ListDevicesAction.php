@@ -29,6 +29,20 @@ class ListDevicesAction
             }
         }
 
+        if ($dto->syncStatus !== null) {
+            if ($dto->syncStatus === 'active') {
+                $deviceQuery->where('last_heartbeat_at', '>=', now()->subMinutes(60));
+            } elseif ($dto->syncStatus === 'warning') {
+                $deviceQuery->where('last_heartbeat_at', '>=', now()->subMinutes(180))
+                    ->where('last_heartbeat_at', '<', now()->subMinutes(60));
+            } elseif ($dto->syncStatus === 'stale') {
+                $deviceQuery->where(function ($q) {
+                    $q->whereNull('last_heartbeat_at')
+                        ->orWhere('last_heartbeat_at', '<', now()->subMinutes(180));
+                });
+            }
+        }
+
         return $deviceQuery
             ->when($dto->search, function (Builder $query, string $search) {
                 $term = strtolower($search);

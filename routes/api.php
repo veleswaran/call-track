@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\Admin\CallClassificationController;
+use App\Http\Controllers\Api\V1\BrandingController;
 use App\Http\Middleware\DeviceAuthMiddleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -10,6 +11,9 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 Route::prefix('v1')->group(function () {
+    // Public Branding
+    Route::get('/branding', [BrandingController::class, 'index']);
+
     // Device Routes
     Route::post('/devices/register', [\App\Http\Controllers\Api\DeviceRegistrationController::class, 'store'])->name('devices.register'); // Open Registration
 
@@ -78,6 +82,7 @@ Route::prefix('v1')->group(function () {
         // System Settings
         Route::get('/settings', [\App\Http\Controllers\Api\Admin\SystemSettingsController::class, 'index']);
         Route::post('/settings', [\App\Http\Controllers\Api\Admin\SystemSettingsController::class, 'store']);
+        Route::post('/settings/logo', [\App\Http\Controllers\Api\Admin\BrandingLogoController::class, 'store']);
 
         // Manual Push Notifications
         Route::post('/devices/{device}/push', [\App\Http\Controllers\Api\Admin\DevicePushNotificationController::class, 'store']);
