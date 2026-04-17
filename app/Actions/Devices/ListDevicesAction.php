@@ -48,12 +48,13 @@ class ListDevicesAction
                 $term = strtolower($search);
                 $isPostgres = config('database.default') === 'pgsql';
                 $query->where(function ($q) use ($term, $isPostgres) {
-                    if (is_numeric($term)) {
-                        $q->orWhere('id', $term);
+                    if (ctype_digit($term)) {
+                        $q->orWhere('id', (int) $term);
                     }
 
                     $q->orWhereRaw('LOWER(name) LIKE ?', ["%{$term}%"])
-                        ->orWhereRaw('LOWER(model) LIKE ?', ["%{$term}%"]);
+                        ->orWhereRaw('LOWER(model) LIKE ?', ["%{$term}%"])
+                        ->orWhereRaw('LOWER(app_version) LIKE ?', ["%{$term}%"]);
 
                     if ($isPostgres) {
                         $q->orWhereRaw('LOWER(device_uuid::text) LIKE ?', ["%{$term}%"]);
