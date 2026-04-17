@@ -13,6 +13,10 @@ use App\Jobs\ProcessCallLogAnalytics;
 
 class IngestCallLogsAction
 {
+    public function __construct(
+        protected IsMissedCallAction $isMissedCallAction
+    ) {}
+
     /**
      * @return array{ingested: int, skipped: int, skipped_slots: int[]}
      */
@@ -116,7 +120,7 @@ class IngestCallLogsAction
             ->get();
 
         foreach ($allLogs as $callLog) {
-            if ($callLog->isMissed()) {
+            if ($this->isMissedCallAction->execute($callLog)) {
                 ProcessMissedCallEscalationJob::dispatch($callLog->id);
             } elseif ($callLog->direction === 'OUTGOING' && $callLog->duration > 0) {
                 AttemptEscalationResolutionJob::dispatch($callLog->id);
