@@ -106,8 +106,8 @@ final class GetAgentPerformanceAction
             'agents.name',
             'agents.employee_code',
             DB::raw('COUNT(call_logs.id) as total_calls'),
-            DB::raw("SUM(CASE WHEN ". CallLog::SQL_CONNECTED_CONDITION ." THEN 1 ELSE 0 END) as connected"),
-            DB::raw("SUM(CASE WHEN ". CallLog::SQL_MISSED_CONDITION ." THEN 1 ELSE 0 END) as missed"),
+            DB::raw('SUM(CASE WHEN '.CallLog::SQL_CONNECTED_CONDITION.' THEN 1 ELSE 0 END) as connected'),
+            DB::raw('SUM(CASE WHEN '.CallLog::SQL_MISSED_CONDITION.' THEN 1 ELSE 0 END) as missed'),
             DB::raw('AVG(call_logs.duration) as avg_duration'),
             DB::raw('SUM(call_logs.duration) as total_duration'),
         ])

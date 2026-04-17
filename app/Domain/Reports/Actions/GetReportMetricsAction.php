@@ -31,13 +31,13 @@ final class GetReportMetricsAction
         $stats = $baseQuery->select([
             DB::raw('COUNT(*) as total_calls'),
             DB::raw("COUNT(CASE WHEN call_escalations.status IN ('pending', 'unattended') THEN 1 END) as missed_calls"),
-            DB::raw("SUM(CASE WHEN ". CallLog::SQL_NO_ANSWER_CONDITION ." THEN 1 ELSE 0 END) as no_answer_calls"),
-            DB::raw("SUM(CASE WHEN ". CallLog::SQL_CONNECTED_CONDITION ." THEN 1 ELSE 0 END) as connected_calls"),
+            DB::raw('SUM(CASE WHEN '.CallLog::SQL_NO_ANSWER_CONDITION.' THEN 1 ELSE 0 END) as no_answer_calls'),
+            DB::raw('SUM(CASE WHEN '.CallLog::SQL_CONNECTED_CONDITION.' THEN 1 ELSE 0 END) as connected_calls'),
             DB::raw('AVG(call_logs.duration) as avg_duration_seconds'),
             DB::raw("SUM(CASE WHEN call_escalations.status = 'pending' THEN 1 ELSE 0 END) as pending_escalations"),
             DB::raw("SUM(CASE WHEN call_escalations.status = 'unattended' THEN 1 ELSE 0 END) as unattended_escalations"),
             DB::raw("SUM(CASE WHEN call_escalations.status = 'resolved' THEN 1 ELSE 0 END) as resolved_escalations"),
-            DB::raw("SUM(CASE WHEN ". CallLog::SQL_MISSED_CONDITION ." THEN 1 ELSE 0 END) as total_missed_calls"),
+            DB::raw('SUM(CASE WHEN '.CallLog::SQL_MISSED_CONDITION.' THEN 1 ELSE 0 END) as total_missed_calls'),
         ])
             ->leftJoin('call_escalations', 'call_logs.id', '=', 'call_escalations.call_log_id')
             ->toBase()->first();

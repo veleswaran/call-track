@@ -8,11 +8,11 @@ use App\Actions\Contacts\GetContactHashVariationsAction;
 use App\Domain\Calls\DTOs\ListCallLogsDTO;
 use App\Domain\Calls\Models\CallLog;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Builder;
 /**
  * Builds the base query for listing call logs with allowed filters and eager loads.
  */
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 
 final class BuildCallLogQueryAction
 {
@@ -24,7 +24,7 @@ final class BuildCallLogQueryAction
     {
         $query = CallLog::query()
             ->select('call_logs.*')
-            ->addSelect(DB::raw(CallLog::getOutcomeCaseSql()." as call_outcome"))
+            ->addSelect(DB::raw(CallLog::getOutcomeCaseSql().' as call_outcome'))
             ->with(['classification', 'device', 'agent'])
             ->orderByDesc('timestamp');
 
@@ -66,13 +66,13 @@ final class BuildCallLogQueryAction
                     $q->orWhere(function (Builder $sub) use ($outcome) {
                         switch ($outcome) {
                             case 'Connected':
-                                $q->connected();
+                                $sub->connected();
                                 break;
                             case 'Missed':
-                                $q->missed();
+                                $sub->missed();
                                 break;
                             case 'No Answer':
-                                $q->noAnswer();
+                                $sub->noAnswer();
                                 break;
                         }
                     });
