@@ -128,8 +128,8 @@ final class GetReportChartsAction
                 SUM(CASE WHEN '.CallLog::SQL_NO_ANSWER_CONDITION.' THEN 1 ELSE 0 END) as no_answer,
                 SUM(CASE WHEN '.CallLog::SQL_CONNECTED_CONDITION.' THEN 1 ELSE 0 END) as connected
             ')
-            ->groupBy('date')
-            ->orderBy('date')
+            ->groupByRaw('DATE(call_logs.timestamp)')
+            ->orderByRaw('DATE(call_logs.timestamp)')
             ->toBase()
             ->get();
 
@@ -186,8 +186,8 @@ final class GetReportChartsAction
 
         $data = $this->getBaseQuery($filters)
             ->selectRaw("$hourExpression as hour, COUNT(*) as count")
-            ->groupBy('hour')
-            ->orderBy('hour')
+            ->groupByRaw($hourExpression)
+            ->orderByRaw($hourExpression)
             ->toBase()
             ->get();
 

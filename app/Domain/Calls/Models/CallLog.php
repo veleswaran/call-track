@@ -126,19 +126,4 @@ class CallLog extends Model
     /**
      * PHP Helper to determine if a call is missed logic-wise.
      */
-    public function isMissed(): bool
-    {
-        $direction = strtoupper((string) $this->direction);
-
-        if (in_array($direction, ['MISSED', 'REJECTED', 'BLOCKED']) || ($direction === 'INCOMING' && $this->duration <= 0)) {
-            return true;
-        }
-
-        // If it has an escalation, it's considered missed regardless of other conditions
-        if ($this->relationLoaded('escalation') && $this->escalation !== null) {
-            return true;
-        }
-
-        return false;
-    }
 }

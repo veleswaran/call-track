@@ -128,7 +128,7 @@ final class GetDashboardChartsAction
                 DB::raw("$outcomeCase as outcome"),
                 DB::raw('COUNT(*) as count'),
             ])
-            ->groupBy('outcome')
+            ->groupBy(DB::raw($outcomeCase))
             ->get();
 
         $distribution = [];
