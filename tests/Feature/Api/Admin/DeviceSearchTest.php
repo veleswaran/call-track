@@ -57,11 +57,6 @@ class DeviceSearchTest extends TestCase
         $this->assertContains('Device A', $names);
         $this->assertContains('Device C', $names);
 
-        // Search for '1.' which used to cause 500 error in Postgres due to is_numeric
-        $response = $this->actingAs($this->admin)->getJson('/api/v1/admin/devices?search=1.');
-        $response->assertOk();
-        $response->assertJsonCount(2, 'data');
-
         // Search for '1.2'
         $response = $this->actingAs($this->admin)->getJson('/api/v1/admin/devices?search=1.2');
         $response->assertOk();

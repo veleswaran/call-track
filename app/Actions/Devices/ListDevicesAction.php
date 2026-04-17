@@ -45,11 +45,11 @@ class ListDevicesAction
 
         return $deviceQuery
             ->when($dto->search, function (Builder $query, string $search) {
-                $term = strtolower($search);
+                $term = strtolower(trim($search));
                 $isPostgres = config('database.default') === 'pgsql';
                 $query->where(function ($q) use ($term, $isPostgres) {
                     if (ctype_digit($term)) {
-                        $q->orWhere('id', (int) $term);
+                        $q->orWhere('id', $term);
                     }
 
                     $q->orWhereRaw('LOWER(name) LIKE ?', ["%{$term}%"])
