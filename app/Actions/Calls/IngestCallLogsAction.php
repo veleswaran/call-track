@@ -118,7 +118,7 @@ class IngestCallLogsAction
         foreach ($allLogs as $callLog) {
             $direction = strtoupper((string) $callLog->direction);
 
-            if (in_array($direction, ['MISSED', 'REJECTED', 'BLOCKED']) || ($direction === 'INCOMING' && $callLog->duration === 0)) {
+            if (in_array($direction, ['MISSED', 'REJECTED', 'BLOCKED']) || ($direction === 'INCOMING' && $callLog->duration <= 0)) {
                 ProcessMissedCallEscalationJob::dispatch($callLog->id);
             } elseif ($direction === 'OUTGOING' && $callLog->duration > 0) {
                 AttemptEscalationResolutionJob::dispatch($callLog->id);

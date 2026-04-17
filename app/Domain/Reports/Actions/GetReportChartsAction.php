@@ -84,7 +84,7 @@ final class GetReportChartsAction
                             $q->orWhereIn('call_logs.direction', ['MISSED', 'REJECTED', 'BLOCKED'])
                                 ->orWhere(function ($sq) {
                                     $sq->where('call_logs.direction', 'INCOMING')
-                                        ->where('call_logs.duration', 0);
+                                        ->where('call_logs.duration', '<=', 0);
                                 });
                             break;
                         case 'NO_ANSWER':
@@ -123,7 +123,7 @@ final class GetReportChartsAction
         $data = $this->getBaseQuery($filters)
             ->selectRaw("
                 DATE(call_logs.timestamp) as date,
-                SUM(CASE WHEN call_logs.direction IN ('MISSED', 'REJECTED', 'BLOCKED') OR (call_logs.direction = 'INCOMING' AND call_logs.duration = 0) THEN 1 ELSE 0 END) as missed,
+                SUM(CASE WHEN call_logs.direction IN ('MISSED', 'REJECTED', 'BLOCKED') OR (call_logs.direction = 'INCOMING' AND call_logs.duration <= 0) THEN 1 ELSE 0 END) as missed,
                 SUM(CASE WHEN call_logs.direction = 'OUTGOING' AND call_logs.duration = 0 THEN 1 ELSE 0 END) as no_answer,
                 SUM(CASE WHEN call_logs.duration > 0 THEN 1 ELSE 0 END) as connected
             ")
@@ -162,7 +162,7 @@ final class GetReportChartsAction
         // Status derived: Missed, Connected, No Answer
         $stats = $this->getBaseQuery($filters)
             ->selectRaw("
-                SUM(CASE WHEN call_logs.direction = 'MISSED' THEN 1 ELSE 0 END) as missed,
+                SUM(CASE WHEN call_logs.direction IN ('MISSED', 'REJECTED', 'BLOCKED') OR (call_logs.direction = 'INCOMING' AND call_logs.duration <= 0) THEN 1 ELSE 0 END) as missed,
                 SUM(CASE WHEN call_logs.direction = 'OUTGOING' AND call_logs.duration = 0 THEN 1 ELSE 0 END) as no_answer,
                 SUM(CASE WHEN call_logs.duration > 0 THEN 1 ELSE 0 END) as connected
             ")
@@ -245,7 +245,7 @@ final class GetReportChartsAction
     {
         $stats = $this->getBaseQuery($filters)
             ->selectRaw("
-                SUM(CASE WHEN call_logs.direction IN ('INCOMING', 'MISSED') THEN 1 ELSE 0 END) as incoming,
+                SUM(CASE WHEN call_logs.direction IN ('INCOMING', 'MISSED', 'REJECTED', 'BLOCKED') THEN 1 ELSE 0 END) as incoming,
                 SUM(CASE WHEN call_logs.direction = 'OUTGOING' THEN 1 ELSE 0 END) as outgoing
             ")
             ->toBase()

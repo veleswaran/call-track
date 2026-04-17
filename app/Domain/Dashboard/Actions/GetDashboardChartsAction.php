@@ -123,14 +123,14 @@ final class GetDashboardChartsAction
         $results = $query
             ->select([
                 DB::raw("CASE
-                    WHEN EXISTS (SELECT 1 FROM call_escalations WHERE call_escalations.call_log_id = call_logs.id) THEN 'Missed'
+                    WHEN call_logs.direction IN ('MISSED', 'REJECTED', 'BLOCKED') OR (call_logs.direction = 'INCOMING' AND call_logs.duration <= 0) THEN 'Missed'
                     WHEN call_logs.direction = 'OUTGOING' AND call_logs.duration = 0 THEN 'No Answer'
                     ELSE 'Connected'
                 END as outcome"),
                 DB::raw('COUNT(*) as count'),
             ])
             ->groupBy(DB::raw("CASE
-                    WHEN EXISTS (SELECT 1 FROM call_escalations WHERE call_escalations.call_log_id = call_logs.id) THEN 'Missed'
+                    WHEN call_logs.direction IN ('MISSED', 'REJECTED', 'BLOCKED') OR (call_logs.direction = 'INCOMING' AND call_logs.duration <= 0) THEN 'Missed'
                     WHEN call_logs.direction = 'OUTGOING' AND call_logs.duration = 0 THEN 'No Answer'
                     ELSE 'Connected'
                 END"))
