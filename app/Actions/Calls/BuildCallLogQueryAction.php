@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Actions\Calls;
 
+use App\Actions\Contacts\GetContactHashVariationsAction;
 use App\Domain\Calls\DTOs\ListCallLogsDTO;
 use App\Domain\Calls\Models\CallLog;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 /**
  * Builds the base query for listing call logs with allowed filters and eager loads.
  */
@@ -15,20 +17,14 @@ use Illuminate\Database\Eloquent\Builder;
 final class BuildCallLogQueryAction
 {
     public function __construct(
-        protected \App\Actions\Contacts\GetContactHashVariationsAction $getContactHashesAction
+        protected GetContactHashVariationsAction $getContactHashesAction
     ) {}
 
     public function execute(ListCallLogsDTO $dto): Builder
     {
         $query = CallLog::query()
             ->select('call_logs.*')
-            ->addSelect(\Illuminate\Support\Facades\DB::raw("CASE 
-                WHEN call_logs.duration > 0 THEN 'Connected'
-                WHEN call_logs.direction IN ('MISSED', 'REJECTED', 'BLOCKED') THEN 'Missed'
-                WHEN call_logs.direction = 'INCOMING' AND call_logs.duration = 0 THEN 'Missed'
-                WHEN call_logs.direction = 'OUTGOING' AND call_logs.duration = 0 THEN 'No Answer'
-                ELSE 'Unknown'
-            END as call_outcome"))
+            ->addSelect(DB::raw(CallLog::getOutcomeCaseSql()." as call_outcome"))
             ->with(['classification', 'device', 'agent'])
             ->orderByDesc('timestamp');
 
@@ -70,19 +66,13 @@ final class BuildCallLogQueryAction
                     $q->orWhere(function (Builder $sub) use ($outcome) {
                         switch ($outcome) {
                             case 'Connected':
-                                $sub->where('duration', '>', 0);
+                                $q->connected();
                                 break;
                             case 'Missed':
-                                // MISSED, REJECTED, BLOCKED direction OR INCOMING with 0 duration
-                                $sub->where(function (Builder $inner) {
-                                    $inner->whereIn('direction', ['MISSED', 'REJECTED', 'BLOCKED'])
-                                        ->orWhere(function (Builder $inc) {
-                                            $inc->where('direction', 'INCOMING')->where('duration', 0);
-                                        });
-                                });
+                                $q->missed();
                                 break;
                             case 'No Answer':
-                                $sub->where('direction', 'OUTGOING')->where('duration', 0);
+                                $q->noAnswer();
                                 break;
                         }
                     });

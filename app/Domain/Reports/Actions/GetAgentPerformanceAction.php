@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Reports\Actions;
 
+use App\Domain\Calls\Models\CallLog;
 use App\Domain\Reports\DTOs\ReportFilterDTO;
 use Illuminate\Support\Facades\DB;
 
@@ -105,8 +106,8 @@ final class GetAgentPerformanceAction
             'agents.name',
             'agents.employee_code',
             DB::raw('COUNT(call_logs.id) as total_calls'),
-            DB::raw('SUM(CASE WHEN call_logs.duration > 0 THEN 1 ELSE 0 END) as connected'),
-            DB::raw("SUM(CASE WHEN call_logs.direction IN ('MISSED', 'REJECTED', 'BLOCKED') OR (call_logs.direction = 'INCOMING' AND call_logs.duration = 0) THEN 1 ELSE 0 END) as missed"),
+            DB::raw("SUM(CASE WHEN ". CallLog::SQL_CONNECTED_CONDITION ." THEN 1 ELSE 0 END) as connected"),
+            DB::raw("SUM(CASE WHEN ". CallLog::SQL_MISSED_CONDITION ." THEN 1 ELSE 0 END) as missed"),
             DB::raw('AVG(call_logs.duration) as avg_duration'),
             DB::raw('SUM(call_logs.duration) as total_duration'),
         ])
