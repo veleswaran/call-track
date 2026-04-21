@@ -35,7 +35,7 @@ class IngestCallLogsActionTest extends TestCase
             logs: [$logData]
         );
 
-        $action = new IngestCallLogsAction;
+        $action = resolve(IngestCallLogsAction::class);
         $action->execute($dto);
 
         $this->assertDatabaseHas('call_logs', [
@@ -69,7 +69,7 @@ class IngestCallLogsActionTest extends TestCase
             logs: [$logData]
         );
 
-        $action = new IngestCallLogsAction;
+        $action = resolve(IngestCallLogsAction::class);
         $action->execute($dto);
         $action->execute($dto); // Run twice
 

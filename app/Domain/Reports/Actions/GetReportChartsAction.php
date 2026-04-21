@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Reports\Actions;
 
+use App\Domain\Calls\Models\CallLog;
 use App\Domain\Reports\DTOs\ReportFilterDTO;
 use Illuminate\Support\Facades\DB;
 
@@ -121,14 +122,14 @@ final class GetReportChartsAction
         }
 
         $data = $this->getBaseQuery($filters)
-            ->selectRaw("
+            ->selectRaw('
                 DATE(call_logs.timestamp) as date,
-                SUM(CASE WHEN call_logs.direction IN ('MISSED', 'REJECTED', 'BLOCKED') OR (call_logs.direction = 'INCOMING' AND call_logs.duration <= 0) THEN 1 ELSE 0 END) as missed,
-                SUM(CASE WHEN call_logs.direction = 'OUTGOING' AND call_logs.duration = 0 THEN 1 ELSE 0 END) as no_answer,
-                SUM(CASE WHEN call_logs.duration > 0 THEN 1 ELSE 0 END) as connected
-            ")
-            ->groupBy('date')
-            ->orderBy('date')
+                SUM(CASE WHEN '.CallLog::SQL_MISSED_CONDITION.' THEN 1 ELSE 0 END) as missed,
+                SUM(CASE WHEN '.CallLog::SQL_NO_ANSWER_CONDITION.' THEN 1 ELSE 0 END) as no_answer,
+                SUM(CASE WHEN '.CallLog::SQL_CONNECTED_CONDITION.' THEN 1 ELSE 0 END) as connected
+            ')
+            ->groupByRaw('DATE(call_logs.timestamp)')
+            ->orderByRaw('DATE(call_logs.timestamp)')
             ->toBase()
             ->get();
 
@@ -161,11 +162,11 @@ final class GetReportChartsAction
     {
         // Status derived: Missed, Connected, No Answer
         $stats = $this->getBaseQuery($filters)
-            ->selectRaw("
-                SUM(CASE WHEN call_logs.direction IN ('MISSED', 'REJECTED', 'BLOCKED') OR (call_logs.direction = 'INCOMING' AND call_logs.duration <= 0) THEN 1 ELSE 0 END) as missed,
-                SUM(CASE WHEN call_logs.direction = 'OUTGOING' AND call_logs.duration = 0 THEN 1 ELSE 0 END) as no_answer,
-                SUM(CASE WHEN call_logs.duration > 0 THEN 1 ELSE 0 END) as connected
-            ")
+            ->selectRaw('
+                SUM(CASE WHEN '.CallLog::SQL_MISSED_CONDITION.' THEN 1 ELSE 0 END) as missed,
+                SUM(CASE WHEN '.CallLog::SQL_NO_ANSWER_CONDITION.' THEN 1 ELSE 0 END) as no_answer,
+                SUM(CASE WHEN '.CallLog::SQL_CONNECTED_CONDITION.' THEN 1 ELSE 0 END) as connected
+            ')
             ->toBase()
             ->first();
 
@@ -185,8 +186,8 @@ final class GetReportChartsAction
 
         $data = $this->getBaseQuery($filters)
             ->selectRaw("$hourExpression as hour, COUNT(*) as count")
-            ->groupBy('hour')
-            ->orderBy('hour')
+            ->groupByRaw($hourExpression)
+            ->orderByRaw($hourExpression)
             ->toBase()
             ->get();
 
