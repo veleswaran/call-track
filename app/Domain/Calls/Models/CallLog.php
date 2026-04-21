@@ -29,6 +29,30 @@ class CallLog extends Model
 {
     use HasFactory;
 
+    /**
+     * SQL Conditions for mutual exclusivity
+     */
+    public const SQL_MISSED_CONDITION = "(EXISTS (SELECT 1 FROM call_escalations WHERE call_escalations.call_log_id = call_logs.id) OR call_logs.direction IN ('MISSED', 'REJECTED', 'BLOCKED') OR (call_logs.direction = 'INCOMING' AND call_logs.duration <= 0))";
+
+    public const SQL_NO_ANSWER_CONDITION = "(call_logs.direction = 'OUTGOING' AND call_logs.duration = 0)";
+
+    public const SQL_CONNECTED_CONDITION = "(call_logs.duration > 0 AND NOT (EXISTS (SELECT 1 FROM call_escalations WHERE call_escalations.call_log_id = call_logs.id) OR call_logs.direction IN ('MISSED', 'REJECTED', 'BLOCKED') OR (call_logs.direction = 'INCOMING' AND call_logs.duration <= 0)))";
+
+    /**
+     * Builds a CASE statement for call outcomes
+     */
+    public static function getOutcomeCaseSql(): string
+    {
+        $missed = self::SQL_MISSED_CONDITION;
+        $noAnswer = self::SQL_NO_ANSWER_CONDITION;
+
+        return "CASE
+            WHEN $missed THEN 'Missed'
+            WHEN $noAnswer THEN 'No Answer'
+            ELSE 'Connected'
+        END";
+    }
+
     protected static function newFactory()
     {
         return \Database\Factories\CallLogFactory::new();
@@ -80,4 +104,26 @@ class CallLog extends Model
     {
         return $this->hasOne(CallEscalation::class);
     }
+
+    /**
+     * Scopes
+     */
+    public function scopeMissed($query)
+    {
+        return $query->whereRaw(self::SQL_MISSED_CONDITION);
+    }
+
+    public function scopeConnected($query)
+    {
+        return $query->whereRaw(self::SQL_CONNECTED_CONDITION);
+    }
+
+    public function scopeNoAnswer($query)
+    {
+        return $query->whereRaw(self::SQL_NO_ANSWER_CONDITION);
+    }
+
+    /**
+     * PHP Helper to determine if a call is missed logic-wise.
+     */
 }

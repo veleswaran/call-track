@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Dashboard\Actions;
 
+use App\Domain\Calls\Models\CallLog;
 use App\Domain\Dashboard\DTOs\DashboardChartsDTO;
 use App\Domain\Dashboard\DTOs\DashboardFilterDTO;
 use Carbon\Carbon;
@@ -120,20 +121,14 @@ final class GetDashboardChartsAction
             $query->whereIn('devices.agent_id', $filter->allowedAgentIds);
         }
 
+        $outcomeCase = CallLog::getOutcomeCaseSql();
+
         $results = $query
             ->select([
-                DB::raw("CASE
-                    WHEN EXISTS (SELECT 1 FROM call_escalations WHERE call_escalations.call_log_id = call_logs.id) THEN 'Missed'
-                    WHEN call_logs.direction = 'OUTGOING' AND call_logs.duration = 0 THEN 'No Answer'
-                    ELSE 'Connected'
-                END as outcome"),
+                DB::raw("$outcomeCase as outcome"),
                 DB::raw('COUNT(*) as count'),
             ])
-            ->groupBy(DB::raw("CASE
-                    WHEN EXISTS (SELECT 1 FROM call_escalations WHERE call_escalations.call_log_id = call_logs.id) THEN 'Missed'
-                    WHEN call_logs.direction = 'OUTGOING' AND call_logs.duration = 0 THEN 'No Answer'
-                    ELSE 'Connected'
-                END"))
+            ->groupBy(DB::raw($outcomeCase))
             ->get();
 
         $distribution = [];
