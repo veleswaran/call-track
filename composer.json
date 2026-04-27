@@ -9,7 +9,7 @@
     ],
     "license": "MIT",
     "require": {
-        "php": "~8.4.2",
+        "php": "^8.4",
         "dedoc/scramble": "^0.13.8",
         "kreait/firebase-php": "^8.2",
         "laravel/framework": "^12.0",

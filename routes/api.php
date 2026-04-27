@@ -13,6 +13,7 @@ Route::get('/user', function (Request $request) {
 Route::prefix('v1')->group(function () {
     // Public Branding
     Route::get('/branding', [BrandingController::class, 'index']);
+    Route::post('/auth/login', [\App\Http\Controllers\Api\Auth\AdminTokenAuthController::class, 'login']);
 
     // Device Routes
     Route::post('/devices/register', [\App\Http\Controllers\Api\DeviceRegistrationController::class, 'store'])->name('devices.register'); // Open Registration
@@ -90,6 +91,7 @@ Route::prefix('v1')->group(function () {
 
     // 2FA Management (Session based)
     Route::middleware(['auth:sanctum'])->group(function () {
+        Route::post('/auth/logout', [\App\Http\Controllers\Api\Auth\AdminTokenAuthController::class, 'logout']);
         Route::post('/profile/password', [\App\Http\Controllers\Api\ProfileController::class, 'updatePassword']);
 
         Route::post('/auth/two-factor/enable', [\App\Http\Controllers\Api\Auth\TwoFactorController::class, 'enable']);
