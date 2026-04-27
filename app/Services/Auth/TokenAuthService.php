@@ -13,6 +13,10 @@ use PragmaRX\Google2FA\Google2FA;
 
 class TokenAuthService implements TokenAuthServiceInterface
 {
+    public function __construct(
+        private Google2FA $google2fa
+    ) {}
+
     public function attemptTokenLogin(array $credentials): array
     {
         $user = User::query()->where('email', $credentials['email'])->first();
@@ -56,9 +60,8 @@ class TokenAuthService implements TokenAuthServiceInterface
             ]);
         }
 
-        $google2fa = new Google2FA;
         $secret = Crypt::decryptString($user->two_factor_secret);
-        $isValid = $google2fa->verifyKey($secret, $twoFactorCode);
+        $isValid = $this->google2fa->verifyKey($secret, $twoFactorCode);
 
         if (! $isValid) {
             throw ValidationException::withMessages([

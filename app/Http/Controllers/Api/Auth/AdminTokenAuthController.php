@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\Auth;
 
 use App\Contracts\Services\TokenAuthServiceInterface;
+use App\Domain\Users\Models\User;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\AdminTokenLoginRequest;
 use App\Http\Resources\AdminUserResource;
@@ -30,8 +31,12 @@ class AdminTokenAuthController extends Controller
 
     public function logout(Request $request): JsonResponse
     {
-        /** @var \App\Domain\Users\Models\User $user */
         $user = $request->user();
+
+        if (! $user instanceof User) {
+            abort(401, 'Unauthenticated.');
+        }
+
         $this->tokenAuthService->revokeCurrentToken($user);
 
         return response()->json([
