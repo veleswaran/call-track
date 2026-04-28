@@ -66,6 +66,12 @@ public class SaveCore {
                     // Try enhanced SIM detection (supports OPPO/Realme)
                     detectAndFillSimSlot(context, cursor, record);
 
+                    // Default to slot 0 if detection failed to ensure call logs sync
+                    if (record.simSlot == null) {
+                        record.simSlot = 0;
+                        Log.d("CallMonitor", "SIM detection failed, defaulting to slot 0");
+                    }
+
                     persistRecord(context.getApplicationContext(), record);
                     lastProcessedId = record.callLocalId;
                     Log.e("CallMonitor -> saveLatestCall", "SIM " + record.simSlot);
@@ -167,6 +173,15 @@ public class SaveCore {
         String manufacturer = android.os.Build.MANUFACTURER.toLowerCase();
         int sdkInt = android.os.Build.VERSION.SDK_INT;
 
+        // Log active subscriptions for debugging dual SIM issues
+        StringBuilder simInfo = new StringBuilder("Active SIMs: ");
+        for (SubscriptionInfo info : subs) {
+            simInfo.append("slot").append(info.getSimSlotIndex())
+                   .append("(subId:").append(info.getSubscriptionId()).append(") ");
+        }
+        Log.d("CallMonitor", simInfo.toString());
+        FirebaseCrashlytics.getInstance().log("SIM_DETECTION: " + simInfo.toString());
+
         // Method 1: Try standard subscription_id (works on most devices)
         int subId = getIntSafe(cursor, "subscription_id");
         if (subId >= 0) { // Valid subscription IDs are non-negative (INVALID_SUBSCRIPTION_ID = -1)
@@ -205,9 +220,11 @@ public class SaveCore {
             if (info.getSubscriptionId() == subId) {
                 record.simSlot = info.getSimSlotIndex();
                 record.carrier = info.getCarrierName() != null ? info.getCarrierName().toString() : null;
+                Log.d("CallMonitor", "SIM detected via subscription_id: slot=" + record.simSlot + ", carrier=" + record.carrier);
                 return true;
             }
         }
+        Log.d("CallMonitor", "subscription_id " + subId + " not found in active subscriptions");
         return false;
     }
 
@@ -363,11 +380,18 @@ public class SaveCore {
     private void persistRecord(Context context, CallRecord record) {
         AppDB db = AppDB.getInstance(context);
         TokenEntity te = db.tokenDao().getOne();
+        // Persist if: device registered AND (SIM slot is tracked OR null as fallback)
+        // Note: SIM slot should always be 0 if detection failed (see defaulting logic above)
         if (te != null && (te.simSlots.contains(record.simSlot) || record.simSlot == null)) {
             db.callRecordDao().insert(record);
-//            Log.d("CallMonitor", "Call record persisted: " + record.type + " " + record.number);
+            Log.d("CallMonitor", "✓ Call persisted - SIM slot: " + record.simSlot +
+                ", Type: " + record.type + ", Tracked slots: " + te.simSlots);
         } else {
-            Log.d("CallMonitor", "Skipped persisting record due to SIM slot mismatch");
+            Log.w("CallMonitor", "✗ SKIPPED - SIM slot: " + record.simSlot +
+                ", Tracked slots: " + (te != null ? te.simSlots : "null") +
+                ", Type: " + record.type);
+            FirebaseCrashlytics.getInstance().log("SKIPPED CALL - SIM: " + record.simSlot +
+                ", Tracked: " + (te != null ? te.simSlots : "null"));
         }
     }
 
