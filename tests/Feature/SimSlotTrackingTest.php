@@ -118,10 +118,6 @@ class SimSlotTrackingTest extends TestCase
 
     public function test_always_accepts_slot_0_as_fallback_when_sim_detection_fails()
     {
-        // FALLBACK_SIM_SLOT = 0 (defined in IngestCallLogsAction)
-        // When Android app cannot detect SIM slot, it defaults to slot 0
-        // Server must accept this even if not in tracked_sim_slots
-
         // Device tracks only SIM 1
         $device = Device::factory()->create([
             'tracked_sim_slots' => [1],
@@ -131,6 +127,8 @@ class SimSlotTrackingTest extends TestCase
         $plainToken = Str::random(40);
         $token->update(['token_hash' => hash('sha256', $plainToken)]);
 
+        $fallbackSlot = \App\Actions\Calls\IngestCallLogsAction::FALLBACK_SIM_SLOT;
+
         $logs = [
             [
                 'call_hash' => 'hash_fallback',
@@ -138,7 +136,7 @@ class SimSlotTrackingTest extends TestCase
                 'direction' => 'INCOMING',
                 'duration' => 45,
                 'timestamp' => now()->toIso8601String(),
-                'sim_slot' => 0, // FALLBACK_SIM_SLOT - not in tracked list [1], but accepted as fallback
+                'sim_slot' => $fallbackSlot, // Not in tracked list [1], but accepted as fallback
             ],
             [
                 'call_hash' => 'hash_tracked',
