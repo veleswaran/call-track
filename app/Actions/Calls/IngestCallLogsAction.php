@@ -17,7 +17,7 @@ class IngestCallLogsAction
      * Fallback SIM slot used when device cannot detect the actual SIM slot.
      * This must match the FALLBACK_SIM_SLOT constant in the Android app.
      */
-    private const FALLBACK_SIM_SLOT = 0;
+    public const FALLBACK_SIM_SLOT = 0;
 
     public function __construct(
         protected IsMissedCallAction $isMissedCallAction
