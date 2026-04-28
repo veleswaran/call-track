@@ -31,7 +31,8 @@ class IngestCallLogsAction
 
         foreach ($dto->logs as $log) {
             // Filter by tracked SIM slots if configured
-            if ($trackedSlots !== null && ! in_array($log->simSlot, $trackedSlots, true)) {
+            // Always accept slot 0 as fallback when SIM detection fails on device
+            if ($trackedSlots !== null && ! in_array($log->simSlot, $trackedSlots, true) && $log->simSlot !== 0) {
                 $skippedCount++;
                 if (! in_array($log->simSlot, $skippedSlots, true)) {
                     $skippedSlots[] = $log->simSlot;

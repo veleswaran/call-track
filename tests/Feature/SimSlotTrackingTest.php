@@ -115,4 +115,55 @@ class SimSlotTrackingTest extends TestCase
         $response->assertOk();
         $this->assertDatabaseHas('call_logs', ['call_hash' => 'hash3']);
     }
+
+    public function test_always_accepts_slot_0_as_fallback_when_sim_detection_fails()
+    {
+        // Device tracks only SIM 1
+        $device = Device::factory()->create([
+            'tracked_sim_slots' => [1],
+        ]);
+
+        $token = \App\Domain\Devices\Models\DeviceToken::factory()->create(['device_id' => $device->id]);
+        $plainToken = Str::random(40);
+        $token->update(['token_hash' => hash('sha256', $plainToken)]);
+
+        $logs = [
+            [
+                'call_hash' => 'hash_fallback',
+                'phone_number' => '5551234567',
+                'direction' => 'INCOMING',
+                'duration' => 45,
+                'timestamp' => now()->toIso8601String(),
+                'sim_slot' => 0, // Not in tracked list [1], but should be accepted as fallback
+            ],
+            [
+                'call_hash' => 'hash_tracked',
+                'phone_number' => '5559876543',
+                'direction' => 'OUTGOING',
+                'duration' => 30,
+                'timestamp' => now()->toIso8601String(),
+                'sim_slot' => 1, // In tracked list, should be accepted
+            ],
+            [
+                'call_hash' => 'hash_rejected',
+                'phone_number' => '5555555555',
+                'direction' => 'INCOMING',
+                'duration' => 20,
+                'timestamp' => now()->toIso8601String(),
+                'sim_slot' => 2, // Not in tracked list and not fallback, should be rejected
+            ],
+        ];
+
+        $response = $this->withHeaders(['X-Device-Token' => $plainToken])
+            ->postJson('/api/v1/call-logs/sync', ['logs' => $logs]);
+
+        $response->assertOk();
+
+        // Slot 0 should be accepted (fallback)
+        $this->assertDatabaseHas('call_logs', ['call_hash' => 'hash_fallback']);
+        // Slot 1 should be accepted (tracked)
+        $this->assertDatabaseHas('call_logs', ['call_hash' => 'hash_tracked']);
+        // Slot 2 should be rejected
+        $this->assertDatabaseMissing('call_logs', ['call_hash' => 'hash_rejected']);
+    }
 }
