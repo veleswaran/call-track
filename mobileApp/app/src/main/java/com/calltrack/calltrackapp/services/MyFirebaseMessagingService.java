@@ -100,7 +100,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             .setAutoCancel(true);
 
         NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        manager.notify(0, builder.build());
+        manager.notify((int) System.currentTimeMillis(), builder.build());
     }
 
     private void createNotificationChannel() {
