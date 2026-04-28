@@ -23,6 +23,12 @@ import androidx.core.app.ActivityCompat;
 
 public class SaveCore {
 
+    /**
+     * Fallback SIM slot used when device cannot detect the actual SIM slot.
+     * This must match the FALLBACK_SIM_SLOT constant in the Laravel backend.
+     */
+    private static final int FALLBACK_SIM_SLOT = 0;
+
     final private Context context;
     final private LocalSettings localSettings;
 
@@ -66,13 +72,14 @@ public class SaveCore {
                     // Try enhanced SIM detection (supports OPPO/Realme)
                     detectAndFillSimSlot(context, cursor, record);
 
-                    // Default to slot 0 if detection failed to ensure call logs sync
-                    if (record.simSlot == null) {
-                        record.simSlot = 0;
-                        Log.d("CallMonitor", "SIM detection failed, defaulting to slot 0");
+                    // Track if detection failed for fallback logic
+                    boolean detectionFailed = (record.simSlot == null);
+                    if (detectionFailed) {
+                        record.simSlot = FALLBACK_SIM_SLOT;
+                        Log.d("CallMonitor", "SIM detection failed, defaulting to slot " + FALLBACK_SIM_SLOT);
                     }
 
-                    persistRecord(context.getApplicationContext(), record);
+                    persistRecord(context.getApplicationContext(), record, detectionFailed);
                     lastProcessedId = record.callLocalId;
                     Log.e("CallMonitor -> saveLatestCall", "SIM " + record.simSlot);
                     FirebaseCrashlytics.getInstance().log("SIM -> " + record.simSlot);
@@ -377,15 +384,17 @@ public class SaveCore {
         }
     }
 
-    private void persistRecord(Context context, CallRecord record) {
+    private void persistRecord(Context context, CallRecord record, boolean detectionFailed) {
         AppDB db = AppDB.getInstance(context);
         TokenEntity te = db.tokenDao().getOne();
-        // Persist if: device registered AND (SIM slot is tracked OR null as fallback)
-        // Note: SIM slot should always be 0 if detection failed (see defaulting logic above)
-        if (te != null && (te.simSlots.contains(record.simSlot) || record.simSlot == null)) {
+
+        // Persist if: device registered AND (SIM slot is tracked OR detection failed as fallback)
+        // When detection fails, we default to slot 0 and always persist (server will handle filtering)
+        if (te != null && (te.simSlots.contains(record.simSlot) || detectionFailed)) {
             db.callRecordDao().insert(record);
+            String fallbackNote = detectionFailed ? " (fallback - detection failed)" : "";
             Log.d("CallMonitor", "✓ Call persisted - SIM slot: " + record.simSlot +
-                ", Type: " + record.type + ", Tracked slots: " + te.simSlots);
+                fallbackNote + ", Type: " + record.type + ", Tracked slots: " + te.simSlots);
         } else {
             Log.w("CallMonitor", "✗ SKIPPED - SIM slot: " + record.simSlot +
                 ", Tracked slots: " + (te != null ? te.simSlots : "null") +
