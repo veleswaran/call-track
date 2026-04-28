@@ -87,16 +87,22 @@ public class MainActivity extends AppCompatActivity {
     private static String[] getPermissions() {
         String[] permissions;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) { // API 34
-            permissions = new String[]{Manifest.permission.READ_PHONE_STATE, Manifest.permission.READ_CALL_LOG,
-                Manifest.permission.FOREGROUND_SERVICE, Manifest.permission.FOREGROUND_SERVICE_PHONE_CALL,
+            permissions = new String[]{
+                Manifest.permission.READ_PHONE_STATE,
+                Manifest.permission.READ_CALL_LOG,
+                Manifest.permission.FOREGROUND_SERVICE_PHONE_CALL,
                 Manifest.permission.POST_NOTIFICATIONS
             };
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // API 33
-            permissions = new String[]{Manifest.permission.READ_PHONE_STATE, Manifest.permission.READ_CALL_LOG,
+            permissions = new String[]{
+                Manifest.permission.READ_PHONE_STATE,
+                Manifest.permission.READ_CALL_LOG,
                 Manifest.permission.POST_NOTIFICATIONS
             };
         } else {
-            permissions = new String[]{Manifest.permission.READ_PHONE_STATE, Manifest.permission.READ_CALL_LOG
+            permissions = new String[]{
+                Manifest.permission.READ_PHONE_STATE,
+                Manifest.permission.READ_CALL_LOG
             };
         }
         return permissions;
