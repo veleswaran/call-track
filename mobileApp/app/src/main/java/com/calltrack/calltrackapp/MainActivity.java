@@ -20,6 +20,8 @@ import android.widget.Toast;
 import com.calltrack.calltrackapp.Adapters.CallRecordAdapter;
 import com.calltrack.calltrackapp.api.ApiUtilities;
 import com.calltrack.calltrackapp.api.DeviceApi;
+import com.calltrack.calltrackapp.bundles.FcmTokenRequest;
+import com.calltrack.calltrackapp.bundles.FcmTokenResponse;
 import com.calltrack.calltrackapp.bundles.RegistrationRequest;
 import com.calltrack.calltrackapp.bundles.RegistrationResponse;
 import com.calltrack.calltrackapp.db.AppDB;
@@ -48,6 +50,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.work.ExistingWorkPolicy;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
+
+import com.google.firebase.messaging.FirebaseMessaging;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -83,7 +88,12 @@ public class MainActivity extends AppCompatActivity {
         String[] permissions;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) { // API 34
             permissions = new String[]{Manifest.permission.READ_PHONE_STATE, Manifest.permission.READ_CALL_LOG,
-                Manifest.permission.FOREGROUND_SERVICE, Manifest.permission.FOREGROUND_SERVICE_PHONE_CALL
+                Manifest.permission.FOREGROUND_SERVICE, Manifest.permission.FOREGROUND_SERVICE_PHONE_CALL,
+                Manifest.permission.POST_NOTIFICATIONS
+            };
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // API 33
+            permissions = new String[]{Manifest.permission.READ_PHONE_STATE, Manifest.permission.READ_CALL_LOG,
+                Manifest.permission.POST_NOTIFICATIONS
             };
         } else {
             permissions = new String[]{Manifest.permission.READ_PHONE_STATE, Manifest.permission.READ_CALL_LOG
@@ -148,6 +158,48 @@ public class MainActivity extends AppCompatActivity {
                 startService(serviceIntent);
             }
         }
+        syncFcmToken();
+    }
+
+    private void syncFcmToken() {
+        LocalSettings settings = new LocalSettings(this);
+        if (settings.isFcmTokenSent()) {
+            return;
+        }
+
+        executor.execute(() -> {
+            AppDB db = AppDB.getInstance(this);
+            TokenEntity te = db.tokenDao().getOne();
+            if (te == null) {
+                return;
+            }
+
+            FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+                if (!task.isSuccessful()) {
+                    Log.e("MainActivity", "Failed to get FCM token", task.getException());
+                    return;
+                }
+
+                String token = task.getResult();
+                DeviceApi api = ApiUtilities.getDeviceApi();
+                FcmTokenRequest request = new FcmTokenRequest(token);
+
+                api.sendFcmToken(te.token, request).enqueue(new Callback<FcmTokenResponse>() {
+                    @Override
+                    public void onResponse(@NonNull Call<FcmTokenResponse> call, @NonNull Response<FcmTokenResponse> response) {
+                        if (response.isSuccessful()) {
+                            settings.setFcmTokenSent(true);
+                            Log.d("MainActivity", "FCM token sent successfully");
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<FcmTokenResponse> call, @NonNull Throwable t) {
+                        Log.e("MainActivity", "Failed to send FCM token", t);
+                    }
+                });
+            });
+        });
     }
 
     @Override
