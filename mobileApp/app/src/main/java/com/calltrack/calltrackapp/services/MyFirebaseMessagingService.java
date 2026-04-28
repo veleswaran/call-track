@@ -12,19 +12,9 @@ import androidx.core.app.NotificationCompat;
 
 import com.calltrack.calltrackapp.MainActivity;
 import com.calltrack.calltrackapp.R;
-import com.calltrack.calltrackapp.api.ApiUtilities;
-import com.calltrack.calltrackapp.api.DeviceApi;
-import com.calltrack.calltrackapp.bundles.FcmTokenRequest;
-import com.calltrack.calltrackapp.bundles.FcmTokenResponse;
-import com.calltrack.calltrackapp.db.AppDB;
-import com.calltrack.calltrackapp.db.bundles.TokenEntity;
-import com.calltrack.calltrackapp.settings.LocalSettings;
+import com.calltrack.calltrackapp.utilities.FcmTokenUploader;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
@@ -35,7 +25,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     public void onNewToken(@NonNull String token) {
         super.onNewToken(token);
         Log.d(TAG, "New FCM token: " + token);
-        sendTokenToServer(token);
+        FcmTokenUploader.uploadToken(getApplicationContext(), token);
     }
 
     @Override
@@ -49,37 +39,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 message.getNotification().getBody()
             );
         }
-    }
-
-    private void sendTokenToServer(String token) {
-        AppDB db = AppDB.getInstance(getApplicationContext());
-        TokenEntity te = db.tokenDao().getOne();
-
-        if (te == null) {
-            Log.d(TAG, "Device not registered, skipping FCM token sync");
-            return;
-        }
-
-        DeviceApi api = ApiUtilities.getDeviceApi();
-        FcmTokenRequest request = new FcmTokenRequest(token);
-
-        api.sendFcmToken(te.token, request).enqueue(new Callback<FcmTokenResponse>() {
-            @Override
-            public void onResponse(@NonNull Call<FcmTokenResponse> call, @NonNull Response<FcmTokenResponse> response) {
-                if (response.isSuccessful()) {
-                    Log.d(TAG, "FCM token sent successfully");
-                    LocalSettings settings = new LocalSettings(getApplicationContext());
-                    settings.setFcmTokenSent(true);
-                } else {
-                    Log.e(TAG, "Failed to send FCM token: " + response.code());
-                }
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<FcmTokenResponse> call, @NonNull Throwable t) {
-                Log.e(TAG, "Error sending FCM token", t);
-            }
-        });
     }
 
     private void showNotification(String title, String body) {

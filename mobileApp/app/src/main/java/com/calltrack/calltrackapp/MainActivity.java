@@ -20,8 +20,6 @@ import android.widget.Toast;
 import com.calltrack.calltrackapp.Adapters.CallRecordAdapter;
 import com.calltrack.calltrackapp.api.ApiUtilities;
 import com.calltrack.calltrackapp.api.DeviceApi;
-import com.calltrack.calltrackapp.bundles.FcmTokenRequest;
-import com.calltrack.calltrackapp.bundles.FcmTokenResponse;
 import com.calltrack.calltrackapp.bundles.RegistrationRequest;
 import com.calltrack.calltrackapp.bundles.RegistrationResponse;
 import com.calltrack.calltrackapp.db.AppDB;
@@ -29,6 +27,7 @@ import com.calltrack.calltrackapp.db.bundles.TokenEntity;
 import com.calltrack.calltrackapp.monitors.CallMonitorService;
 import com.calltrack.calltrackapp.settings.LocalSettings;
 import com.calltrack.calltrackapp.syncer.CallSyncer;
+import com.calltrack.calltrackapp.utilities.FcmTokenUploader;
 import com.calltrack.calltrackapp.utilities.Utility;
 
 import java.io.IOException;
@@ -173,38 +172,14 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        executor.execute(() -> {
-            AppDB db = AppDB.getInstance(this);
-            TokenEntity te = db.tokenDao().getOne();
-            if (te == null) {
+        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+            if (!task.isSuccessful()) {
+                Log.e("MainActivity", "Failed to get FCM token", task.getException());
                 return;
             }
 
-            FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
-                if (!task.isSuccessful()) {
-                    Log.e("MainActivity", "Failed to get FCM token", task.getException());
-                    return;
-                }
-
-                String token = task.getResult();
-                DeviceApi api = ApiUtilities.getDeviceApi();
-                FcmTokenRequest request = new FcmTokenRequest(token);
-
-                api.sendFcmToken(te.token, request).enqueue(new Callback<FcmTokenResponse>() {
-                    @Override
-                    public void onResponse(@NonNull Call<FcmTokenResponse> call, @NonNull Response<FcmTokenResponse> response) {
-                        if (response.isSuccessful()) {
-                            settings.setFcmTokenSent(true);
-                            Log.d("MainActivity", "FCM token sent successfully");
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(@NonNull Call<FcmTokenResponse> call, @NonNull Throwable t) {
-                        Log.e("MainActivity", "Failed to send FCM token", t);
-                    }
-                });
-            });
+            String token = task.getResult();
+            executor.execute(() -> FcmTokenUploader.uploadToken(this, token));
         });
     }
 
