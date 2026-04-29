@@ -1,0 +1,20 @@
+meta {
+  name: Missed Calls
+  type: http
+  seq: 9
+}
+
+get {
+  url: http://127.0.0.1:8000/api/v1/admin/call-logs/escalations
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer 3|0nZ2KWlWMhWn4HFP5AXzW0QvORqn9c8WkNq17bdw50868138
+  Content-Type: application/json
+}
+
+settings {
+  encodeUrl: true
+}

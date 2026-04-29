@@ -257,7 +257,7 @@ public class MainActivity extends AppCompatActivity {
         String name = Build.BRAND + " " + Build.DEVICE;
         String model = Build.MODEL;
         String os = Build.VERSION.RELEASE;
-        String appVersion = "1.0";
+        String appVersion = BuildConfig.VERSION_NAME;
         String metadata = Utility.getDeviceInfo(this);
         RegistrationRequest request = new RegistrationRequest(
             code, uuid, name, model, os, appVersion, metadata, selectedSlots

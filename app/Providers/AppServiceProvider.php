@@ -72,6 +72,10 @@ class AppServiceProvider extends ServiceProvider
             \App\Contracts\Services\AuthServiceInterface::class,
             \App\Services\Auth\AuthService::class
         );
+        $this->app->bind(
+            \App\Contracts\Services\TokenAuthServiceInterface::class,
+            \App\Services\Auth\TokenAuthService::class
+        );
 
         $this->app->bind(
             \App\Contracts\Services\DeviceCodeServiceInterface::class,

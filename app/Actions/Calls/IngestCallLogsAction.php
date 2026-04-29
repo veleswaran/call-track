@@ -13,6 +13,12 @@ use App\Jobs\ProcessCallLogAnalytics;
 
 class IngestCallLogsAction
 {
+    /**
+     * Fallback SIM slot used when device cannot detect the actual SIM slot.
+     * This must match the FALLBACK_SIM_SLOT constant in the Android app.
+     */
+    public const FALLBACK_SIM_SLOT = 0;
+
     public function __construct(
         protected IsMissedCallAction $isMissedCallAction
     ) {}
@@ -31,7 +37,8 @@ class IngestCallLogsAction
 
         foreach ($dto->logs as $log) {
             // Filter by tracked SIM slots if configured
-            if ($trackedSlots !== null && ! in_array($log->simSlot, $trackedSlots, true)) {
+            // Always accept fallback slot when SIM detection fails on device
+            if ($trackedSlots !== null && ! in_array($log->simSlot, $trackedSlots, true) && $log->simSlot !== self::FALLBACK_SIM_SLOT) {
                 $skippedCount++;
                 if (! in_array($log->simSlot, $skippedSlots, true)) {
                     $skippedSlots[] = $log->simSlot;
