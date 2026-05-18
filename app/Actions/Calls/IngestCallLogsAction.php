@@ -129,7 +129,7 @@ class IngestCallLogsAction
         foreach ($allLogs as $callLog) {
             if ($this->isMissedCallAction->execute($callLog)) {
                 ProcessMissedCallEscalationJob::dispatch($callLog->id);
-            } elseif ($callLog->direction === 'OUTGOING' && $callLog->duration > 0) {
+            } elseif (in_array(strtoupper($callLog->direction), ['OUTGOING', 'INCOMING'], true) && $callLog->duration > 0) {
                 AttemptEscalationResolutionJob::dispatch($callLog->id);
             }
         }

@@ -46,6 +46,7 @@ describe("use-settings hooks", () => {
         it("should fetch settings", async () => {
             const mockData: SettingsData = {
                 heartbeat_threshold_minutes: 60,
+                device_archive_days: 15,
                 fcm_stale_title: "Title",
                 fcm_stale_body: "Body",
                 escalation_sla_hours: 2,

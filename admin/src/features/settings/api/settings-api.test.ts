@@ -19,6 +19,7 @@ describe('settingsApi', () => {
             const mockResponse = {
                 data: {
                     heartbeat_threshold_minutes: 60,
+                    device_archive_days: 15,
                     fcm_stale_title: 'Test Title',
                     fcm_stale_body: 'Test Body',
                 }
@@ -38,6 +39,7 @@ describe('settingsApi', () => {
             const payload = {
                 settings: {
                     heartbeat_threshold_minutes: 120,
+                    device_archive_days: 30,
                     fcm_stale_title: 'New Title',
                     fcm_stale_body: 'New Body',
                 }

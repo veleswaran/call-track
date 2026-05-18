@@ -26,6 +26,7 @@ import {
 const formSchema = z.object({
     app_sitename: z.string().min(1, "Site name is required").max(50, "Site name is too long"),
     heartbeat_threshold_minutes: z.number().min(5, "Minimum threshold is 5 minutes").max(10080, "Maximum is 1 week"),
+    device_archive_days: z.number().min(1, "Minimum threshold is 1 day").max(365, "Maximum is 365 days"),
     fcm_stale_title: z.string().min(1, "Title is required").max(100, "Title is too long"),
     fcm_stale_body: z.string().min(1, "Message body is required").max(500, "Message body is too long"),
     escalation_sla_hours: z.number().min(1, "Minimum is 1 hour").max(168, "Maximum is 1 week (168 hours)"),
@@ -58,6 +59,7 @@ export function SettingsPage() {
         defaultValues: {
             app_sitename: "CallTrack AI",
             heartbeat_threshold_minutes: 60,
+            device_archive_days: 15,
             fcm_stale_title: "",
             fcm_stale_body: "",
             escalation_sla_hours: 2,
@@ -85,6 +87,7 @@ export function SettingsPage() {
             form.reset({
                 app_sitename: settings.app_sitename || "CallTrack AI",
                 heartbeat_threshold_minutes: Number(settings.heartbeat_threshold_minutes),
+                device_archive_days: Number(settings.device_archive_days ?? 15),
                 fcm_stale_title: settings.fcm_stale_title,
                 fcm_stale_body: settings.fcm_stale_body,
                 escalation_sla_hours: Number(settings.escalation_sla_hours ?? 2),
@@ -113,6 +116,7 @@ export function SettingsPage() {
             settings: {
                 app_sitename: values.app_sitename,
                 heartbeat_threshold_minutes: Number(values.heartbeat_threshold_minutes),
+                device_archive_days: Number(values.device_archive_days),
                 fcm_stale_title: values.fcm_stale_title,
                 fcm_stale_body: values.fcm_stale_body,
                 escalation_sla_hours: Number(values.escalation_sla_hours),
@@ -198,6 +202,27 @@ export function SettingsPage() {
                                         </FormControl>
                                         <FormDescription>
                                             Devices without a heartbeat for this long will receive a &quot;wake up&quot; push notification.
+                                        </FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="device_archive_days"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Device Inactivity Archive Threshold (days)</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                type="number"
+                                                {...field}
+                                                onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
+                                            />
+                                        </FormControl>
+                                        <FormDescription>
+                                            Inactive devices will be archived automatically after this many days.
                                         </FormDescription>
                                         <FormMessage />
                                     </FormItem>

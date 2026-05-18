@@ -109,9 +109,11 @@ final class BuildCallLogQueryAction
                     $q->whereIn('phone_number_hash', array_unique($searchHashes));
                 }
 
-                // 2. Search by Phone Number (normalized)
-                $normalizedSearch = \App\Support\PhoneNormalizer::normalize($searchTerm);
-                $q->orWhere('phone_number_hash', hash('sha256', $normalizedSearch));
+                // 2. Search by Phone Number (normalized prefix variations)
+                $phoneHashes = \App\Support\PhoneNormalizer::generateHashVariations($searchTerm);
+                if (! empty($phoneHashes)) {
+                    $q->orWhereIn('phone_number_hash', $phoneHashes);
+                }
             });
         }
 
