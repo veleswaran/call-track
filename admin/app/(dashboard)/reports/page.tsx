@@ -99,16 +99,14 @@ export default function ReportsPage() {
                 </div>
             )}
 
-            {filters.contactFilter !== 'external' && (
-                <div className="space-y-4">
-                    <div id="agent-performance">
-                        <h2 className="text-xl font-bold tracking-tight">Agent Performance Report</h2>
-                        <p className="text-sm text-muted-foreground">See how each agent handles calls and responds to customers.</p>
-                    </div>
-
-                    <AgentPerformanceTable data={performanceQuery.data || []} filters={filters} />
+            <div className="space-y-4">
+                <div id="agent-performance">
+                    <h2 className="text-xl font-bold tracking-tight">Agent Performance Report</h2>
+                    <p className="text-sm text-muted-foreground">See how each agent handles calls and responds to customers.</p>
                 </div>
-            )}
+
+                <AgentPerformanceTable data={performanceQuery.data || []} filters={filters} />
+            </div>
 
         </div>
     )

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Actions\Devices\ArchiveInactiveDevicesAction;
 use Illuminate\Console\Command;
 
 class ArchiveInactiveDevicesCommand extends Command
@@ -27,7 +26,7 @@ class ArchiveInactiveDevicesCommand extends Command
      * Execute the console command.
      */
     public function handle(
-        ArchiveInactiveDevicesAction $archiveAction,
+        \App\Contracts\Services\DeviceManagementServiceInterface $deviceManagementService,
         \App\Contracts\Services\SettingsServiceInterface $settingsService
     ): int {
         $daysOption = $this->option('days');
@@ -38,7 +37,7 @@ class ArchiveInactiveDevicesCommand extends Command
 
         $this->info("Archiving devices inactive for more than {$days} days...");
 
-        $archivedCount = $archiveAction->execute($days);
+        $archivedCount = $deviceManagementService->archiveInactiveDevices($days);
 
         $this->info("Successfully archived {$archivedCount} inactive devices.");
 
