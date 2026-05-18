@@ -14,7 +14,7 @@ class DeviceManagementService implements DeviceManagementServiceInterface
     ) {}
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function archiveInactiveDevices(int $days = 15): int
     {
