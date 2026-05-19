@@ -19,7 +19,7 @@ class ArchiveInactiveDevicesAction
                 $query->where('last_heartbeat_at', '<', $cutoff)
                     ->orWhere(function ($sub) use ($cutoff) {
                         $sub->whereNull('last_heartbeat_at')
-                            ->where('created_at', '<', $cutoff);
+                            ->where('updated_at', '<', $cutoff);
                     });
             })
             ->update(['status' => 'archived']);

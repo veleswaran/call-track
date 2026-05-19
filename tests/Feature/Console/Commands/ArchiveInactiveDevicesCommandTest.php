@@ -24,11 +24,12 @@ class ArchiveInactiveDevicesCommandTest extends TestCase
             'status' => 'inactive',
         ]);
 
-        // 2. Inactive device (>15 days based on created_at and null heartbeat)
+        // 2. Inactive device (>15 days based on updated_at and null heartbeat)
         $staleCreatedDevice = Device::factory()->create([
             'name' => 'Stale Created Device',
             'last_heartbeat_at' => null,
             'created_at' => Carbon::now()->subDays(16),
+            'updated_at' => Carbon::now()->subDays(16),
             'status' => 'inactive',
         ]);
 
