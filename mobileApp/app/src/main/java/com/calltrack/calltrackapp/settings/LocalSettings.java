@@ -10,6 +10,7 @@ public class LocalSettings {
 
     private static final String PREFERENCE_KEY = "log_prefs";
     private static final String LAST_PROCESSED_KEY = "last_processed_id";
+    private static final String FCM_TOKEN_SENT_KEY = "fcm_token_sent";
 
     final private Context context;
 
@@ -45,5 +46,14 @@ public class LocalSettings {
         }
     }
 
+    public boolean isFcmTokenSent() {
+        SharedPreferences prefs = context.getSharedPreferences(PREFERENCE_KEY, Context.MODE_PRIVATE);
+        return prefs.getBoolean(FCM_TOKEN_SENT_KEY, false);
+    }
+
+    public void setFcmTokenSent(boolean sent) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFERENCE_KEY, Context.MODE_PRIVATE);
+        prefs.edit().putBoolean(FCM_TOKEN_SENT_KEY, sent).apply();
+    }
 
 }

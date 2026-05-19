@@ -27,6 +27,7 @@ import com.calltrack.calltrackapp.db.bundles.TokenEntity;
 import com.calltrack.calltrackapp.monitors.CallMonitorService;
 import com.calltrack.calltrackapp.settings.LocalSettings;
 import com.calltrack.calltrackapp.syncer.CallSyncer;
+import com.calltrack.calltrackapp.utilities.FcmTokenUploader;
 import com.calltrack.calltrackapp.utilities.Utility;
 
 import java.io.IOException;
@@ -48,6 +49,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.work.ExistingWorkPolicy;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
+
+import com.google.firebase.messaging.FirebaseMessaging;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -82,11 +86,22 @@ public class MainActivity extends AppCompatActivity {
     private static String[] getPermissions() {
         String[] permissions;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) { // API 34
-            permissions = new String[]{Manifest.permission.READ_PHONE_STATE, Manifest.permission.READ_CALL_LOG,
-                Manifest.permission.FOREGROUND_SERVICE, Manifest.permission.FOREGROUND_SERVICE_PHONE_CALL
+            permissions = new String[]{
+                Manifest.permission.READ_PHONE_STATE,
+                Manifest.permission.READ_CALL_LOG,
+                Manifest.permission.FOREGROUND_SERVICE_PHONE_CALL,
+                Manifest.permission.POST_NOTIFICATIONS
+            };
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // API 33
+            permissions = new String[]{
+                Manifest.permission.READ_PHONE_STATE,
+                Manifest.permission.READ_CALL_LOG,
+                Manifest.permission.POST_NOTIFICATIONS
             };
         } else {
-            permissions = new String[]{Manifest.permission.READ_PHONE_STATE, Manifest.permission.READ_CALL_LOG
+            permissions = new String[]{
+                Manifest.permission.READ_PHONE_STATE,
+                Manifest.permission.READ_CALL_LOG
             };
         }
         return permissions;
@@ -148,6 +163,24 @@ public class MainActivity extends AppCompatActivity {
                 startService(serviceIntent);
             }
         }
+        syncFcmToken();
+    }
+
+    private void syncFcmToken() {
+        LocalSettings settings = new LocalSettings(this);
+        if (settings.isFcmTokenSent()) {
+            return;
+        }
+
+        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+            if (!task.isSuccessful()) {
+                Log.e("MainActivity", "Failed to get FCM token", task.getException());
+                return;
+            }
+
+            String token = task.getResult();
+            executor.execute(() -> FcmTokenUploader.uploadToken(this, token));
+        });
     }
 
     @Override
