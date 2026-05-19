@@ -44,6 +44,11 @@ class AppServiceProvider extends ServiceProvider
         );
 
         $this->app->bind(
+            \App\Contracts\Services\DeviceManagementServiceInterface::class,
+            \App\Services\Devices\DeviceManagementService::class
+        );
+
+        $this->app->bind(
             \App\Contracts\Services\DashboardServiceContract::class,
             \App\Services\DashboardService::class
         );

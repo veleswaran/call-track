@@ -14,6 +14,8 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withSchedule(function (\Illuminate\Console\Scheduling\Schedule $schedule): void {
         $schedule->command('devices:notify-stale')->everyFifteenMinutes();
+        $schedule->command('calls:notify-unattended')->everyFifteenMinutes();
+        $schedule->command('devices:archive-inactive')->daily();
         $schedule->job(new EvaluateEscalationSlasJob)->everyFifteenMinutes();
     })
     ->withMiddleware(function (Middleware $middleware): void {

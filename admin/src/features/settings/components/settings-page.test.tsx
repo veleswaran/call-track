@@ -24,6 +24,7 @@ describe("SettingsPage", () => {
 
     const defaultSettings: SettingsData = {
         heartbeat_threshold_minutes: 60,
+        device_archive_days: 15,
         fcm_stale_title: "Warning",
         fcm_stale_body: "Wake up",
         escalation_sla_hours: 2,
@@ -75,6 +76,7 @@ describe("SettingsPage", () => {
             data: {
                 ...defaultSettings,
                 heartbeat_threshold_minutes: 120,
+                device_archive_days: 30,
                 fcm_stale_title: "Test Title",
                 fcm_stale_body: "Test Body",
                 escalation_sla_hours: 4,
@@ -89,6 +91,7 @@ describe("SettingsPage", () => {
         );
 
         expect(screen.getByLabelText(/Stale Heartbeat Threshold/i)).toHaveValue(120);
+        expect(screen.getByLabelText(/Device Inactivity Archive Threshold/i)).toHaveValue(30);
         expect(screen.getByLabelText(/Push Notification Title/i)).toHaveValue("Test Title");
         expect(screen.getByLabelText(/Push Notification Message/i)).toHaveValue("Test Body");
         expect(screen.getByLabelText(/Escalation SLA Deadline/i)).toHaveValue(4);
