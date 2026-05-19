@@ -14,7 +14,7 @@ class ArchiveInactiveDevicesAction
         $cutoff = Carbon::now()->subDays($days);
 
         return Device::query()
-            ->where('status', '!=', 'archived')
+            ->where('is_archived', false)
             ->where(function ($query) use ($cutoff) {
                 $query->where('last_heartbeat_at', '<', $cutoff)
                     ->orWhere(function ($sub) use ($cutoff) {
@@ -22,6 +22,6 @@ class ArchiveInactiveDevicesAction
                             ->where('updated_at', '<', $cutoff);
                     });
             })
-            ->update(['status' => 'archived']);
+            ->update(['is_archived' => true]);
     }
 }
