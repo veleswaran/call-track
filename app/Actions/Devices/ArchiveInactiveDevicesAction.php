@@ -9,6 +9,11 @@ use Illuminate\Support\Carbon;
 
 class ArchiveInactiveDevicesAction
 {
+    /**
+     * Archive devices that have been inactive for a specified number of days.
+     *
+     * @return int The number of devices archived.
+     */
     public function execute(int $days = 15): int
     {
         $cutoff = Carbon::now()->subDays($days);

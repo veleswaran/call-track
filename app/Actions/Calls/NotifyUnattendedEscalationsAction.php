@@ -16,6 +16,11 @@ class NotifyUnattendedEscalationsAction
         protected SendPushNotificationAction $sendPushAction
     ) {}
 
+    /**
+     * Notify devices of unattended missed call escalations.
+     *
+     * @return int The number of notifications sent.
+     */
     public function execute(): int
     {
         $sentCount = 0;
@@ -28,14 +33,16 @@ class NotifyUnattendedEscalationsAction
                     $device = $escalation->callLog?->device;
 
                     if (! $device || empty($device->fcm_token)) {
-                        Log::warning("Cannot notify unattended escalation {$escalation->id}: Device or FCM token missing.");
+                        Log::warning('Cannot notify unattended escalation: Device or FCM token missing.', [
+                            'escalation_id' => $escalation->id,
+                        ]);
 
                         continue;
                     }
 
                     $phone = $escalation->callLog->phone_number;
-                    $title = __('Unattended Missed Call Alert');
-                    $body = __('You have an unattended missed call from :phone that requires immediate follow-up.', ['phone' => $phone]);
+                    $title = __('notifications.unattended_missed_call.title');
+                    $body = __('notifications.unattended_missed_call.body', ['phone' => $phone]);
 
                     $dto = new PushNotificationDTO(
                         device: $device,

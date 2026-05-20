@@ -21,7 +21,6 @@ class ArchiveInactiveDevicesCommandTest extends TestCase
         $staleHeartbeatDevice = Device::factory()->create([
             'name' => 'Stale Heartbeat Device',
             'last_heartbeat_at' => Carbon::now()->subDays(16),
-            'status' => 'inactive',
         ]);
 
         // 2. Inactive device (>15 days based on updated_at and null heartbeat)
@@ -30,14 +29,12 @@ class ArchiveInactiveDevicesCommandTest extends TestCase
             'last_heartbeat_at' => null,
             'created_at' => Carbon::now()->subDays(16),
             'updated_at' => Carbon::now()->subDays(16),
-            'status' => 'inactive',
         ]);
 
         // 3. Recently active device (<15 days based on heartbeat)
         $freshDevice = Device::factory()->create([
             'name' => 'Fresh Device',
             'last_heartbeat_at' => Carbon::now()->subDays(5),
-            'status' => 'active',
         ]);
 
         // 4. Run the artisan command
@@ -72,14 +69,12 @@ class ArchiveInactiveDevicesCommandTest extends TestCase
         $staleDevice = Device::factory()->create([
             'name' => 'Stale Device 35 Days',
             'last_heartbeat_at' => Carbon::now()->subDays(35),
-            'status' => 'inactive',
         ]);
 
         // 3. Recently active device (<30 days but >15 days)
         $freshDevice = Device::factory()->create([
             'name' => 'Fresh Device 20 Days',
             'last_heartbeat_at' => Carbon::now()->subDays(20),
-            'status' => 'active',
         ]);
 
         // 4. Run the artisan command without the --days option

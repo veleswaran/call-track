@@ -18,6 +18,11 @@ class AttemptTokenLoginAction
         private Google2FA $google2fa
     ) {}
 
+    /**
+     * Execute the token login attempt.
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     */
     public function execute(AdminTokenLoginDTO $dto): AdminTokenLoginResultDTO
     {
         $user = User::query()->where('email', $dto->email)->first();

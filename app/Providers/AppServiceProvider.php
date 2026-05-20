@@ -12,10 +12,16 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(\Kreait\Firebase\Contract\Messaging::class, function ($app) {
-            $factory = (new \Kreait\Firebase\Factory)
-                ->withServiceAccount(config('firebase.credentials_path'));
+            $path = config('firebase.credentials_path');
 
-            return $factory->createMessaging();
+            if ($path && file_exists($path)) {
+                $factory = (new \Kreait\Firebase\Factory)
+                    ->withServiceAccount($path);
+
+                return $factory->createMessaging();
+            }
+
+            return new \App\Services\Devices\FakeMessaging;
         });
 
         $this->app->bind(

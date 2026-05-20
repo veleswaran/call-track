@@ -53,10 +53,17 @@ class NotifyUnattendedMissedCallsCommandTest extends TestCase
             'notified_at' => null,
         ]);
 
-        // 4. Mock FCM messaging
+        // 4. Mock FCM messaging and assert that the translated title and body are correct
         $messagingMock = $this->createMock(Messaging::class);
         $messagingMock->expects($this->once())
-            ->method('send');
+            ->method('send')
+            ->with($this->callback(function (\Kreait\Firebase\Messaging\CloudMessage $message) {
+                $data = $message->jsonSerialize();
+
+                return isset($data['notification'])
+                    && $data['notification']['title'] === 'Unattended Missed Call Alert'
+                    && $data['notification']['body'] === 'You have an unattended missed call from +919999999999 that requires immediate follow-up.';
+            }));
 
         $this->app->instance(Messaging::class, $messagingMock);
 
@@ -75,7 +82,6 @@ class NotifyUnattendedMissedCallsCommandTest extends TestCase
     {
         $device = Device::factory()->create([
             'fcm_token' => 'mock-device-fcm-token',
-            'status' => 'active',
         ]);
 
         DeviceToken::create([

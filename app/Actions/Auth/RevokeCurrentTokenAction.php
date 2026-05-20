@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\Auth;
 
 class RevokeCurrentTokenAction
 {
+    /**
+     * Revoke the current access token for the authenticated user.
+     */
     public function execute(): void
     {
         $user = Auth::user();

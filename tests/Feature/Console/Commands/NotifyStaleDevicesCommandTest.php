@@ -21,7 +21,6 @@ class NotifyStaleDevicesCommandTest extends TestCase
         $device = Device::factory()->create([
             'fcm_token' => 'mock-fcm-token',
             'last_heartbeat_at' => Carbon::now()->subMinutes(120),
-            'status' => 'active',
         ]);
 
         // 2. Add an active device token so it satisfies ->whereHas('activeTokens')
@@ -53,7 +52,6 @@ class NotifyStaleDevicesCommandTest extends TestCase
         $device = Device::factory()->create([
             'fcm_token' => 'mock-fcm-token',
             'last_heartbeat_at' => Carbon::now()->subMinutes(10),
-            'status' => 'active',
         ]);
 
         DeviceToken::create([
