@@ -23,6 +23,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property array|null $tracked_sim_slots
  * @property \Illuminate\Support\Carbon|null $last_heartbeat_at
  * @property string $status
+ * @property bool $is_archived
  */
 class Device extends Model
 {
@@ -52,6 +53,7 @@ class Device extends Model
         'fcm_token',
         'metadata',
         'status',
+        'is_archived',
     ];
 
     /**
@@ -65,6 +67,7 @@ class Device extends Model
             'tracked_sim_slots' => 'array',
             'last_heartbeat_at' => 'datetime',
             'metadata' => 'array',
+            'is_archived' => 'boolean',
         ];
     }
 

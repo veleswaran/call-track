@@ -14,7 +14,7 @@ class ListDevicesAction
     public function execute(ListDevicesDTO $dto): LengthAwarePaginator
     {
         $deviceQuery = Device::query()
-            ->where('status', '!=', 'archived')
+            ->where('is_archived', false)
             ->with(['agent'])
             ->withExists('activeTokens');
 

@@ -47,9 +47,9 @@ class ArchiveInactiveDevicesCommandTest extends TestCase
             ->assertExitCode(0);
 
         // 5. Assert database transitions
-        $this->assertEquals('archived', $staleHeartbeatDevice->refresh()->status);
-        $this->assertEquals('archived', $staleCreatedDevice->refresh()->status);
-        $this->assertEquals('active', $freshDevice->refresh()->status);
+        $this->assertTrue($staleHeartbeatDevice->refresh()->is_archived);
+        $this->assertTrue($staleCreatedDevice->refresh()->is_archived);
+        $this->assertFalse($freshDevice->refresh()->is_archived);
 
         // 6. Assert ListDevicesAction query excludes archived devices
         $listAction = app(ListDevicesAction::class);
@@ -89,7 +89,7 @@ class ArchiveInactiveDevicesCommandTest extends TestCase
             ->assertExitCode(0);
 
         // 5. Assert database transitions
-        $this->assertEquals('archived', $staleDevice->refresh()->status);
-        $this->assertEquals('active', $freshDevice->refresh()->status);
+        $this->assertTrue($staleDevice->refresh()->is_archived);
+        $this->assertFalse($freshDevice->refresh()->is_archived);
     }
 }
