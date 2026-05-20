@@ -48,7 +48,11 @@ class FakeMessaging implements Messaging
      */
     public function validateRegistrationTokens($registrationTokenOrTokens): array
     {
-        return [];
+        return [
+            'valid' => [],
+            'unknown' => [],
+            'invalid' => [],
+        ];
     }
 
     /**
