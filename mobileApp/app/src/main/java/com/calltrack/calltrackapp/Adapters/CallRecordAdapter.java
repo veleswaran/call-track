@@ -27,6 +27,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public class CallRecordAdapter extends RecyclerView.Adapter<CallRecordAdapter.ViewHolder> {
 
+    private static final Executor BACKGROUND_EXECUTOR = Executors.newSingleThreadExecutor();
+
     private List<CallRecord> records;
     private final OnRecordUpdatedListener listener;
 
@@ -208,7 +210,7 @@ public class CallRecordAdapter extends RecyclerView.Adapter<CallRecordAdapter.Vi
         }
 
         // Save in background thread to avoid blocking UI
-        Executors.newSingleThreadExecutor().execute(() -> {
+        BACKGROUND_EXECUTOR.execute(() -> {
             try {
                 AppDB db = AppDB.getInstance(context.getApplicationContext());
 

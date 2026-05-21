@@ -63,4 +63,13 @@ public interface PhoneNumberCategoryDAO {
      */
     @Query("SELECT COUNT(*) FROM phone_number_categories")
     int getPreferenceCount();
+
+    /**
+     * Get all category preferences at once.
+     * Use this for batch operations to avoid N+1 query problem.
+     *
+     * @return List of all phone number category preferences
+     */
+    @Query("SELECT * FROM phone_number_categories")
+    java.util.List<PhoneNumberCategory> getAllPreferences();
 }
