@@ -45,13 +45,13 @@ class GetAgentPerformanceActionTest extends TestCase
         );
 
         $action = app(GetAgentPerformanceAction::class);
-        $result = $action->execute($filters);
+        $result = $action->execute($filters)->items();
 
         $this->assertNotEmpty($result);
         $this->assertEquals('09:30 AM', $result[0]['first_call_time']);
     }
 
-    public function test_returns_na_when_no_calls_on_start_date_but_calls_on_other_dates(): void
+    public function test_returns_first_call_within_range_when_no_calls_on_start_date(): void
     {
         $agent = Agent::factory()->create();
         $device = Device::factory()->create(['agent_id' => $agent->id]);
@@ -68,10 +68,10 @@ class GetAgentPerformanceActionTest extends TestCase
         );
 
         $action = app(GetAgentPerformanceAction::class);
-        $result = $action->execute($filters);
+        $result = $action->execute($filters)->items();
 
         $this->assertNotEmpty($result);
-        $this->assertEquals('N/A', $result[0]['first_call_time']);
+        $this->assertEquals('09:30 AM', $result[0]['first_call_time']);
     }
 
     public function test_returns_earliest_call_when_multiple_calls_on_start_date(): void
@@ -101,7 +101,7 @@ class GetAgentPerformanceActionTest extends TestCase
         );
 
         $action = app(GetAgentPerformanceAction::class);
-        $result = $action->execute($filters);
+        $result = $action->execute($filters)->items();
 
         $this->assertNotEmpty($result);
         $this->assertEquals('08:45 AM', $result[0]['first_call_time']);
@@ -124,7 +124,7 @@ class GetAgentPerformanceActionTest extends TestCase
         );
 
         $action = app(GetAgentPerformanceAction::class);
-        $result = $action->execute($filters);
+        $result = $action->execute($filters)->items();
 
         $this->assertNotEmpty($result);
         $this->assertEquals('10:15 AM', $result[0]['first_call_time']);
@@ -143,7 +143,7 @@ class GetAgentPerformanceActionTest extends TestCase
         );
 
         $action = app(GetAgentPerformanceAction::class);
-        $result = $action->execute($filters);
+        $result = $action->execute($filters)->items();
 
         // Since the query does an INNER JOIN on devices and call_logs, an agent with NO call logs will NOT appear in the results.
         // This is existing behavior of GetAgentPerformanceAction. So result should be empty.
