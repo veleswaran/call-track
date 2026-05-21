@@ -10,12 +10,16 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.calltrack.calltrackapp.R;
+import com.calltrack.calltrackapp.db.AppDB;
 import com.calltrack.calltrackapp.db.bundles.CallRecord;
+import com.calltrack.calltrackapp.db.bundles.PhoneNumberCategory;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
@@ -162,15 +166,71 @@ public class CallRecordAdapter extends RecyclerView.Adapter<CallRecordAdapter.Vi
 
     private void showCategoryDialog(Context context, CallRecord record, int position) {
         String[] options = {"BUSINESS", "PERSONAL", "IGNORED"};
+
+        // Find current selection index for showing a checkmark
+        int currentSelection = -1;
+        for (int i = 0; i < options.length; i++) {
+            if (options[i].equals(record.category)) {
+                currentSelection = i;
+                break;
+            }
+        }
+
         new AlertDialog.Builder(context)
             .setTitle("Select Category")
-            .setItems(options, (d, idx) -> {
-                record.category = options[idx];
+            .setSingleChoiceItems(options, currentSelection, (d, idx) -> {
+                String selectedCategory = options[idx];
+                record.category = selectedCategory;
                 record.synced = false;
+
+                // Save the category preference for this phone number
+                saveCategoryPreference(context, record.number, selectedCategory);
+
                 listener.onRecordUpdated(record);
                 notifyItemChanged(position);
+                d.dismiss();
             })
+            .setNegativeButton("Cancel", null)
             .show();
+    }
+
+    /**
+     * Save the category preference for a phone number.
+     * This will be used to auto-apply the category to future calls from this number.
+     *
+     * @param context The context
+     * @param phoneNumber The phone number
+     * @param category The selected category ("BUSINESS", "PERSONAL", or "IGNORED")
+     */
+    private void saveCategoryPreference(Context context, String phoneNumber, String category) {
+        if (phoneNumber == null || phoneNumber.isEmpty() || category == null || category.isEmpty()) {
+            return;
+        }
+
+        // Save in background thread to avoid blocking UI
+        Executors.newSingleThreadExecutor().execute(() -> {
+            try {
+                AppDB db = AppDB.getInstance(context.getApplicationContext());
+
+                // Create or update the preference
+                PhoneNumberCategory preference = new PhoneNumberCategory();
+                preference.phoneNumber = phoneNumber;
+                preference.normalizedNumber = PhoneNumberCategory.normalizePhoneNumber(phoneNumber);
+                preference.category = category;
+                preference.lastUpdated = System.currentTimeMillis();
+
+                // Insert or replace (will update if exists due to REPLACE conflict strategy)
+                db.phoneNumberCategoryDao().insert(preference);
+
+                android.util.Log.d("CallRecordAdapter",
+                    "Saved category preference: " + phoneNumber +
+                    " (normalized: " + preference.normalizedNumber + ") → " + category);
+
+            } catch (Exception e) {
+                android.util.Log.e("CallRecordAdapter",
+                    "Error saving category preference for " + phoneNumber, e);
+            }
+        });
     }
 
     private void setTextOrDefault(View parent, int viewId, String value, String defaultValue) {

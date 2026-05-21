@@ -12,6 +12,7 @@ import android.util.Log;
 
 import com.calltrack.calltrackapp.db.AppDB;
 import com.calltrack.calltrackapp.db.bundles.CallRecord;
+import com.calltrack.calltrackapp.db.bundles.PhoneNumberCategory;
 import com.calltrack.calltrackapp.db.bundles.TokenEntity;
 import com.calltrack.calltrackapp.settings.LocalSettings;
 import com.calltrack.calltrackapp.utilities.Utility;
@@ -65,6 +66,9 @@ public class SaveCore {
                     record.duration = getStringSafe(cursor, CallLog.Calls.DURATION);
                     int type = getIntSafe(cursor, CallLog.Calls.TYPE);
                     record.type = mapCallType(type);
+
+                    // Auto-apply category based on previous selection for this number
+                    record.category = getCategoryForNumber(context.getApplicationContext(), record.number);
 //                    int blockReason = getIntSafe(cursor, "block_reason");
                     int blockReason = -1;
                     record.metaData = buildMetadata(type, blockReason);
@@ -384,6 +388,42 @@ public class SaveCore {
         }
     }
 
+    /**
+     * Get the previously saved category preference for a phone number.
+     * Returns the saved category if found, otherwise returns empty string.
+     *
+     * @param context Application context
+     * @param phoneNumber The phone number to look up
+     * @return The saved category ("BUSINESS", "PERSONAL", "IGNORED") or empty string
+     */
+    private String getCategoryForNumber(Context context, String phoneNumber) {
+        if (phoneNumber == null || phoneNumber.isEmpty()) {
+            return "";
+        }
+
+        try {
+            AppDB db = AppDB.getInstance(context);
+            String normalizedNumber = PhoneNumberCategory.normalizePhoneNumber(phoneNumber);
+
+            // Look up the category preference
+            PhoneNumberCategory preference = db.phoneNumberCategoryDao().getCategoryForNumber(normalizedNumber);
+
+            if (preference != null && preference.category != null && !preference.category.isEmpty()) {
+                Log.d("CallMonitor", "Auto-applied category '" + preference.category +
+                      "' for number " + phoneNumber + " (normalized: " + normalizedNumber + ")");
+                return preference.category;
+            }
+
+            Log.d("CallMonitor", "No saved category for number " + phoneNumber +
+                  " (normalized: " + normalizedNumber + ")");
+        } catch (Exception e) {
+            Log.e("CallMonitor", "Error getting category for number: " + phoneNumber, e);
+            FirebaseCrashlytics.getInstance().recordException(e);
+        }
+
+        return ""; // Default to empty if no preference found or error occurred
+    }
+
     private void persistRecord(Context context, CallRecord record, boolean detectionFailed) {
         AppDB db = AppDB.getInstance(context);
         TokenEntity te = db.tokenDao().getOne();
@@ -394,7 +434,8 @@ public class SaveCore {
             db.callRecordDao().insert(record);
             String fallbackNote = detectionFailed ? " (fallback - detection failed)" : "";
             Log.d("CallMonitor", "✓ Call persisted - SIM slot: " + record.simSlot +
-                fallbackNote + ", Type: " + record.type + ", Tracked slots: " + te.simSlots);
+                fallbackNote + ", Type: " + record.type + ", Category: " + record.category +
+                ", Tracked slots: " + te.simSlots);
         } else {
             Log.w("CallMonitor", "✗ SKIPPED - SIM slot: " + record.simSlot +
                 ", Tracked slots: " + (te != null ? te.simSlots : "null") +
