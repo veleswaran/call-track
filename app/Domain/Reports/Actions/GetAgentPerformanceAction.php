@@ -110,7 +110,9 @@ final class GetAgentPerformanceAction
             DB::raw('SUM(CASE WHEN '.CallLog::SQL_MISSED_CONDITION.' THEN 1 ELSE 0 END) as missed'),
             DB::raw('AVG(call_logs.duration) as avg_duration'),
             DB::raw('SUM(call_logs.duration) as total_duration'),
+            DB::raw('MIN(CASE WHEN DATE(call_logs.timestamp) = ? THEN call_logs.timestamp END) as first_call_time'),
         ])
+            ->addBinding($filters->startDate?->format('Y-m-d'), 'select')
             ->groupBy('agents.id', 'agents.name', 'agents.employee_code')
             ->toBase()
             ->get();
@@ -136,6 +138,7 @@ final class GetAgentPerformanceAction
                 'id' => $stat->id,
                 'agent' => $stat->name,
                 'employee_code' => 'EMP-'.str_pad((string) $stat->id, 3, '0', STR_PAD_LEFT), // Mock code
+                'first_call_time' => $stat->first_call_time ? \Carbon\Carbon::parse($stat->first_call_time)->format('h:i A') : 'N/A',
                 'total_calls' => $total,
                 'connected' => $connected,
                 'missed' => (int) $stat->missed,

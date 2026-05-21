@@ -26,6 +26,7 @@ export interface AgentPerformance {
     id: number
     agent: string
     employee_code: string
+    first_call_time: string
     total_calls: number
     connected: number
     missed: number
@@ -182,6 +183,7 @@ export function AgentPerformanceTable({ data, filters }: AgentPerformanceTablePr
                             <TableHead className="w-[80px]">Avatar</TableHead>
                             <TableHead>Agent</TableHead>
                             <TableHead>EMP Code</TableHead>
+                            <TableHead className="text-center">First Call</TableHead>
                             <SortableHeader label="Total Calls" sortKey="total_calls" align="right" className="text-right" onSort={handleSort} />
                             <SortableHeader label="Connected" sortKey="connected" align="right" className="text-right" onSort={handleSort} />
                             <SortableHeader label="Missed" sortKey="missed" align="right" className="text-right" onSort={handleSort} />
@@ -229,6 +231,9 @@ export function AgentPerformanceTable({ data, filters }: AgentPerformanceTablePr
                                 </TableCell>
                                 <TableCell className="font-medium">{row.agent}</TableCell>
                                 <TableCell>{row.employee_code}</TableCell>
+                                <TableCell className={`text-center ${row.first_call_time === 'N/A' ? 'text-muted-foreground' : ''}`}>
+                                    {row.first_call_time}
+                                </TableCell>
                                 <TableCell className="text-right">{row.total_calls}</TableCell>
                                 <TableCell className="text-right text-green-600 font-bold">{row.connected}</TableCell>
                                 <TableCell className="text-right text-red-600 font-bold">{row.missed}</TableCell>
