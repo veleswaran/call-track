@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Devices;
+namespace Tests\Fakes;
 
 use Kreait\Firebase\Contract\Messaging;
 use Kreait\Firebase\Messaging\AppInstance;

@@ -21,7 +21,11 @@ class AppServiceProvider extends ServiceProvider
                 return $factory->createMessaging();
             }
 
-            return new \App\Services\Devices\FakeMessaging;
+            if (class_exists(\Tests\Fakes\FakeMessaging::class)) {
+                return new \Tests\Fakes\FakeMessaging;
+            }
+
+            throw new \RuntimeException('Firebase credentials are not configured and FakeMessaging is only available in development/testing environments.');
         });
 
         $this->app->bind(
