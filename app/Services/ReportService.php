@@ -30,9 +30,9 @@ final class ReportService implements ReportServiceInterface
         return $this->getChartsAction->execute($this->ensureDefaults($filters));
     }
 
-    public function getPerformance(ReportFilterDTO $filters): LengthAwarePaginator
+    public function getPerformance(ReportFilterDTO $filters, int $perPage = 15): LengthAwarePaginator
     {
-        return $this->getPerformanceAction->execute($this->ensureDefaults($filters));
+        return $this->getPerformanceAction->execute($this->ensureDefaults($filters), $perPage);
     }
 
     private function ensureDefaults(ReportFilterDTO $filters): ReportFilterDTO
@@ -52,6 +52,8 @@ final class ReportService implements ReportServiceInterface
             search: $filters->search,
             allowedAgentIds: $filters->allowedAgentIds,
             contactFilter: $filters->contactFilter,
+            sortBy: $filters->sortBy,
+            sortOrder: $filters->sortOrder,
         );
     }
 }

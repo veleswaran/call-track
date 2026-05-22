@@ -20,6 +20,8 @@ final class ReportFilterDTO
         /** @var int[]|null Null = full access, array = restricted agent IDs */
         public readonly ?array $allowedAgentIds = null,
         public readonly ?string $contactFilter = null,
+        public readonly ?string $sortBy = null,
+        public readonly ?string $sortOrder = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -35,6 +37,8 @@ final class ReportFilterDTO
             search: $data['search'] ?? null,
             allowedAgentIds: $data['allowed_agent_ids'] ?? null,
             contactFilter: $data['contact_filter'] ?? null,
+            sortBy: $data['sort_by'] ?? null,
+            sortOrder: $data['sort_order'] ?? null,
         );
     }
 }

@@ -38,7 +38,8 @@ final class ReportController extends Controller
     public function performance(GetReportDataRequest $request): AgentPerformanceCollection
     {
         $filters = $this->buildScopedFilters($request);
-        $data = $this->reportService->getPerformance($filters);
+        $perPage = $request->integer('per_page', 15);
+        $data = $this->reportService->getPerformance($filters, $perPage);
 
         return new AgentPerformanceCollection($data);
     }
@@ -62,6 +63,8 @@ final class ReportController extends Controller
             search: $base->search,
             allowedAgentIds: $allowedAgentIds,
             contactFilter: $base->contactFilter,
+            sortBy: $base->sortBy,
+            sortOrder: $base->sortOrder,
         );
     }
 }

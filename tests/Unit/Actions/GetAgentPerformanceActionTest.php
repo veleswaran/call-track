@@ -149,4 +149,47 @@ class GetAgentPerformanceActionTest extends TestCase
         // This is existing behavior of GetAgentPerformanceAction. So result should be empty.
         $this->assertEmpty($result);
     }
+
+    public function test_sorts_performance_report_by_first_call_time(): void
+    {
+        $agentA = Agent::factory()->create(['name' => 'Agent A']);
+        $deviceA = Device::factory()->create(['agent_id' => $agentA->id]);
+        CallLog::factory()->create([
+            'device_id' => $deviceA->id,
+            'agent_id' => $agentA->id,
+            'timestamp' => '2026-05-21 11:00:00',
+        ]);
+
+        $agentB = Agent::factory()->create(['name' => 'Agent B']);
+        $deviceB = Device::factory()->create(['agent_id' => $agentB->id]);
+        CallLog::factory()->create([
+            'device_id' => $deviceB->id,
+            'agent_id' => $agentB->id,
+            'timestamp' => '2026-05-21 09:00:00',
+        ]);
+
+        $action = app(GetAgentPerformanceAction::class);
+
+        // Test Ascending Sort
+        $filtersAsc = new ReportFilterDTO(
+            startDate: Carbon::parse('2026-05-21'),
+            endDate: Carbon::parse('2026-05-21'),
+            sortBy: 'first_call_time',
+            sortOrder: 'asc'
+        );
+        $resultAsc = $action->execute($filtersAsc)->items();
+        $this->assertCount(2, $resultAsc);
+        $this->assertEquals($agentB->name, $resultAsc[0]['agent']); // 09:00 AM comes before 11:00 AM
+
+        // Test Descending Sort
+        $filtersDesc = new ReportFilterDTO(
+            startDate: Carbon::parse('2026-05-21'),
+            endDate: Carbon::parse('2026-05-21'),
+            sortBy: 'first_call_time',
+            sortOrder: 'desc'
+        );
+        $resultDesc = $action->execute($filtersDesc)->items();
+        $this->assertCount(2, $resultDesc);
+        $this->assertEquals($agentA->name, $resultDesc[0]['agent']); // 11:00 AM comes after 09:00 AM
+    }
 }
