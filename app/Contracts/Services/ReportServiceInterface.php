@@ -13,5 +13,5 @@ interface ReportServiceInterface
 
     public function getCharts(ReportFilterDTO $filters): array;
 
-    public function getPerformance(ReportFilterDTO $filters, int $perPage = 15): LengthAwarePaginator;
+    public function getPerformance(ReportFilterDTO $filters): LengthAwarePaginator;
 }

@@ -15,7 +15,7 @@ final class GetAgentPerformanceAction
         protected \App\Actions\Contacts\GetContactHashVariationsAction $getContactHashesAction
     ) {}
 
-    public function execute(ReportFilterDTO $filters, int $perPage = 15): LengthAwarePaginator
+    public function execute(ReportFilterDTO $filters): LengthAwarePaginator
     {
         // Should join users/agents.
         // Assuming 'agents' are Users with specific role or just Users linked to Devices.
@@ -39,7 +39,7 @@ final class GetAgentPerformanceAction
         if ($filters->allowedAgentIds !== null) {
             if (empty($filters->allowedAgentIds)) {
                 // No access
-                return new \Illuminate\Pagination\LengthAwarePaginator([], 0, $perPage);
+                return new \Illuminate\Pagination\LengthAwarePaginator([], 0, $filters->perPage);
             }
             $query->whereIn('agents.id', $filters->allowedAgentIds);
         }
@@ -136,7 +136,7 @@ final class GetAgentPerformanceAction
         }
 
         $stats = $query->toBase()
-            ->paginate($perPage);
+            ->paginate(perPage: $filters->perPage, page: $filters->page);
 
         $stats->getCollection()->transform(function ($stat) {
             $total = (int) $stat->total_calls;

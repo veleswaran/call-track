@@ -192,4 +192,53 @@ class GetAgentPerformanceActionTest extends TestCase
         $this->assertCount(2, $resultDesc);
         $this->assertEquals($agentA->name, $resultDesc[0]['agent']); // 11:00 AM comes after 09:00 AM
     }
+
+    public function test_paginates_performance_report_using_dto_properties(): void
+    {
+        $agentA = Agent::factory()->create(['name' => 'Agent A']);
+        $deviceA = Device::factory()->create(['agent_id' => $agentA->id]);
+        CallLog::factory()->create([
+            'device_id' => $deviceA->id,
+            'agent_id' => $agentA->id,
+            'timestamp' => '2026-05-21 11:00:00',
+        ]);
+
+        $agentB = Agent::factory()->create(['name' => 'Agent B']);
+        $deviceB = Device::factory()->create(['agent_id' => $agentB->id]);
+        CallLog::factory()->create([
+            'device_id' => $deviceB->id,
+            'agent_id' => $agentB->id,
+            'timestamp' => '2026-05-21 09:00:00',
+        ]);
+
+        $action = app(GetAgentPerformanceAction::class);
+
+        // Request perPage = 1, page = 1
+        $filtersPage1 = new ReportFilterDTO(
+            startDate: Carbon::parse('2026-05-21'),
+            endDate: Carbon::parse('2026-05-21'),
+            sortBy: 'agent',
+            sortOrder: 'asc',
+            perPage: 1,
+            page: 1
+        );
+        $resultPage1 = $action->execute($filtersPage1);
+        $this->assertEquals(2, $resultPage1->total());
+        $this->assertCount(1, $resultPage1->items());
+        $this->assertEquals($agentA->name, $resultPage1->items()[0]['agent']); // 'Agent A' is first in alphabetical order
+
+        // Request perPage = 1, page = 2
+        $filtersPage2 = new ReportFilterDTO(
+            startDate: Carbon::parse('2026-05-21'),
+            endDate: Carbon::parse('2026-05-21'),
+            sortBy: 'agent',
+            sortOrder: 'asc',
+            perPage: 1,
+            page: 2
+        );
+        $resultPage2 = $action->execute($filtersPage2);
+        $this->assertEquals(2, $resultPage2->total());
+        $this->assertCount(1, $resultPage2->items());
+        $this->assertEquals($agentB->name, $resultPage2->items()[0]['agent']); // 'Agent B' is second in alphabetical order
+    }
 }

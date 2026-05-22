@@ -22,6 +22,8 @@ final class ReportFilterDTO
         public readonly ?string $contactFilter = null,
         public readonly ?string $sortBy = null,
         public readonly ?string $sortOrder = null,
+        public readonly int $perPage = 15,
+        public readonly ?int $page = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -39,6 +41,8 @@ final class ReportFilterDTO
             contactFilter: $data['contact_filter'] ?? null,
             sortBy: $data['sort_by'] ?? null,
             sortOrder: $data['sort_order'] ?? null,
+            perPage: (int) ($data['per_page'] ?? 15),
+            page: isset($data['page']) ? (int) $data['page'] : null,
         );
     }
 }
