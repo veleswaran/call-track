@@ -39,7 +39,7 @@ final class GetAgentPerformanceAction
         if ($filters->allowedAgentIds !== null) {
             if (empty($filters->allowedAgentIds)) {
                 // No access
-                return new \Illuminate\Pagination\LengthAwarePaginator([], 0, 15);
+                return new \Illuminate\Pagination\LengthAwarePaginator([], 0, $filters->perPage, $filters->page);
             }
             $query->whereIn('agents.id', $filters->allowedAgentIds);
         }
@@ -113,9 +113,30 @@ final class GetAgentPerformanceAction
             DB::raw('SUM(call_logs.duration) as total_duration'),
             DB::raw('MIN(call_logs.timestamp) as first_call_time'),
         ])
-            ->groupBy('agents.id', 'agents.name', 'agents.employee_code')
-            ->toBase()
-            ->paginate(15);
+            ->groupBy('agents.id', 'agents.name', 'agents.employee_code');
+
+        $sortField = $filters->sortBy;
+        $sortOrder = $filters->sortOrder ?? 'asc';
+
+        if ($sortField) {
+            $mappedSort = match ($sortField) {
+                'agent' => 'agents.name',
+                'total_calls' => 'total_calls',
+                'connected' => 'connected',
+                'missed' => 'missed',
+                'avg_duration' => 'avg_duration',
+                'total_duration' => 'total_duration',
+                'first_call_time' => 'first_call_time',
+                default => 'agents.name',
+            };
+
+            $query->orderBy($mappedSort, $sortOrder);
+        } else {
+            $query->orderBy('agents.name', 'asc');
+        }
+
+        $stats = $query->toBase()
+            ->paginate(perPage: $filters->perPage, page: $filters->page);
 
         $stats->getCollection()->transform(function ($stat) {
             $total = (int) $stat->total_calls;

@@ -62,6 +62,10 @@ final class ReportController extends Controller
             search: $base->search,
             allowedAgentIds: $allowedAgentIds,
             contactFilter: $base->contactFilter,
+            sortBy: $base->sortBy,
+            sortOrder: $base->sortOrder,
+            perPage: $base->perPage,
+            page: $base->page,
         );
     }
 }

@@ -52,6 +52,10 @@ final class ReportService implements ReportServiceInterface
             search: $filters->search,
             allowedAgentIds: $filters->allowedAgentIds,
             contactFilter: $filters->contactFilter,
+            sortBy: $filters->sortBy,
+            sortOrder: $filters->sortOrder,
+            perPage: $filters->perPage,
+            page: $filters->page,
         );
     }
 }
