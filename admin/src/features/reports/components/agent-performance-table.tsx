@@ -26,6 +26,7 @@ export interface AgentPerformance {
     id: number
     agent: string
     employee_code: string
+    first_call_time: string
     total_calls: number
     connected: number
     missed: number
@@ -72,6 +73,24 @@ const durationToSeconds = (duration: string): number => {
     return totalSeconds;
 }
 
+/**
+ * Helper to parse time string (e.g. "09:15 AM") to minutes from midnight for sorting
+ */
+const timeToMinutes = (timeStr: string): number => {
+    if (!timeStr || timeStr === 'N/A') return Infinity;
+
+    const [time, period] = timeStr.split(' ');
+    if (!time || !period) return Infinity;
+
+    const timeParts = time.split(':').map(Number);
+    let hours = timeParts[0];
+    const minutes = timeParts[1];
+    if (period === 'PM' && hours !== 12) hours += 12;
+    if (period === 'AM' && hours === 12) hours = 0;
+
+    return hours * 60 + minutes;
+}
+
 const SortableHeader = ({
     label,
     sortKey,
@@ -82,14 +101,14 @@ const SortableHeader = ({
     label: React.ReactNode,
     sortKey: keyof AgentPerformance,
     onSort: (key: keyof AgentPerformance) => void,
-    align?: "left" | "right",
+    align?: "left" | "right" | "center",
     className?: string
 }) => (
     <TableHead className={className}>
         <Button
             variant="ghost"
             onClick={() => onSort(sortKey)}
-            className={`p-0 hover:bg-transparent flex items-center gap-1 ${align === "right" ? "ml-auto" : ""}`}
+            className={`p-0 hover:bg-transparent flex items-center gap-1 ${align === "right" ? "ml-auto" : align === "center" ? "mx-auto" : ""}`}
         >
             {label}
             <ArrowUpDown className="h-3 w-3" />
@@ -121,6 +140,12 @@ export function AgentPerformanceTable({ data, filters }: AgentPerformanceTablePr
         if (sortConfig.key === 'total_duration' || sortConfig.key === 'avg_duration') {
             aValue = durationToSeconds(aValue as string);
             bValue = durationToSeconds(bValue as string);
+        }
+
+        // Handle time sorting
+        if (sortConfig.key === 'first_call_time') {
+            aValue = timeToMinutes(aValue as string);
+            bValue = timeToMinutes(bValue as string);
         }
 
         if (aValue < bValue) {
@@ -182,6 +207,7 @@ export function AgentPerformanceTable({ data, filters }: AgentPerformanceTablePr
                             <TableHead className="w-[80px]">Avatar</TableHead>
                             <TableHead>Agent</TableHead>
                             <TableHead>EMP Code</TableHead>
+                            <SortableHeader label="First Call" sortKey="first_call_time" align="center" className="text-center" onSort={handleSort} />
                             <SortableHeader label="Total Calls" sortKey="total_calls" align="right" className="text-right" onSort={handleSort} />
                             <SortableHeader label="Connected" sortKey="connected" align="right" className="text-right" onSort={handleSort} />
                             <SortableHeader label="Missed" sortKey="missed" align="right" className="text-right" onSort={handleSort} />
@@ -229,6 +255,9 @@ export function AgentPerformanceTable({ data, filters }: AgentPerformanceTablePr
                                 </TableCell>
                                 <TableCell className="font-medium">{row.agent}</TableCell>
                                 <TableCell>{row.employee_code}</TableCell>
+                                <TableCell className={`text-center ${row.first_call_time === 'N/A' ? 'text-muted-foreground' : ''}`}>
+                                    {row.first_call_time}
+                                </TableCell>
                                 <TableCell className="text-right">{row.total_calls}</TableCell>
                                 <TableCell className="text-right text-green-600 font-bold">{row.connected}</TableCell>
                                 <TableCell className="text-right text-red-600 font-bold">{row.missed}</TableCell>

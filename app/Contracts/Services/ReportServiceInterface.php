@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Contracts\Services;
 
 use App\Domain\Reports\DTOs\ReportFilterDTO;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 interface ReportServiceInterface
 {
@@ -12,5 +13,5 @@ interface ReportServiceInterface
 
     public function getCharts(ReportFilterDTO $filters): array;
 
-    public function getPerformance(ReportFilterDTO $filters): array;
+    public function getPerformance(ReportFilterDTO $filters): LengthAwarePaginator;
 }
