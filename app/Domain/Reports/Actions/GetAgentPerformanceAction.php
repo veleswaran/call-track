@@ -39,7 +39,7 @@ final class GetAgentPerformanceAction
         if ($filters->allowedAgentIds !== null) {
             if (empty($filters->allowedAgentIds)) {
                 // No access
-                return new \Illuminate\Pagination\LengthAwarePaginator([], 0, $filters->perPage);
+                return new \Illuminate\Pagination\LengthAwarePaginator([], 0, $filters->perPage, $filters->page);
             }
             $query->whereIn('agents.id', $filters->allowedAgentIds);
         }
