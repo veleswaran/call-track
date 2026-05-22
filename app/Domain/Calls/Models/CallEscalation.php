@@ -18,11 +18,13 @@ class CallEscalation extends Model
         'response_due_at',
         'resolved_at',
         'resolved_by_call_id',
+        'notified_at',
     ];
 
     protected $casts = [
         'response_due_at' => 'datetime',
         'resolved_at' => 'datetime',
+        'notified_at' => 'datetime',
     ];
 
     /**

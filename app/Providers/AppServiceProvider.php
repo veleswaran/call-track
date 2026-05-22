@@ -12,10 +12,20 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(\Kreait\Firebase\Contract\Messaging::class, function ($app) {
-            $factory = (new \Kreait\Firebase\Factory)
-                ->withServiceAccount(config('firebase.credentials_path'));
+            $path = config('firebase.credentials_path');
 
-            return $factory->createMessaging();
+            if ($path && file_exists($path)) {
+                $factory = (new \Kreait\Firebase\Factory)
+                    ->withServiceAccount($path);
+
+                return $factory->createMessaging();
+            }
+
+            if (class_exists(\Tests\Fakes\FakeMessaging::class)) {
+                return new \Tests\Fakes\FakeMessaging;
+            }
+
+            throw new \RuntimeException('Firebase credentials are not configured and FakeMessaging is only available in development/testing environments.');
         });
 
         $this->app->bind(
@@ -41,6 +51,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             \App\Contracts\Services\DeviceRegistrationServiceInterface::class,
             \App\Services\Devices\DeviceRegistrationService::class
+        );
+
+        $this->app->bind(
+            \App\Contracts\Services\DeviceManagementServiceInterface::class,
+            \App\Services\Devices\DeviceManagementService::class
         );
 
         $this->app->bind(

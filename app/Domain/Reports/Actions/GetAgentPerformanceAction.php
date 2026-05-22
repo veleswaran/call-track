@@ -6,6 +6,7 @@ namespace App\Domain\Reports\Actions;
 
 use App\Domain\Calls\Models\CallLog;
 use App\Domain\Reports\DTOs\ReportFilterDTO;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
 final class GetAgentPerformanceAction
@@ -14,7 +15,7 @@ final class GetAgentPerformanceAction
         protected \App\Actions\Contacts\GetContactHashVariationsAction $getContactHashesAction
     ) {}
 
-    public function execute(ReportFilterDTO $filters): array
+    public function execute(ReportFilterDTO $filters): LengthAwarePaginator
     {
         // Should join users/agents.
         // Assuming 'agents' are Users with specific role or just Users linked to Devices.
@@ -38,7 +39,7 @@ final class GetAgentPerformanceAction
         if ($filters->allowedAgentIds !== null) {
             if (empty($filters->allowedAgentIds)) {
                 // No access
-                return [];
+                return new \Illuminate\Pagination\LengthAwarePaginator([], 0, 15);
             }
             $query->whereIn('agents.id', $filters->allowedAgentIds);
         }
@@ -110,21 +111,17 @@ final class GetAgentPerformanceAction
             DB::raw('SUM(CASE WHEN '.CallLog::SQL_MISSED_CONDITION.' THEN 1 ELSE 0 END) as missed'),
             DB::raw('AVG(call_logs.duration) as avg_duration'),
             DB::raw('SUM(call_logs.duration) as total_duration'),
+            DB::raw('MIN(call_logs.timestamp) as first_call_time'),
         ])
             ->groupBy('agents.id', 'agents.name', 'agents.employee_code')
             ->toBase()
-            ->get();
+            ->paginate(15);
 
-        $result = [];
-        foreach ($stats as $stat) {
+        $stats->getCollection()->transform(function ($stat) {
             $total = (int) $stat->total_calls;
             $connected = (int) $stat->connected;
-            // Handling Rate = Connected / Total? Or (Connected + Outgoing) / Total?
-            // "Handling Rate" usually implies "Calls Answered / Total Offered" for Inbound.
-            // For mixed, let's use Connected %
             $handlingRate = $total > 0 ? round(($connected / $total) * 100, 1) : 0;
 
-            // Performance Label
             $performance = 'Average';
             if ($handlingRate >= 80) {
                 $performance = 'Excellent';
@@ -132,10 +129,11 @@ final class GetAgentPerformanceAction
                 $performance = 'Poor';
             }
 
-            $result[] = [
+            return [
                 'id' => $stat->id,
                 'agent' => $stat->name,
                 'employee_code' => 'EMP-'.str_pad((string) $stat->id, 3, '0', STR_PAD_LEFT), // Mock code
+                'first_call_time' => $stat->first_call_time ? \Carbon\Carbon::parse($stat->first_call_time)->format('h:i A') : 'N/A',
                 'total_calls' => $total,
                 'connected' => $connected,
                 'missed' => (int) $stat->missed,
@@ -144,9 +142,9 @@ final class GetAgentPerformanceAction
                 'handling_rate' => $handlingRate,
                 'performance' => $performance,
             ];
-        }
+        });
 
-        return $result;
+        return $stats;
     }
 
     private function formatDuration(int $seconds): string

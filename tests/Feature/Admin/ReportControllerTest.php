@@ -92,4 +92,47 @@ class ReportControllerTest extends TestCase
             ->assertJsonPath('data.0.total_calls', 1)
             ->assertJsonPath('data.0.avg_duration', '2m 0s');
     }
+
+    public function test_performance_endpoint_filters_by_contact_filter(): void
+    {
+        $contact = \App\Domain\Calls\Models\Contact::factory()->create([
+            'is_internal' => true,
+            'phone_number' => '+919999999999',
+            'phone_hash' => hash('sha256', '+919999999999'),
+        ]);
+        // Clean cache so variations are populated
+        app(\App\Actions\Contacts\GetContactHashVariationsAction::class)->clearCache();
+
+        // 1. Internal call
+        CallLog::factory()->create([
+            'device_id' => $this->device->id,
+            'phone_number_hash' => hash('sha256', '+919999999999'),
+            'duration' => 120,
+        ]);
+
+        // 2. External call
+        CallLog::factory()->create([
+            'device_id' => $this->device->id,
+            'phone_number_hash' => hash('sha256', '+918888888888'),
+            'duration' => 60,
+        ]);
+
+        // Query internal
+        $responseInternal = $this->actingAs($this->admin)
+            ->getJson('/api/v1/admin/reports/performance?contact_filter=internal');
+
+        $responseInternal->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.total_calls', 1)
+            ->assertJsonPath('data.0.avg_duration', '2m 0s');
+
+        // Query external
+        $responseExternal = $this->actingAs($this->admin)
+            ->getJson('/api/v1/admin/reports/performance?contact_filter=external');
+
+        $responseExternal->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.total_calls', 1)
+            ->assertJsonPath('data.0.avg_duration', '1m 0s');
+    }
 }

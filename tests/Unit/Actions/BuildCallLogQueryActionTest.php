@@ -27,7 +27,8 @@ class BuildCallLogQueryActionTest extends TestCase
         );
     }
 
-    public function it_filters_by_search_term_matching_phone_number(): void
+    #[Test]
+    public function test_it_filters_by_search_term_matching_phone_number(): void
     {
         // 1. Create a call log with a specific phone number
         $phoneNumber = PhoneNormalizer::normalize('+15551234567');
@@ -50,6 +51,31 @@ class BuildCallLogQueryActionTest extends TestCase
             page: 1,
             perPage: 10,
             search: $phoneNumber
+        );
+
+        $results = $this->action->execute($dto)->get();
+        $this->assertCount(1, $results);
+        $this->assertEquals($hash, $results->first()->phone_number_hash);
+    }
+
+    #[Test]
+    public function test_it_filters_by_search_term_matching_phone_number_with_prefix_variations(): void
+    {
+        // Stored phone has prefix, e.g. +917904953544
+        $phoneNumber = '+917904953544';
+        $hash = hash('sha256', '917904953544');
+
+        CallLog::factory()->create([
+            'phone_number_hash' => $hash,
+            'phone_number' => $phoneNumber,
+            'created_at' => now(),
+        ]);
+
+        // Search for different prefix variation
+        $dto = new ListCallLogsDTO(
+            page: 1,
+            perPage: 10,
+            search: '7904953544'
         );
 
         $results = $this->action->execute($dto)->get();

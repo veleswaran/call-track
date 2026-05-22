@@ -33,4 +33,9 @@ interface EscalationServiceContract
      * Get summary metrics for the Escalation dashboard (counts of pending, unattended, resolved, etc.)
      */
     public function getEscalationSummary(EscalationFilterDTO $dto): array;
+
+    /**
+     * Notify devices of unattended missed call escalations via FCM.
+     */
+    public function notifyUnattendedEscalations(): int;
 }

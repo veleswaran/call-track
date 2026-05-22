@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\Auth;
 
 use App\Contracts\Services\TokenAuthServiceInterface;
-use App\Domain\Users\Models\User;
+use App\Domain\Auth\DTOs\AdminTokenLoginDTO;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\AdminTokenLoginRequest;
 use App\Http\Resources\AdminUserResource;
@@ -20,24 +20,25 @@ class AdminTokenAuthController extends Controller
 
     public function login(AdminTokenLoginRequest $request): JsonResponse
     {
-        $result = $this->tokenAuthService->attemptTokenLogin($request->validated());
+        $dto = new AdminTokenLoginDTO(
+            email: $request->input('email'),
+            password: $request->input('password'),
+            tokenName: $request->input('token_name'),
+            twoFactorCode: $request->input('two_factor_code')
+        );
+
+        $result = $this->tokenAuthService->attemptTokenLogin($dto);
 
         return response()->json([
-            'access_token' => $result['token'],
-            'token_type' => $result['token_type'],
-            'user' => new AdminUserResource($result['user']),
+            'access_token' => $result->token,
+            'token_type' => $result->tokenType,
+            'user' => new AdminUserResource($result->user),
         ]);
     }
 
     public function logout(Request $request): JsonResponse
     {
-        $user = $request->user();
-
-        if (! $user instanceof User) {
-            abort(401, 'Unauthenticated.');
-        }
-
-        $this->tokenAuthService->revokeCurrentToken($user);
+        $this->tokenAuthService->revokeCurrentToken();
 
         return response()->json([
             'message' => 'Token revoked successfully',
