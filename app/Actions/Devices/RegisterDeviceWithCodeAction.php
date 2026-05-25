@@ -48,7 +48,6 @@ class RegisterDeviceWithCodeAction
             $tokenResult = $this->issueToken->execute(new IssueDeviceTokenDTO(
                 deviceId: $device->id,
                 deviceName: $data->name,
-                expiresInDays: 90 // Default 90 days expiry
             ));
 
             // 4. Update code usage
