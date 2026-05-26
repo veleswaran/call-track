@@ -12,6 +12,6 @@ readonly class IssueDeviceTokenDTO
     public function __construct(
         public int $deviceId,
         public string $deviceName,
-        public ?int $expiresInDays = 90,
+        public ?int $expiresInDays = null,
     ) {}
 }

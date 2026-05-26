@@ -55,7 +55,7 @@ class RegisterDeviceTest extends TestCase
         $deviceToken = \App\Domain\Devices\Models\DeviceToken::where('device_id', $response->json('device_id'))->first();
         $this->assertEquals(hash('sha256', $token), $deviceToken->token_hash);
         $this->assertNotNull($deviceToken->issued_at);
-        $this->assertNotNull($deviceToken->expires_at);
+        $this->assertNull($deviceToken->expires_at);
     }
 
     public function test_it_validates_registration_payload()
