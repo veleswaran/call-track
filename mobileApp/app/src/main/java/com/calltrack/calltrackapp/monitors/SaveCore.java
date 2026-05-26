@@ -12,12 +12,15 @@ import android.util.Log;
 
 import com.calltrack.calltrackapp.db.AppDB;
 import com.calltrack.calltrackapp.db.bundles.CallRecord;
+import com.calltrack.calltrackapp.db.bundles.PhoneNumberCategory;
 import com.calltrack.calltrackapp.db.bundles.TokenEntity;
 import com.calltrack.calltrackapp.settings.LocalSettings;
 import com.calltrack.calltrackapp.utilities.Utility;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import androidx.core.app.ActivityCompat;
 
@@ -53,6 +56,10 @@ public class SaveCore {
             try (Cursor cursor = context.getContentResolver().query(CallLog.Calls.CONTENT_URI, projection, selection, selectionArgs, CallLog.Calls._ID + " ASC")) {
                 if (cursor == null) return;
                 int batteryLevel = Utility.getBatteryPercentage(context);
+
+                // Batch-load all category preferences ONCE before the loop to avoid N+1 queries
+                Map<String, String> categoryCache = buildCategoryCache(context.getApplicationContext());
+
                 while (cursor.moveToNext()) {
                     Log.e("CallMonitor -> ProcessCalls", "Data fetched");
                     CallRecord record = new CallRecord();
@@ -65,6 +72,9 @@ public class SaveCore {
                     record.duration = getStringSafe(cursor, CallLog.Calls.DURATION);
                     int type = getIntSafe(cursor, CallLog.Calls.TYPE);
                     record.type = mapCallType(type);
+
+                    // Auto-apply category from cache (no database query in loop)
+                    record.category = getCategoryFromCache(categoryCache, record.number);
 //                    int blockReason = getIntSafe(cursor, "block_reason");
                     int blockReason = -1;
                     record.metaData = buildMetadata(type, blockReason);
@@ -384,6 +394,59 @@ public class SaveCore {
         }
     }
 
+    /**
+     * Build a cache of all category preferences to avoid N+1 database queries.
+     * This loads all preferences in a single query and stores them in a HashMap
+     * for O(1) lookups during call processing.
+     *
+     * @param context Application context
+     * @return Map of normalized phone number -> category
+     */
+    private Map<String, String> buildCategoryCache(Context context) {
+        Map<String, String> cache = new HashMap<>();
+        try {
+            AppDB db = AppDB.getInstance(context);
+            List<PhoneNumberCategory> preferences = db.phoneNumberCategoryDao().getAllPreferences();
+
+            for (PhoneNumberCategory pref : preferences) {
+                if (pref.normalizedNumber != null && pref.category != null && !pref.category.isEmpty()) {
+                    cache.put(pref.normalizedNumber, pref.category);
+                }
+            }
+
+            Log.d("CallMonitor", "Category cache built with " + cache.size() + " preferences");
+        } catch (Exception e) {
+            Log.e("CallMonitor", "Error building category cache", e);
+            FirebaseCrashlytics.getInstance().recordException(e);
+        }
+        return cache;
+    }
+
+    /**
+     * Get category from the pre-built cache (no database query).
+     * Returns the saved category if found, otherwise returns empty string.
+     *
+     * @param categoryCache Pre-built cache of normalized number -> category
+     * @param phoneNumber The phone number to look up
+     * @return The saved category ("BUSINESS", "PERSONAL", "IGNORED") or empty string
+     */
+    private String getCategoryFromCache(Map<String, String> categoryCache, String phoneNumber) {
+        if (phoneNumber == null || phoneNumber.isEmpty()) {
+            return "";
+        }
+
+        String normalizedNumber = PhoneNumberCategory.normalizePhoneNumber(phoneNumber);
+        String category = categoryCache.get(normalizedNumber);
+
+        if (category != null && !category.isEmpty()) {
+            Log.d("CallMonitor", "Auto-applied category '" + category +
+                  "' for number " + phoneNumber + " (normalized: " + normalizedNumber + ")");
+            return category;
+        }
+
+        return ""; // Default to empty if no preference found
+    }
+
     private void persistRecord(Context context, CallRecord record, boolean detectionFailed) {
         AppDB db = AppDB.getInstance(context);
         TokenEntity te = db.tokenDao().getOne();
@@ -394,7 +457,8 @@ public class SaveCore {
             db.callRecordDao().insert(record);
             String fallbackNote = detectionFailed ? " (fallback - detection failed)" : "";
             Log.d("CallMonitor", "✓ Call persisted - SIM slot: " + record.simSlot +
-                fallbackNote + ", Type: " + record.type + ", Tracked slots: " + te.simSlots);
+                fallbackNote + ", Type: " + record.type + ", Category: " + record.category +
+                ", Tracked slots: " + te.simSlots);
         } else {
             Log.w("CallMonitor", "✗ SKIPPED - SIM slot: " + record.simSlot +
                 ", Tracked slots: " + (te != null ? te.simSlots : "null") +

@@ -8,6 +8,7 @@ use App\Actions\Calls\CreatePendingEscalationAction;
 use App\Actions\Calls\FlagOverdueEscalationsAction;
 use App\Actions\Calls\GetEscalationInsightsAction;
 use App\Actions\Calls\GetEscalationSummaryAction;
+use App\Actions\Calls\NotifyUnattendedEscalationsAction;
 use App\Actions\Calls\ResolveEscalationAction;
 use App\Contracts\Services\EscalationServiceContract;
 use App\Domain\Calls\DTOs\EscalationFilterDTO;
@@ -21,7 +22,8 @@ class EscalationService implements EscalationServiceContract
         private FlagOverdueEscalationsAction $flagOverdueEscalationsAction,
         private ResolveEscalationAction $resolveEscalationAction,
         private GetEscalationInsightsAction $getEscalationInsightsAction,
-        private GetEscalationSummaryAction $getEscalationSummaryAction
+        private GetEscalationSummaryAction $getEscalationSummaryAction,
+        private NotifyUnattendedEscalationsAction $notifyUnattendedEscalationsAction
     ) {}
 
     public function handleMissedCall(int $callLogId): void
@@ -59,5 +61,10 @@ class EscalationService implements EscalationServiceContract
     public function getEscalationSummary(EscalationFilterDTO $dto): array
     {
         return $this->getEscalationSummaryAction->execute($dto);
+    }
+
+    public function notifyUnattendedEscalations(): int
+    {
+        return $this->notifyUnattendedEscalationsAction->execute();
     }
 }

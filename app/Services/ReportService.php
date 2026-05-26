@@ -10,6 +10,7 @@ use App\Domain\Reports\Actions\GetReportChartsAction;
 use App\Domain\Reports\Actions\GetReportMetricsAction;
 use App\Domain\Reports\DTOs\ReportFilterDTO;
 use Carbon\Carbon;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 final class ReportService implements ReportServiceInterface
 {
@@ -29,7 +30,7 @@ final class ReportService implements ReportServiceInterface
         return $this->getChartsAction->execute($this->ensureDefaults($filters));
     }
 
-    public function getPerformance(ReportFilterDTO $filters): array
+    public function getPerformance(ReportFilterDTO $filters): LengthAwarePaginator
     {
         return $this->getPerformanceAction->execute($this->ensureDefaults($filters));
     }
@@ -51,6 +52,10 @@ final class ReportService implements ReportServiceInterface
             search: $filters->search,
             allowedAgentIds: $filters->allowedAgentIds,
             contactFilter: $filters->contactFilter,
+            sortBy: $filters->sortBy,
+            sortOrder: $filters->sortOrder,
+            perPage: $filters->perPage,
+            page: $filters->page,
         );
     }
 }

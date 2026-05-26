@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Actions\Devices;
 
 use App\Actions\Devices\SendPushNotificationAction;
+use App\Domain\Devices\DTOs\PushNotificationDTO;
 use App\Domain\Devices\DTOs\StaleHeartbeatNotificationDTO;
 use App\Domain\Devices\Models\Device;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -25,6 +26,28 @@ class SendPushNotificationActionTest extends TestCase
             device: $device,
             messageTitle: 'Test Title',
             messageBody: 'Test Body'
+        );
+
+        /** @var Messaging|MockInterface $messagingMock */
+        $messagingMock = Mockery::mock(Messaging::class);
+        $messagingMock->shouldReceive('send')->once()->andReturn([]);
+
+        $action = new SendPushNotificationAction($messagingMock);
+
+        Log::shouldReceive('info')->once()->with("Successfully sent FCM push notification to device {$device->id}");
+
+        $result = $action->execute($dto);
+
+        $this->assertTrue($result);
+    }
+
+    public function test_it_sends_a_generic_push_notification_successfully(): void
+    {
+        $device = Device::factory()->create(['fcm_token' => 'valid-token']);
+        $dto = new PushNotificationDTO(
+            device: $device,
+            title: 'Generic Title',
+            body: 'Generic Body'
         );
 
         /** @var Messaging|MockInterface $messagingMock */

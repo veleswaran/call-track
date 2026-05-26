@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Devices;
 
+use App\Domain\Devices\DTOs\PushNotificationDTO;
 use App\Domain\Devices\DTOs\StaleHeartbeatNotificationDTO;
 use App\Domain\Devices\DTOs\UpdateFcmTokenDTO;
 use Illuminate\Support\Facades\Log;
@@ -20,45 +21,49 @@ class SendPushNotificationAction
         protected ?UpdateDeviceFcmTokenAction $updateDeviceFcmTokenAction = null,
     ) {}
 
-    public function execute(StaleHeartbeatNotificationDTO $dto): bool
+    public function execute(StaleHeartbeatNotificationDTO|PushNotificationDTO $dto): bool
     {
-        if (empty($dto->device->fcm_token)) {
-            Log::warning("Cannot send push notification: Device {$dto->device->id} missing FCM token.");
+        $device = $dto->device;
+        if (empty($device->fcm_token)) {
+            Log::warning("Cannot send push notification: Device {$device->id} missing FCM token.");
 
             return false;
         }
 
+        $title = $dto instanceof PushNotificationDTO ? $dto->title : $dto->messageTitle;
+        $body = $dto instanceof PushNotificationDTO ? $dto->body : $dto->messageBody;
+
         try {
-            $notification = Notification::create($dto->messageTitle, $dto->messageBody);
+            $notification = Notification::create($title, $body);
             $message = CloudMessage::new()
-                ->withToken($dto->device->fcm_token)
+                ->withToken($device->fcm_token)
                 ->withNotification($notification);
 
             $this->messaging->send($message);
 
-            Log::info("Successfully sent FCM push notification to device {$dto->device->id}");
+            Log::info("Successfully sent FCM push notification to device {$device->id}");
 
             return true;
         } catch (NotFound|InvalidArgument $e) {
             // Token is invalid/expired. Clear it to avoid repeated failures.
-            Log::warning("Invalid FCM token detected for device {$dto->device->id}; clearing token.", [
-                'device_id' => $dto->device->id,
+            Log::warning("Invalid FCM token detected for device {$device->id}; clearing token.", [
+                'device_id' => $device->id,
                 'error' => $e->getMessage(),
                 'exception' => $e::class,
             ]);
 
             ($this->updateDeviceFcmTokenAction ?? app(UpdateDeviceFcmTokenAction::class))
                 ->execute(new UpdateFcmTokenDTO(
-                    deviceId: $dto->device->id,
+                    deviceId: $device->id,
                     fcmToken: null,
                 ));
 
             return false;
         } catch (\Throwable $e) {
-            Log::error("Failed to send FCM push notification to device {$dto->device->id}", [
+            Log::error("Failed to send FCM push notification to device {$device->id}", [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
-                'device_id' => $dto->device->id,
+                'device_id' => $device->id,
             ]);
 
             return false;

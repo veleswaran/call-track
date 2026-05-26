@@ -1,6 +1,7 @@
 export interface SettingsData {
     app_sitename?: string;
     heartbeat_threshold_minutes: number;
+    device_archive_days?: number;
     fcm_stale_title: string;
     fcm_stale_body: string;
     escalation_sla_hours?: number;

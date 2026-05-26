@@ -64,6 +64,7 @@ class RolePermissionSeeder extends Seeder
             'view dashboard',
             'view reports',
             'manage team',
+            'manage devices',
             'classify calls',
             'manage contacts',
             'view device sync logs',
