@@ -35,6 +35,10 @@ class DeviceResource extends JsonResource
             'agent' => $this->whenLoaded('agent', fn () => [
                 'id' => $this->resource->agent->id,
                 'name' => $this->resource->agent->name,
+                'teams' => $this->resource->agent->teams->map(fn ($team) => [
+                    'id' => $team->id,
+                    'name' => $team->name,
+                ]),
             ]),
             'last_sync_at' => $this->last_heartbeat_at,
             'metadata' => $this->metadata,

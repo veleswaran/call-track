@@ -6,6 +6,7 @@ import { Input } from "@shared/components/ui/input";
 import { Button } from "@shared/components/ui/button";
 import { DeviceMetadataDialog } from "@features/devices/components/device-metadata-dialog";
 import { DevicePushNotificationDialog } from "@features/devices/components/device-push-notification-dialog";
+import { AsyncSelect } from "@shared/components/async-select";
 
 import { useAuth } from "@features/auth/hooks/use-auth";
 
@@ -49,8 +50,9 @@ export default function DevicesPage() {
         { id: 'stale', name: 'Stale/Offline' },
     ];
     const [search, setSearch] = useState("");
-    const [status, setStatus] = useState<string>("all");
+    const [status, setStatus] = useState<string>("active");
     const [syncStatus, setSyncStatus] = useState<string>("all");
+    const [teamId, setTeamId] = useState<string>("all");
     const [debouncedSearch, setDebouncedSearch] = useState("");
     const [pagination, setPagination] = useState({ page: 1, per_page: 20 });
     
@@ -65,18 +67,21 @@ export default function DevicesPage() {
 
     const [prevStatus, setPrevStatus] = useState(status);
     const [prevSyncStatus, setPrevSyncStatus] = useState(syncStatus);
+    const [prevTeamId, setPrevTeamId] = useState(teamId);
 
     // Reset page on status change
-    if (status !== prevStatus || syncStatus !== prevSyncStatus) {
+    if (status !== prevStatus || syncStatus !== prevSyncStatus || teamId !== prevTeamId) {
         setPrevStatus(status);
         setPrevSyncStatus(syncStatus);
+        setPrevTeamId(teamId);
         setPagination(prev => ({ ...prev, page: 1 }));
     }
     const { data, isLoading, isError } = useDevices({ 
         ...pagination, 
         search: debouncedSearch,
         status: status === "all" ? undefined : status,
-        sync_status: syncStatus === "all" ? undefined : syncStatus
+        sync_status: syncStatus === "all" ? undefined : syncStatus,
+        team_id: teamId === "all" ? undefined : teamId
     });
     const revokeDeviceTokens = useRevokeDeviceTokens();
 
@@ -124,7 +129,7 @@ export default function DevicesPage() {
                 </div>
 
                 {settings?.enable_device_status_filter && (
-                    <div className="flex gap-4 w-full sm:w-auto overflow-x-auto">
+                    <div className="flex flex-wrap gap-4 w-full sm:w-auto">
                         <div className="w-[180px] shrink-0">
                             <Select value={status} onValueChange={setStatus}>
                                 <SelectTrigger>
@@ -155,6 +160,26 @@ export default function DevicesPage() {
                                 </SelectContent>
                             </Select>
                         </div>
+                        <div className="w-[180px] shrink-0">
+                            <AsyncSelect
+                                value={teamId}
+                                onChange={setTeamId}
+                                loadOptions={async (search) => {
+                                    const { teamsApi } = await import("@features/teams/api/teams-api");
+                                    const res = await teamsApi.getTeams({
+                                        search: search || undefined,
+                                        per_page: 50
+                                    });
+                                    const options = res.data.map((team) => ({
+                                        label: team.name,
+                                        value: team.id.toString()
+                                    }))
+                                    return [{ label: "All Teams", value: "all" }, ...options];
+                                }}
+                                placeholder="All Teams"
+                                label="Team"
+                            />
+                        </div>
                     </div>
                 )}
             </div>
@@ -168,6 +193,7 @@ export default function DevicesPage() {
                                 <TableHead>Device Name</TableHead>
                                 <TableHead>Model</TableHead>
                                 <TableHead>Agent</TableHead>
+                                <TableHead>Team</TableHead>
                                 <TableHead>Battery</TableHead>
                                 <TableHead>App Version</TableHead>
                                 <TableHead>Tracked SIMs</TableHead>
@@ -179,19 +205,19 @@ export default function DevicesPage() {
                         <TableBody>
                             {isLoading ? (
                                 <TableRow>
-                                    <TableCell colSpan={10} className="h-24 text-center">
+                                    <TableCell colSpan={11} className="h-24 text-center">
                                         Loading...
                                     </TableCell>
                                 </TableRow>
                             ) : isError ? (
                                 <TableRow>
-                                    <TableCell colSpan={10} className="h-24 text-center text-red-500">
+                                    <TableCell colSpan={11} className="h-24 text-center text-red-500">
                                         Failed to load devices
                                     </TableCell>
                                 </TableRow>
                             ) : devices.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={10} className="h-24 text-center">
+                                    <TableCell colSpan={11} className="h-24 text-center">
                                         No devices found
                                     </TableCell>
                                 </TableRow>
@@ -213,6 +239,22 @@ export default function DevicesPage() {
                                             <TableCell>
                                                 {device.agent ? (
                                                     <span className="text-blue-600 dark:text-blue-400">{device.agent.name}</span>
+                                                ) : (
+                                                    <span className="text-zinc-400">—</span>
+                                                )}
+                                            </TableCell>
+                                            <TableCell>
+                                                {device.agent?.teams && device.agent.teams.length > 0 ? (
+                                                    <div className="flex flex-wrap gap-1">
+                                                        {device.agent.teams.map((team) => (
+                                                            <span
+                                                                key={team.id}
+                                                                className="inline-flex items-center rounded-md bg-zinc-100 px-2 py-1 text-xs font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
+                                                            >
+                                                                {team.name}
+                                                            </span>
+                                                        ))}
+                                                    </div>
                                                 ) : (
                                                     <span className="text-zinc-400">—</span>
                                                 )}

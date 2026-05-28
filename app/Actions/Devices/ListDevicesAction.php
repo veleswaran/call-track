@@ -15,11 +15,17 @@ class ListDevicesAction
     {
         $deviceQuery = Device::query()
             ->where('is_archived', false)
-            ->with(['agent'])
+            ->with(['agent', 'agent.teams'])
             ->withExists('activeTokens');
 
         if ($dto->allowedAgentIds !== null && $dto->allowedAgentIds !== 'all') {
             $deviceQuery->whereIn('agent_id', (array) $dto->allowedAgentIds);
+        }
+
+        if ($dto->teamId !== null) {
+            $deviceQuery->whereHas('agent.teams', function ($q) use ($dto) {
+                $q->where('teams.id', $dto->teamId);
+            });
         }
 
         if ($dto->status !== null) {

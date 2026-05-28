@@ -102,21 +102,6 @@ export default function ReportsPage() {
             }} />
 
             <ReportSummary metrics={metricsQuery.data || []} isLoading={metricsQuery.isLoading} />
-
-            {chartsQuery.isLoading ? (
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-                    <div className="col-span-full h-[300px] rounded-xl bg-zinc-100 dark:bg-zinc-800 animate-pulse" />
-                    <div className="col-span-3 h-[250px] rounded-xl bg-zinc-100 dark:bg-zinc-800 animate-pulse" />
-                    <div className="col-span-4 h-[250px] rounded-xl bg-zinc-100 dark:bg-zinc-800 animate-pulse" />
-                </div>
-            ) : chartsQuery.data ? (
-                <ReportCharts data={chartsQuery.data} />
-            ) : (
-                <div className="p-8 text-center text-muted-foreground">
-                    No chart data available for the selected period.
-                </div>
-            )}
-
             <div className="space-y-4">
                 <div id="agent-performance">
                     <h2 className="text-xl font-bold tracking-tight">Agent Performance Report</h2>
@@ -149,7 +134,19 @@ export default function ReportsPage() {
                     </div>
                 )}
             </div>
-
+            {chartsQuery.isLoading ? (
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+                    <div className="col-span-full h-[300px] rounded-xl bg-zinc-100 dark:bg-zinc-800 animate-pulse" />
+                    <div className="col-span-3 h-[250px] rounded-xl bg-zinc-100 dark:bg-zinc-800 animate-pulse" />
+                    <div className="col-span-4 h-[250px] rounded-xl bg-zinc-100 dark:bg-zinc-800 animate-pulse" />
+                </div>
+            ) : chartsQuery.data ? (
+                <ReportCharts data={chartsQuery.data} />
+            ) : (
+                <div className="p-8 text-center text-muted-foreground">
+                    No chart data available for the selected period.
+                </div>
+            )}
         </div>
     )
 }

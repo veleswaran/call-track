@@ -17,19 +17,20 @@ final class GetAgentPerformanceAction
 
     public function execute(ReportFilterDTO $filters): LengthAwarePaginator
     {
-        // Should join users/agents.
-        // Assuming 'agents' are Users with specific role or just Users linked to Devices.
-        // Devices have `agent_id` which might link to `users.id` (based on Laravel convention) or `agents` table.
-        // Let's check `Device` model relationships later to be sure.
-        // Assuming `agent_id` -> `users` (Admin is User, Agent is User).
-
-        $query = \App\Domain\Agents\Models\Agent::query()
-            ->join('devices', 'agents.id', '=', 'devices.agent_id')
-            ->join('call_logs', 'devices.id', '=', 'call_logs.device_id')
-            ->leftJoin('call_classifications', 'call_logs.id', '=', 'call_classifications.call_log_id');
+        $query = CallLog::query()
+            ->from('call_logs as cl')
+            ->join('devices as d', 'd.id', '=', 'cl.device_id')
+            ->join('agents as a', 'a.id', '=', 'd.agent_id')
+            ->leftJoinSub(
+                'SELECT DISTINCT call_log_id FROM call_escalations',
+                'ce',
+                'ce.call_log_id',
+                '=',
+                'cl.id'
+            );
 
         if ($filters->startDate && $filters->endDate) {
-            $query->whereBetween('call_logs.timestamp', [
+            $query->whereBetween('cl.timestamp', [
                 $filters->startDate->copy()->startOfDay(),
                 $filters->endDate->copy()->endOfDay(),
             ]);
@@ -41,17 +42,17 @@ final class GetAgentPerformanceAction
                 // No access
                 return new \Illuminate\Pagination\LengthAwarePaginator([], 0, $filters->perPage, $filters->page);
             }
-            $query->whereIn('agents.id', $filters->allowedAgentIds);
+            $query->whereIn('a.id', $filters->allowedAgentIds);
         }
 
         // User-selected agent filter
         if (! empty($filters->agentIds)) {
-            $query->whereIn('agents.id', $filters->agentIds);
+            $query->whereIn('a.id', $filters->agentIds);
         }
 
         // Apply team filter
         if (! empty($filters->teamIds)) {
-            $query->whereIn('agents.id', function ($q) use ($filters) {
+            $query->whereIn('a.id', function ($q) use ($filters) {
                 $q->select('agent_id')
                     ->from('team_members')
                     ->whereIn('team_id', $filters->teamIds);
@@ -61,7 +62,8 @@ final class GetAgentPerformanceAction
         // Filter by Classification (mapped from 'types' in DTO)
         if (! empty($filters->types)) {
             // Frontend sends BUSINESS/PERSONAL. Column in CallClassification is 'type'.
-            $query->whereIn('call_classifications.type', array_map('strtoupper', $filters->types));
+            $query->leftJoin('call_classifications as cc', 'cl.id', '=', 'cc.call_log_id')
+                ->whereIn('cc.type', array_map('strtoupper', $filters->types));
         }
 
         // Filter by Call Outcomes
@@ -71,19 +73,23 @@ final class GetAgentPerformanceAction
                     $q->orWhere(function ($sub) use ($outcome) {
                         switch (strtoupper($outcome)) {
                             case 'CONNECTED':
-                                $sub->where('call_logs.duration', '>', 0);
+                                $sub->where('cl.duration', '>', 0)
+                                    ->whereNull('ce.call_log_id')
+                                    ->whereNotIn('cl.direction', ['MISSED', 'REJECTED', 'BLOCKED'])
+                                    ->whereRaw('NOT (cl.direction = ? AND cl.duration <= 0)', ['INCOMING']);
                                 break;
                             case 'MISSED':
                                 $sub->where(function ($inner) {
-                                    $inner->whereIn('call_logs.direction', ['MISSED', 'REJECTED', 'BLOCKED'])
+                                    $inner->whereNotNull('ce.call_log_id')
+                                        ->orWhereIn('cl.direction', ['MISSED', 'REJECTED', 'BLOCKED'])
                                         ->orWhere(function ($inc) {
-                                            $inc->where('call_logs.direction', 'INCOMING')->where('call_logs.duration', 0);
+                                            $inc->where('cl.direction', 'INCOMING')->where('cl.duration', '<=', 0);
                                         });
                                 });
                                 break;
                             case 'NO_ANSWER':
-                                $sub->where('call_logs.direction', 'OUTGOING')
-                                    ->where('call_logs.duration', 0);
+                                $sub->where('cl.direction', 'OUTGOING')
+                                    ->where('cl.duration', 0);
                                 break;
                         }
                     });
@@ -95,44 +101,53 @@ final class GetAgentPerformanceAction
             $contactHashes = $this->getContactHashesAction->execute();
 
             if ($filters->contactFilter === 'internal') {
-                $query->whereIn('call_logs.phone_number_hash', $contactHashes);
+                $query->whereIn('cl.phone_number_hash', $contactHashes);
             } else {
-                $query->whereNotIn('call_logs.phone_number_hash', $contactHashes);
+                $query->whereNotIn('cl.phone_number_hash', $contactHashes);
             }
         }
 
         // Group by Agent
         $stats = $query->select([
-            'agents.id',
-            'agents.name',
-            'agents.employee_code',
-            DB::raw('COUNT(call_logs.id) as total_calls'),
-            DB::raw('SUM(CASE WHEN '.CallLog::SQL_CONNECTED_CONDITION.' THEN 1 ELSE 0 END) as connected'),
-            DB::raw('SUM(CASE WHEN '.CallLog::SQL_MISSED_CONDITION.' THEN 1 ELSE 0 END) as missed'),
-            DB::raw('AVG(call_logs.duration) as avg_duration'),
-            DB::raw('SUM(call_logs.duration) as total_duration'),
-            DB::raw('MIN(call_logs.timestamp) as first_call_time'),
+            'a.id',
+            'a.name',
+            'a.employee_code',
+            DB::raw('COUNT(cl.id) as total_calls'),
+            DB::raw("SUM(CASE WHEN (
+                cl.duration > 0
+                AND ce.call_log_id IS NULL
+                AND cl.direction NOT IN ('MISSED', 'REJECTED', 'BLOCKED')
+                AND NOT (cl.direction = 'INCOMING' AND cl.duration <= 0)
+            ) THEN 1 ELSE 0 END) as connected"),
+            DB::raw("SUM(CASE WHEN (
+                ce.call_log_id IS NOT NULL
+                OR cl.direction IN ('MISSED', 'REJECTED', 'BLOCKED')
+                OR (cl.direction = 'INCOMING' AND cl.duration <= 0)
+            ) THEN 1 ELSE 0 END) as missed"),
+            DB::raw('AVG(cl.duration) as avg_duration'),
+            DB::raw('SUM(cl.duration) as total_duration'),
+            DB::raw('MIN(cl.timestamp) as first_call_time'),
         ])
-            ->groupBy('agents.id', 'agents.name', 'agents.employee_code');
+            ->groupBy('a.id', 'a.name', 'a.employee_code');
 
         $sortField = $filters->sortBy;
         $sortOrder = $filters->sortOrder ?? 'asc';
 
         if ($sortField) {
             $mappedSort = match ($sortField) {
-                'agent' => 'agents.name',
+                'agent' => 'a.name',
                 'total_calls' => 'total_calls',
                 'connected' => 'connected',
                 'missed' => 'missed',
                 'avg_duration' => 'avg_duration',
                 'total_duration' => 'total_duration',
                 'first_call_time' => 'first_call_time',
-                default => 'agents.name',
+                default => 'a.name',
             };
 
             $query->orderBy($mappedSort, $sortOrder);
         } else {
-            $query->orderBy('agents.name', 'asc');
+            $query->orderBy('a.name', 'asc');
         }
 
         $stats = $query->toBase()
