@@ -22,7 +22,9 @@ final class GetAgentPerformanceAction
             ->join('devices as d', 'd.id', '=', 'cl.device_id')
             ->join('agents as a', 'a.id', '=', 'd.agent_id')
             ->leftJoinSub(
-                'SELECT DISTINCT call_log_id FROM call_escalations',
+                function ($query) {
+                    $query->select('call_log_id')->distinct()->from('call_escalations');
+                },
                 'ce',
                 'ce.call_log_id',
                 '=',

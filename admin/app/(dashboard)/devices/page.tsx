@@ -165,16 +165,21 @@ export default function DevicesPage() {
                                 value={teamId}
                                 onChange={setTeamId}
                                 loadOptions={async (search) => {
-                                    const { teamsApi } = await import("@features/teams/api/teams-api");
-                                    const res = await teamsApi.getTeams({
-                                        search: search || undefined,
-                                        per_page: 50
-                                    });
-                                    const options = res.data.map((team) => ({
-                                        label: team.name,
-                                        value: team.id.toString()
-                                    }))
-                                    return [{ label: "All Teams", value: "all" }, ...options];
+                                    try {
+                                        const { teamsApi } = await import("@features/teams/api/teams-api");
+                                        const res = await teamsApi.getTeams({
+                                            search: search || undefined,
+                                            per_page: 50
+                                        });
+                                        const options = res.data.map((team) => ({
+                                            label: team.name,
+                                            value: team.id.toString()
+                                        }));
+                                        return [{ label: "All Teams", value: "all" }, ...options];
+                                    } catch (error) {
+                                        console.error("Failed to load teams:", error);
+                                        return [{ label: "All Teams", value: "all" }];
+                                    }
                                 }}
                                 placeholder="All Teams"
                                 label="Team"
