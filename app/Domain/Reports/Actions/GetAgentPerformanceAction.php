@@ -29,7 +29,13 @@ final class GetAgentPerformanceAction
                 'ce.call_log_id',
                 '=',
                 'cl.id'
-            );
+            )
+            ->whereNotExists(function ($q) {
+                $q->select(DB::raw(1))
+                    ->from('call_classifications as cc_exclude')
+                    ->whereColumn('cc_exclude.call_log_id', 'cl.id')
+                    ->where('cc_exclude.type', 'PERSONAL');
+            });
 
         if ($filters->startDate && $filters->endDate) {
             $query->whereBetween('cl.timestamp', [
@@ -77,8 +83,7 @@ final class GetAgentPerformanceAction
                             case 'CONNECTED':
                                 $sub->where('cl.duration', '>', 0)
                                     ->whereNull('ce.call_log_id')
-                                    ->whereNotIn('cl.direction', ['MISSED', 'REJECTED', 'BLOCKED'])
-                                    ->whereRaw('NOT (cl.direction = ? AND cl.duration <= 0)', ['INCOMING']);
+                                    ->whereNotIn('cl.direction', ['MISSED', 'REJECTED', 'BLOCKED']);
                                 break;
                             case 'MISSED':
                                 $sub->where(function ($inner) {
@@ -119,7 +124,6 @@ final class GetAgentPerformanceAction
                 cl.duration > 0
                 AND ce.call_log_id IS NULL
                 AND cl.direction NOT IN ('MISSED', 'REJECTED', 'BLOCKED')
-                AND NOT (cl.direction = 'INCOMING' AND cl.duration <= 0)
             ) THEN 1 ELSE 0 END) as connected"),
             DB::raw("SUM(CASE WHEN (
                 ce.call_log_id IS NOT NULL

@@ -38,12 +38,10 @@ final class GetAgentAccessScopeAction
         $accessibleIds = [$agent->id];
 
         // Get all agent IDs from all teams where this agent is a MANAGER
-        $teamAgentIds = TeamMember::whereIn('team_id', function ($query) use ($agent) {
-            $query->select('team_id')
-                ->from('team_members')
-                ->where('agent_id', $agent->id)
-                ->where('role', 'MANAGER');
-        })
+        $teamAgentIds = TeamMember::whereIn('team_id', TeamMember::select('team_id')
+            ->where('agent_id', $agent->id)
+            ->where('role', 'MANAGER')
+        )
             ->pluck('agent_id')
             ->toArray();
 

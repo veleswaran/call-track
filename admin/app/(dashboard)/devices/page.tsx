@@ -7,6 +7,7 @@ import { Button } from "@shared/components/ui/button";
 import { DeviceMetadataDialog } from "@features/devices/components/device-metadata-dialog";
 import { DevicePushNotificationDialog } from "@features/devices/components/device-push-notification-dialog";
 import { AsyncSelect } from "@shared/components/async-select";
+import { teamsApi } from "@features/teams/api/teams-api";
 
 import { useAuth } from "@features/auth/hooks/use-auth";
 
@@ -166,7 +167,6 @@ export default function DevicesPage() {
                                 onChange={setTeamId}
                                 loadOptions={async (search) => {
                                     try {
-                                        const { teamsApi } = await import("@features/teams/api/teams-api");
                                         const res = await teamsApi.getTeams({
                                             search: search || undefined,
                                             per_page: 50

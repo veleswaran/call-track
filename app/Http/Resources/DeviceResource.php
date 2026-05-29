@@ -32,14 +32,15 @@ class DeviceResource extends JsonResource
             'battery_level' => $this->battery_level,
             'status' => $this->active_tokens_exists ? 'active' : 'inactive',
             'agent_id' => $this->agent_id,
-            'agent' => $this->whenLoaded('agent', fn () => $this->resource->agent ? [
+            'agent' => $this->whenLoaded('agent', fn () => $this->resource->agent ? array_merge([
                 'id' => $this->resource->agent->id,
                 'name' => $this->resource->agent->name,
+            ], $this->resource->agent->relationLoaded('teams') ? [
                 'teams' => $this->resource->agent->teams->map(fn ($team) => [
                     'id' => $team->id,
                     'name' => $team->name,
                 ]),
-            ] : null),
+            ] : []) : null),
             'last_sync_at' => $this->last_heartbeat_at,
             'metadata' => $this->metadata,
             'created_at' => $this->created_at,
