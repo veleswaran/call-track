@@ -31,7 +31,7 @@ final class GetAgentPerformanceAction
                 'cl.id'
             )
             ->whereNotExists(function ($q) {
-                $q->select(DB::raw(1))
+                $q->selectRaw(1)
                     ->from('call_classifications as cc_exclude')
                     ->whereColumn('cc_exclude.call_log_id', 'cl.id')
                     ->where('cc_exclude.type', 'PERSONAL');
