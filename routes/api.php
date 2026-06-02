@@ -35,6 +35,7 @@ Route::prefix('v1')->group(function () {
             Route::get('/metrics', [\App\Http\Controllers\Api\Admin\ReportController::class, 'metrics']);
             Route::get('/charts', [\App\Http\Controllers\Api\Admin\ReportController::class, 'charts']);
             Route::get('/performance', [\App\Http\Controllers\Api\Admin\ReportController::class, 'performance']);
+            Route::get('/day-wise', [\App\Http\Controllers\Api\Admin\ReportController::class, 'dayWise']);
         });
 
         // Device Codes

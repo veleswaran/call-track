@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Contracts\Services\ReportServiceInterface;
 use App\Domain\Reports\Actions\GetAgentPerformanceAction;
+use App\Domain\Reports\Actions\GetDayWiseReportAction;
 use App\Domain\Reports\Actions\GetReportChartsAction;
 use App\Domain\Reports\Actions\GetReportMetricsAction;
 use App\Domain\Reports\DTOs\ReportFilterDTO;
@@ -18,6 +19,7 @@ final class ReportService implements ReportServiceInterface
         private readonly GetReportMetricsAction $getMetricsAction,
         private readonly GetReportChartsAction $getChartsAction,
         private readonly GetAgentPerformanceAction $getPerformanceAction,
+        private readonly GetDayWiseReportAction $getDayWiseAction,
     ) {}
 
     public function getMetrics(ReportFilterDTO $filters): array
@@ -33,6 +35,11 @@ final class ReportService implements ReportServiceInterface
     public function getPerformance(ReportFilterDTO $filters): LengthAwarePaginator
     {
         return $this->getPerformanceAction->execute($this->ensureDefaults($filters));
+    }
+
+    public function getDayWise(ReportFilterDTO $filters): array
+    {
+        return $this->getDayWiseAction->execute($this->ensureDefaults($filters));
     }
 
     private function ensureDefaults(ReportFilterDTO $filters): ReportFilterDTO

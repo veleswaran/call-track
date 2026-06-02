@@ -135,4 +135,96 @@ class ReportControllerTest extends TestCase
             ->assertJsonPath('data.0.total_calls', 1)
             ->assertJsonPath('data.0.avg_duration', '1m 0s');
     }
+
+    public function test_day_wise_report_endpoint_returns_correct_day_wise_data(): void
+    {
+        $today = Carbon::today();
+        CallLog::factory()->create([
+            'device_id' => $this->device->id,
+            'timestamp' => $today->copy()->hour(10)->minute(30),
+            'duration' => 600, // 10 minutes
+            'direction' => 'OUTGOING',
+        ]);
+
+        $response = $this->actingAs($this->admin)
+            ->getJson('/api/v1/admin/reports/day-wise?start_date='.$today->toDateString().'&end_date='.$today->toDateString());
+
+        $response->assertOk()
+            ->assertJsonStructure([
+                'data' => [
+                    'agents' => [
+                        '*' => [
+                            'agent_id',
+                            'agent_name',
+                            'employee_code',
+                            'daily_stats',
+                            'period_total',
+                        ],
+                    ],
+                    'dates',
+                ],
+            ]);
+
+        $agentData = $response->json('data.agents.0');
+        $this->assertEquals($this->agent->name, $agentData['agent_name']);
+        $dateStr = $today->format('Y-m-d');
+        $this->assertArrayHasKey($dateStr, $agentData['daily_stats']);
+
+        $stats = $agentData['daily_stats'][$dateStr];
+        $this->assertEquals(1, $stats['total_calls']);
+        $this->assertEquals(1, $stats['connected']);
+        $this->assertEquals(0, $stats['missed']);
+        $this->assertEquals('10m', $stats['total_duration']);
+        $this->assertEquals('10:30 AM', $stats['first_call_time']);
+    }
+
+    public function test_day_wise_report_endpoint_prevents_exceeding_32_days(): void
+    {
+        $startDate = Carbon::today()->subDays(40);
+        $endDate = Carbon::today();
+
+        $response = $this->actingAs($this->admin)
+            ->getJson('/api/v1/admin/reports/day-wise?start_date='.$startDate->toDateString().'&end_date='.$endDate->toDateString());
+
+        $response->assertStatus(500); // Throws InvalidArgumentException
+    }
+
+    public function test_day_wise_report_endpoint_filters_by_classification(): void
+    {
+        $today = Carbon::today();
+
+        // 1. Call classified as BUSINESS (should be included when filtering for BUSINESS)
+        $callLog1 = CallLog::factory()->create([
+            'device_id' => $this->device->id,
+            'timestamp' => $today->copy()->hour(10),
+            'duration' => 300,
+            'direction' => 'OUTGOING',
+        ]);
+        \App\Domain\Classification\Models\CallClassification::factory()->create([
+            'call_log_id' => $callLog1->id,
+            'user_id' => $this->admin->id,
+            'type' => 'BUSINESS',
+        ]);
+
+        // 2. Call without classification (should be excluded when filtering for BUSINESS)
+        CallLog::factory()->create([
+            'device_id' => $this->device->id,
+            'timestamp' => $today->copy()->hour(11),
+            'duration' => 150,
+            'direction' => 'OUTGOING',
+        ]);
+
+        $response = $this->actingAs($this->admin)
+            ->getJson('/api/v1/admin/reports/day-wise?start_date='.$today->toDateString().'&end_date='.$today->toDateString().'&types[]=BUSINESS');
+
+        $response->assertOk();
+
+        $agentData = $response->json('data.agents.0');
+        $dateStr = $today->format('Y-m-d');
+        $stats = $agentData['daily_stats'][$dateStr];
+
+        // Assert only BUSINESS classification is included (total_calls should be 1, total_duration 300)
+        $this->assertEquals(1, $stats['total_calls']);
+        $this->assertEquals(300, $stats['total_duration_seconds']);
+    }
 }

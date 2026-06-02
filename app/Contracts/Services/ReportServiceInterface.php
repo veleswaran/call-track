@@ -14,4 +14,6 @@ interface ReportServiceInterface
     public function getCharts(ReportFilterDTO $filters): array;
 
     public function getPerformance(ReportFilterDTO $filters): LengthAwarePaginator;
+
+    public function getDayWise(ReportFilterDTO $filters): array;
 }
