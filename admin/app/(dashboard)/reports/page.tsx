@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react"
 import { useQuery } from "@tanstack/react-query"
-import { format, differenceInDays } from "date-fns"
+import { format, differenceInCalendarDays } from "date-fns"
 import { LayoutList, Calendar } from "lucide-react"
 
 import { ReportFilters, ReportFiltersData } from "@features/reports/components/report-filters"
@@ -39,7 +39,7 @@ export default function ReportsPage() {
     // Check if date range exceeds 32 days
     const dateRangeDays = useMemo(() => {
         if (!filters.dateRange?.from || !filters.dateRange?.to) return 0
-        return differenceInDays(filters.dateRange.to, filters.dateRange.from) + 1
+        return differenceInCalendarDays(filters.dateRange.to, filters.dateRange.from) + 1
     }, [filters.dateRange])
 
     const canShowDayWise = dateRangeDays <= 32

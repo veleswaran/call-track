@@ -50,7 +50,7 @@ final class DayWiseReportResource extends JsonResource
                 'total_duration' => $this->formatDuration($stats['total_duration']),
                 'total_duration_seconds' => $stats['total_duration'],
                 'first_call_time' => $stats['first_call_time']
-                    ? date('h:i A', strtotime($stats['first_call_time']))
+                    ? \Carbon\Carbon::parse($stats['first_call_time'])->format('h:i A')
                     : null,
             ];
         }, $dailyStats);

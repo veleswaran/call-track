@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Reports\Actions;
 
+use App\Actions\Contacts\GetContactHashVariationsAction;
 use App\Domain\Calls\Models\CallLog;
 use App\Domain\Reports\DTOs\ReportFilterDTO;
 use Carbon\Carbon;
@@ -13,6 +14,18 @@ use Illuminate\Support\Facades\DB;
 
 final class GetDayWiseReportAction
 {
+    /**
+     * Create a new GetDayWiseReportAction instance.
+     */
+    public function __construct(
+        private readonly GetContactHashVariationsAction $contactHashesAction
+    ) {}
+
+    /**
+     * Execute the day-wise report action.
+     *
+     * @throws \InvalidArgumentException
+     */
     public function execute(ReportFilterDTO $filters): array
     {
         $startDate = $filters->startDate;
@@ -32,15 +45,6 @@ final class GetDayWiseReportAction
             ->from('call_logs as cl')
             ->join('devices as d', 'd.id', '=', 'cl.device_id')
             ->join('agents as a', 'a.id', '=', 'd.agent_id')
-            ->leftJoinSub(
-                function ($query) {
-                    $query->select('call_log_id')->distinct()->from('call_escalations');
-                },
-                'ce',
-                'ce.call_log_id',
-                '=',
-                'cl.id'
-            )
             ->selectRaw('
                 a.id as agent_id,
                 a.name as agent_name,
@@ -49,11 +53,11 @@ final class GetDayWiseReportAction
                 COUNT(cl.id) as total_calls,
                 SUM(CASE WHEN (
                     cl.duration > 0
-                    AND ce.call_log_id IS NULL
+                    AND NOT EXISTS (SELECT 1 FROM call_escalations WHERE call_escalations.call_log_id = cl.id)
                     AND cl.direction NOT IN (?, ?, ?)
                 ) THEN 1 ELSE 0 END) as connected_calls,
                 SUM(CASE WHEN (
-                    ce.call_log_id IS NOT NULL
+                    EXISTS (SELECT 1 FROM call_escalations WHERE call_escalations.call_log_id = cl.id)
                     OR cl.direction IN (?, ?, ?)
                     OR (cl.direction = ? AND cl.duration <= 0)
                 ) THEN 1 ELSE 0 END) as missed_calls,
@@ -170,8 +174,12 @@ final class GetDayWiseReportAction
 
         // Filter by Classification (mapped from 'types' in DTO)
         if (! empty($filters->types)) {
-            $query->leftJoin('call_classifications as cc', 'cl.id', '=', 'cc.call_log_id')
-                ->whereIn('cc.type', array_map('strtoupper', $filters->types));
+            $query->whereExists(function ($q) use ($filters) {
+                $q->selectRaw(1)
+                    ->from('call_classifications as cc')
+                    ->whereColumn('cc.call_log_id', 'cl.id')
+                    ->whereIn('cc.type', array_map('strtoupper', $filters->types));
+            });
         }
 
         // Filter by Call Outcomes
@@ -182,12 +190,20 @@ final class GetDayWiseReportAction
                         switch (strtoupper($outcome)) {
                             case 'CONNECTED':
                                 $sub->where('cl.duration', '>', 0)
-                                    ->whereNull('ce.call_log_id')
+                                    ->whereNotExists(function ($innerQ) {
+                                        $innerQ->selectRaw(1)
+                                            ->from('call_escalations as ce_sub')
+                                            ->whereColumn('ce_sub.call_log_id', 'cl.id');
+                                    })
                                     ->whereNotIn('cl.direction', ['MISSED', 'REJECTED', 'BLOCKED']);
                                 break;
                             case 'MISSED':
                                 $sub->where(function ($inner) {
-                                    $inner->whereNotNull('ce.call_log_id')
+                                    $inner->whereExists(function ($innerQ) {
+                                        $innerQ->selectRaw(1)
+                                            ->from('call_escalations as ce_sub')
+                                            ->whereColumn('ce_sub.call_log_id', 'cl.id');
+                                    })
                                         ->orWhereIn('cl.direction', ['MISSED', 'REJECTED', 'BLOCKED'])
                                         ->orWhere(function ($inc) {
                                             $inc->where('cl.direction', 'INCOMING')->where('cl.duration', '<=', 0);
@@ -207,8 +223,7 @@ final class GetDayWiseReportAction
 
         // Contact filter (internal/external)
         if ($filters->contactFilter !== null && $filters->contactFilter !== 'all') {
-            $contactHashesAction = app(\App\Actions\Contacts\GetContactHashVariationsAction::class);
-            $contactHashes = $contactHashesAction->execute();
+            $contactHashes = $this->contactHashesAction->execute();
 
             if ($filters->contactFilter === 'internal') {
                 $query->whereIn('cl.phone_number_hash', $contactHashes);

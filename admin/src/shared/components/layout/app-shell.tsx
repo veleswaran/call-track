@@ -38,7 +38,7 @@ export function AppShell({ children, user, onLogout }: AppShellProps) {
 
             <div
                 className={cn(
-                    "flex flex-1 flex-col min-h-screen transition-all duration-200 overflow-x-hidden",
+                    "flex flex-1 flex-col min-h-screen transition-all duration-200 min-w-0",
                     !isMobile && (sidebarOpen ? "pl-64" : "pl-16")
                 )}
             >

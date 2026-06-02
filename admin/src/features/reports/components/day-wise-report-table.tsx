@@ -86,10 +86,12 @@ export function DayWiseReportTable({ data, isLoading }: DayWiseReportTableProps)
 
         data.agents.forEach(agent => {
             const dayStats = agent.daily_stats[date]
-            totalCalls += dayStats.total_calls
-            totalConnected += dayStats.connected
-            totalMissed += dayStats.missed
-            totalDuration += dayStats.total_duration_seconds
+            if (dayStats) {
+                totalCalls += dayStats.total_calls
+                totalConnected += dayStats.connected
+                totalMissed += dayStats.missed
+                totalDuration += dayStats.total_duration_seconds
+            }
         })
 
         totals[date] = {
@@ -317,7 +319,14 @@ export function DayWiseReportTable({ data, isLoading }: DayWiseReportTableProps)
 
                                         {/* Daily stats */}
                                         {data.dates.map((date) => {
-                                            const stats = agent.daily_stats[date]
+                                            const stats = agent.daily_stats[date] || {
+                                                total_calls: 0,
+                                                connected: 0,
+                                                missed: 0,
+                                                total_duration: '0h 0m',
+                                                total_duration_seconds: 0,
+                                                first_call_time: null
+                                            }
                                             const cellColorClass = getCellColor(stats.total_duration_seconds, maxDuration)
 
                                             return (
