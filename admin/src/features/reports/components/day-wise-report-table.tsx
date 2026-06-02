@@ -403,7 +403,7 @@ export function DayWiseReportTable({ data, isLoading }: DayWiseReportTableProps)
                             <tfoot className="bg-gray-100 dark:bg-zinc-800 border-t-2 border-gray-300 dark:border-zinc-700 sticky bottom-0 z-40">
                                 <tr>
                                     {/* Sticky total label */}
-                                    <td className="sticky left-0 bottom-0 z-50 bg-gray-150 dark:bg-zinc-800 px-4 py-3 text-sm font-bold border-r border-zinc-250 dark:border-zinc-700 border-t border-b">
+                                    <td className="sticky left-0 z-50 bg-gray-100 dark:bg-zinc-800 px-4 py-3 text-sm font-bold border-r border-gray-300 dark:border-zinc-700 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] dark:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.3)]">
                                         <div className="flex items-center gap-2">
                                             <span>Day-Wise Total</span>
                                             <Tooltip>
