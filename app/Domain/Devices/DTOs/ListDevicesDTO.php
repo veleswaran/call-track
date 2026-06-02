@@ -15,6 +15,7 @@ readonly class ListDevicesDTO
         public mixed $allowedAgentIds = null,
         public ?string $status = null,
         public ?string $syncStatus = null,
+        public ?int $teamId = null,
     ) {}
 
     public static function fromRequest(Request $request, mixed $allowedAgentIds = null): self
@@ -26,6 +27,7 @@ readonly class ListDevicesDTO
             allowedAgentIds: $allowedAgentIds,
             status: $request->filled('status') && $request->input('status') !== 'all' ? $request->input('status') : null,
             syncStatus: $request->filled('sync_status') && $request->input('sync_status') !== 'all' ? $request->input('sync_status') : null,
+            teamId: $request->filled('team_id') && $request->input('team_id') !== 'all' ? (int) $request->input('team_id') : null,
         );
     }
 }

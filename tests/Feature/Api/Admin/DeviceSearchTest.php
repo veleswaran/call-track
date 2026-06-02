@@ -61,4 +61,49 @@ class DeviceSearchTest extends TestCase
         $response = $this->actingAs($this->admin)->getJson('/api/v1/admin/devices?search=1.2');
         $response->assertOk();
     }
+
+    public function test_can_filter_devices_by_team_id(): void
+    {
+        // 1. Create Teams
+        $teamA = \App\Domain\Teams\Models\Team::factory()->create(['name' => 'Team Alpha']);
+        $teamB = \App\Domain\Teams\Models\Team::factory()->create(['name' => 'Team Beta']);
+
+        // 2. Create Agents
+        $agentA = \App\Domain\Agents\Models\Agent::factory()->create(['name' => 'Agent Alpha']);
+        $agentB = \App\Domain\Agents\Models\Agent::factory()->create(['name' => 'Agent Beta']);
+
+        // Attach agents to teams
+        $teamA->members()->attach($agentA->id, ['role' => 'MEMBER']);
+        $teamB->members()->attach($agentB->id, ['role' => 'MEMBER']);
+
+        // 3. Create Devices
+        $deviceA = Device::factory()->create([
+            'name' => 'Device Alpha',
+            'agent_id' => $agentA->id,
+        ]);
+        $deviceB = Device::factory()->create([
+            'name' => 'Device Beta',
+            'agent_id' => $agentB->id,
+        ]);
+
+        // Filter by Team Alpha
+        $response = $this->actingAs($this->admin)
+            ->getJson("/api/v1/admin/devices?team_id={$teamA->id}");
+
+        $response->assertOk();
+        $response->assertJsonCount(1, 'data');
+        $response->assertJsonPath('data.0.device_name', 'Device Alpha');
+        $response->assertJsonPath('data.0.agent.name', 'Agent Alpha');
+        $response->assertJsonPath('data.0.agent.teams.0.name', 'Team Alpha');
+
+        // Filter by Team Beta
+        $response = $this->actingAs($this->admin)
+            ->getJson("/api/v1/admin/devices?team_id={$teamB->id}");
+
+        $response->assertOk();
+        $response->assertJsonCount(1, 'data');
+        $response->assertJsonPath('data.0.device_name', 'Device Beta');
+        $response->assertJsonPath('data.0.agent.name', 'Agent Beta');
+        $response->assertJsonPath('data.0.agent.teams.0.name', 'Team Beta');
+    }
 }

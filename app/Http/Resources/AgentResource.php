@@ -26,6 +26,7 @@ class AgentResource extends JsonResource
             'status' => $this->status,
             'user_id' => $this->user_id,
             'devices_count' => $this->whenCounted('devices'),
+            'teams' => TeamResource::collection($this->whenLoaded('teams')),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

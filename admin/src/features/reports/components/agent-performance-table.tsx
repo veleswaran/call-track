@@ -39,6 +39,9 @@ export interface AgentPerformance {
 interface AgentPerformanceTableProps {
     data: AgentPerformance[]
     filters: ReportFiltersData
+    sortBy?: string | null
+    sortOrder?: 'asc' | 'desc'
+    onSort?: (key: string, order: 'asc' | 'desc') => void
 }
 
 const getPerformanceColor = (perf: string) => {
@@ -116,21 +119,32 @@ const SortableHeader = ({
     </TableHead>
 );
 
-export function AgentPerformanceTable({ data, filters }: AgentPerformanceTableProps) {
+export function AgentPerformanceTable({
+    data,
+    filters,
+    sortBy,
+    sortOrder,
+    onSort,
+}: AgentPerformanceTableProps) {
     const [sortConfig, setSortConfig] = useState<{
         key: keyof AgentPerformance | null;
         direction: 'asc' | 'desc';
     }>({ key: null, direction: 'asc' });
 
     const handleSort = (key: keyof AgentPerformance) => {
-        let direction: 'asc' | 'desc' = 'asc';
-        if (sortConfig.key === key && sortConfig.direction === 'asc') {
-            direction = 'desc';
+        if (onSort) {
+            const nextOrder = (sortBy === key && sortOrder === 'asc') ? 'desc' : 'asc';
+            onSort(key as string, nextOrder);
+        } else {
+            let direction: 'asc' | 'desc' = 'asc';
+            if (sortConfig.key === key && sortConfig.direction === 'asc') {
+                direction = 'desc';
+            }
+            setSortConfig({ key, direction });
         }
-        setSortConfig({ key, direction });
     };
 
-    const sortedData = [...data].sort((a, b) => {
+    const sortedData = onSort ? data : [...data].sort((a, b) => {
         if (!sortConfig.key) return 0;
 
         let aValue = a[sortConfig.key];

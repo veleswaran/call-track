@@ -7,8 +7,10 @@ import { format } from "date-fns"
 import { ReportFilters, ReportFiltersData } from "@features/reports/components/report-filters"
 import { ReportSummary } from "@features/reports/components/report-summary"
 import { ReportCharts } from "@features/reports/components/report-charts"
-import { AgentPerformanceTable } from "@features/reports/components/agent-performance-table"
+import { AgentPerformanceTable, AgentPerformance } from "@features/reports/components/agent-performance-table"
+import { CallLogPagination } from "@features/call-logs/components/call-log-pagination"
 import { api } from "@shared/api/api"
+import { PaginatedResponse } from "@shared/types"
 
 export default function ReportsPage() {
     const [filters, setFilters] = useState<ReportFiltersData>({
@@ -22,6 +24,11 @@ export default function ReportsPage() {
         teamIds: null
     })
 
+    const [page, setPage] = useState(1)
+    const [perPage, setPerPage] = useState(15)
+    const [sortBy, setSortBy] = useState<string | null>(null)
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
+
     const queryParams = {
         start_date: filters.dateRange?.from ? format(filters.dateRange.from, 'yyyy-MM-dd') : undefined,
         end_date: filters.dateRange?.to ? format(filters.dateRange.to, 'yyyy-MM-dd') : undefined,
@@ -30,6 +37,14 @@ export default function ReportsPage() {
         agent_ids: filters.agentIds || undefined,
         team_ids: filters.teamIds || undefined,
         contact_filter: filters.contactFilter || undefined,
+    }
+
+    const performanceQueryParams = {
+        ...queryParams,
+        page,
+        per_page: perPage,
+        sort_by: sortBy || undefined,
+        sort_order: sortOrder,
     }
 
     const getQueryString = (params: Record<string, string | number | (string | number)[] | undefined | null>) => {
@@ -65,11 +80,11 @@ export default function ReportsPage() {
     })
 
     const performanceQuery = useQuery({
-        queryKey: ['reports', 'performance', queryParams],
+        queryKey: ['reports', 'performance', performanceQueryParams],
         queryFn: async () => {
-            const qs = getQueryString(queryParams);
-            const res = await api.get<{ data: React.ComponentProps<typeof AgentPerformanceTable>['data'] }>(`/api/v1/admin/reports/performance?${qs}`)
-            return res.data
+            const qs = getQueryString(performanceQueryParams);
+            const res = await api.get<PaginatedResponse<AgentPerformance>>(`/api/v1/admin/reports/performance?${qs}`)
+            return res
         }
     })
 
@@ -81,10 +96,44 @@ export default function ReportsPage() {
                     Analyze call activity, agent performance, and follow-up status using real call data.
                 </p>
             </div>
-            <ReportFilters onFilterChange={setFilters} />
+            <ReportFilters onFilterChange={(newFilters) => {
+                setFilters(newFilters);
+                setPage(1);
+            }} />
 
             <ReportSummary metrics={metricsQuery.data || []} isLoading={metricsQuery.isLoading} />
+            <div className="space-y-4">
+                <div id="agent-performance">
+                    <h2 className="text-xl font-bold tracking-tight">Agent Performance Report</h2>
+                    <p className="text-sm text-muted-foreground">See how each agent handles calls and responds to customers.</p>
+                </div>
 
+                <AgentPerformanceTable
+                    data={performanceQuery.data?.data || []}
+                    filters={filters}
+                    sortBy={sortBy}
+                    sortOrder={sortOrder}
+                    onSort={(key, order) => {
+                        setSortBy(key);
+                        setSortOrder(order);
+                        setPage(1);
+                    }}
+                />
+
+                {performanceQuery.data && (
+                    <div className="mt-4">
+                        <CallLogPagination
+                            page={page}
+                            perPage={perPage}
+                            total={performanceQuery.data.meta.total}
+                            onChange={(newPage, newPerPage) => {
+                                setPage(newPage);
+                                setPerPage(newPerPage);
+                            }}
+                        />
+                    </div>
+                )}
+            </div>
             {chartsQuery.isLoading ? (
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
                     <div className="col-span-full h-[300px] rounded-xl bg-zinc-100 dark:bg-zinc-800 animate-pulse" />
@@ -98,16 +147,6 @@ export default function ReportsPage() {
                     No chart data available for the selected period.
                 </div>
             )}
-
-            <div className="space-y-4">
-                <div id="agent-performance">
-                    <h2 className="text-xl font-bold tracking-tight">Agent Performance Report</h2>
-                    <p className="text-sm text-muted-foreground">See how each agent handles calls and responds to customers.</p>
-                </div>
-
-                <AgentPerformanceTable data={performanceQuery.data || []} filters={filters} />
-            </div>
-
         </div>
     )
 }

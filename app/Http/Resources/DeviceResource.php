@@ -32,10 +32,7 @@ class DeviceResource extends JsonResource
             'battery_level' => $this->battery_level,
             'status' => $this->active_tokens_exists ? 'active' : 'inactive',
             'agent_id' => $this->agent_id,
-            'agent' => $this->whenLoaded('agent', fn () => [
-                'id' => $this->resource->agent->id,
-                'name' => $this->resource->agent->name,
-            ]),
+            'agent' => new AgentResource($this->whenLoaded('agent')),
             'last_sync_at' => $this->last_heartbeat_at,
             'metadata' => $this->metadata,
             'created_at' => $this->created_at,

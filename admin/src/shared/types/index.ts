@@ -75,7 +75,7 @@ export interface Device {
     app_version: string | null;
     status: string | null;
     agent_id: number | null;
-    agent: { id: number; name: string } | null;
+    agent: { id: number; name: string; teams?: { id: number; name: string }[] } | null;
     battery_level: number | null;
     has_fcm_token?: boolean;
     tracked_sim_slots: number[] | null;

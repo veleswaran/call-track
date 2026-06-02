@@ -82,6 +82,49 @@ describe("useDevices", () => {
         );
         expect(result.current.data?.data).toEqual([mockDevice]);
     });
+
+    it("should fetch devices with filters", async () => {
+        const mockResponse: PaginatedResponse<Device> = {
+            data: [mockDevice],
+            meta: {
+                current_page: 2,
+                from: 21,
+                last_page: 2,
+                per_page: 20,
+                to: 21,
+                total: 21,
+            },
+            links: {
+                first: "/api/v1/admin/devices?page=1",
+                last: "/api/v1/admin/devices?page=2",
+                prev: "/api/v1/admin/devices?page=1",
+                next: null,
+            },
+        };
+
+        vi.mocked(api.get).mockResolvedValueOnce(mockResponse);
+
+        const { result } = renderHook(
+            () =>
+                useDevices({
+                    page: 2,
+                    per_page: 20,
+                    search: "pixel",
+                    status: "active",
+                    sync_status: "synced",
+                    team_id: "5",
+                }),
+            {
+                wrapper: createWrapper(),
+            }
+        );
+
+        await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+        expect(api.get).toHaveBeenCalledWith(
+            "/api/v1/admin/devices?page=2&per_page=20&search=pixel&status=active&sync_status=synced&team_id=5"
+        );
+    });
 });
 
 describe("useDevice", () => {
