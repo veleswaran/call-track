@@ -219,7 +219,7 @@ export function AgentPerformanceTable({
                     <TableHeader>
                         <TableRow>
                             <TableHead className="w-[80px]">Avatar</TableHead>
-                            <TableHead>Agent</TableHead>
+                            <SortableHeader label="Agent" sortKey="agent" onSort={handleSort} />
                             <TableHead>EMP Code</TableHead>
                             <SortableHeader label="First Call" sortKey="first_call_time" align="center" className="text-center" onSort={handleSort} />
                             <SortableHeader label="Total Calls" sortKey="total_calls" align="right" className="text-right" onSort={handleSort} />

@@ -33,7 +33,7 @@ export default function ReportsPage() {
     const [viewMode, setViewMode] = useState<ViewMode>('table')
     const [page, setPage] = useState(1)
     const [perPage, setPerPage] = useState(15)
-    const [sortBy, setSortBy] = useState<string | null>(null)
+    const [sortBy, setSortBy] = useState<string | null>('agent')
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
 
     // Check if date range exceeds 32 days

@@ -328,77 +328,40 @@ export function DayWiseReportTable({ data, isLoading }: DayWiseReportTableProps)
                                                 first_call_time: null
                                             }
                                             const cellColorClass = getCellColor(stats.total_duration_seconds, maxDuration)
+                                            const formattedDate = format(new Date(date), 'PPP')
+                                            const titleText = `${formattedDate}\n` +
+                                                `Total Calls: ${stats.total_calls}\n` +
+                                                `Connected: ${stats.connected}\n` +
+                                                `Missed: ${stats.missed}\n` +
+                                                `Duration: ${stats.total_duration}` +
+                                                (stats.first_call_time ? `\nFirst Call: ${stats.first_call_time}` : '')
 
                                             return (
                                                 <td
                                                     key={date}
                                                     className="px-4 py-3 text-center text-sm border-b"
                                                 >
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <div
-                                                                className={cn(
-                                                                    "rounded px-2 py-1 cursor-pointer transition-all hover:shadow-md",
-                                                                    cellColorClass
-                                                                )}
-                                                            >
-                                                                {stats.total_duration}
-                                                            </div>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent className="max-w-xs">
-                                                            <div className="space-y-1 text-xs">
-                                                                <p className="font-semibold">{format(new Date(date), 'PPP')}</p>
-                                                                <div className="grid grid-cols-2 gap-x-3 gap-y-1 mt-2">
-                                                                    <span className="text-gray-500">Total Calls:</span>
-                                                                    <span className="font-medium">{stats.total_calls}</span>
-
-                                                                    <span className="text-gray-500">Connected:</span>
-                                                                    <span className="font-medium text-green-600">{stats.connected}</span>
-
-                                                                    <span className="text-gray-500">Missed:</span>
-                                                                    <span className="font-medium text-red-600">{stats.missed}</span>
-
-                                                                    <span className="text-gray-500">Duration:</span>
-                                                                    <span className="font-medium">{stats.total_duration}</span>
-
-                                                                    {stats.first_call_time && (
-                                                                        <>
-                                                                            <span className="text-gray-500">First Call:</span>
-                                                                            <span className="font-medium">{stats.first_call_time}</span>
-                                                                        </>
-                                                                    )}
-                                                                </div>
-                                                            </div>
-                                                        </TooltipContent>
-                                                    </Tooltip>
+                                                    <div
+                                                        title={titleText}
+                                                        className={cn(
+                                                            "rounded px-2 py-1 cursor-pointer transition-all hover:shadow-md",
+                                                            cellColorClass
+                                                        )}
+                                                    >
+                                                        {stats.total_duration}
+                                                    </div>
                                                 </td>
                                             )
                                         })}
 
                                         {/* Period total */}
                                         <td className={cn("sticky right-0 z-10 px-4 py-3 text-center border-b border-l", rowBg)}>
-                                            <Tooltip>
-                                                <TooltipTrigger asChild>
-                                                    <div className="font-bold text-sm bg-blue-50 text-blue-800 rounded px-2 py-1 cursor-pointer">
-                                                        {agent.period_total.total_duration}
-                                                    </div>
-                                                </TooltipTrigger>
-                                                <TooltipContent>
-                                                    <div className="space-y-1 text-xs">
-                                                        <p className="font-semibold">Period Summary</p>
-                                                        <div className="grid grid-cols-2 gap-x-3 gap-y-1 mt-2">
-                                                            <span className="text-gray-500">Total Calls:</span>
-                                                            <span className="font-medium">{agent.period_total.total_calls}</span>
-
-                                                            <span className="text-gray-500">Connected:</span>
-                                                            <span className="font-medium text-green-600">{agent.period_total.connected}</span>
-
-                                                            <span className="text-gray-500">Missed:</span>
-                                                            <span className="font-medium text-red-600">{agent.period_total.missed}</span>
-                                                        </div>
-                                                    </div>
-                                                </TooltipContent>
-                                            </Tooltip>
+                                            <div
+                                                title={`Period Summary\nTotal Calls: ${agent.period_total.total_calls}\nConnected: ${agent.period_total.connected}\nMissed: ${agent.period_total.missed}`}
+                                                className="font-bold text-sm bg-blue-50 text-blue-800 rounded px-2 py-1 cursor-pointer"
+                                            >
+                                                {agent.period_total.total_duration}
+                                            </div>
                                         </td>
                                     </tr>
                                 )})}

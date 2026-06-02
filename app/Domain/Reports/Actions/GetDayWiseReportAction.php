@@ -40,30 +40,37 @@ final class GetDayWiseReportAction
         $period = CarbonPeriod::create($startDate, $endDate);
         $dates = collect($period)->map(fn (Carbon $date) => $date->format('Y-m-d'))->toArray();
 
+        // Determine database driver and date expression for casting
+        $driver = DB::connection()->getDriverName();
+        $dateExpression = $driver === 'sqlite'
+            ? 'DATE(cl.timestamp)'
+            : 'cl.timestamp::date';
+
         // Build the base query with filters
         $query = CallLog::query()
             ->from('call_logs as cl')
             ->join('devices as d', 'd.id', '=', 'cl.device_id')
             ->join('agents as a', 'a.id', '=', 'd.agent_id')
-            ->selectRaw('
+            ->leftJoin('call_escalations as ce', 'ce.call_log_id', '=', 'cl.id')
+            ->selectRaw("
                 a.id as agent_id,
                 a.name as agent_name,
                 a.employee_code,
-                DATE(cl.timestamp) as call_date,
+                $dateExpression as call_date,
                 COUNT(cl.id) as total_calls,
                 SUM(CASE WHEN (
                     cl.duration > 0
-                    AND NOT EXISTS (SELECT 1 FROM call_escalations WHERE call_escalations.call_log_id = cl.id)
-                    AND cl.direction NOT IN (?, ?, ?)
+                    AND ce.call_log_id IS NULL
+                    AND cl.direction NOT IN ('MISSED', 'REJECTED', 'BLOCKED')
                 ) THEN 1 ELSE 0 END) as connected_calls,
                 SUM(CASE WHEN (
-                    EXISTS (SELECT 1 FROM call_escalations WHERE call_escalations.call_log_id = cl.id)
-                    OR cl.direction IN (?, ?, ?)
-                    OR (cl.direction = ? AND cl.duration <= 0)
+                    ce.call_log_id IS NOT NULL
+                    OR cl.direction IN ('MISSED', 'REJECTED', 'BLOCKED')
+                    OR (cl.direction = 'INCOMING' AND cl.duration <= 0)
                 ) THEN 1 ELSE 0 END) as missed_calls,
                 SUM(cl.duration) as total_duration,
                 MIN(cl.timestamp) as first_call_time
-            ', ['MISSED', 'REJECTED', 'BLOCKED', 'MISSED', 'REJECTED', 'BLOCKED', 'INCOMING'])
+            ")
             ->whereBetween('cl.timestamp', [
                 $startDate->copy()->startOfDay(),
                 $endDate->copy()->endOfDay(),
@@ -74,7 +81,7 @@ final class GetDayWiseReportAction
                     ->whereColumn('cc_exclude.call_log_id', 'cl.id')
                     ->where('cc_exclude.type', 'PERSONAL');
             })
-            ->groupBy('a.id', 'a.name', 'a.employee_code', DB::raw('DATE(cl.timestamp)'));
+            ->groupBy('a.id', 'a.name', 'a.employee_code', DB::raw($dateExpression));
 
         // Apply filters
         $this->applyFilters($query, $filters);
@@ -82,23 +89,25 @@ final class GetDayWiseReportAction
         // Execute query
         $results = $query->get();
 
+        // Pre-build daily stats template to avoid expensive Collection creation inside the loop
+        $dailyStatsTemplate = [];
+        foreach ($dates as $date) {
+            $dailyStatsTemplate[$date] = [
+                'total_calls' => 0,
+                'connected' => 0,
+                'missed' => 0,
+                'total_duration' => 0,
+                'first_call_time' => null,
+            ];
+        }
+
         // Group by agent and organize by date
         // @phpstan-ignore-next-line argument.unresolvableType - Collection contains dynamic properties from selectRaw
-        $agentData = $results->groupBy('agent_id')->map(function (Collection $agentCalls, $agentId) use ($dates) {
+        $agentData = $results->groupBy('agent_id')->map(function (Collection $agentCalls, $agentId) use ($dailyStatsTemplate) {
             $firstAgent = $agentCalls->first();
 
-            // Initialize daily stats for all dates
-            $dailyStats = collect($dates)->mapWithKeys(function ($date) {
-                return [
-                    $date => [
-                        'total_calls' => 0,
-                        'connected' => 0,
-                        'missed' => 0,
-                        'total_duration' => 0,
-                        'first_call_time' => null,
-                    ],
-                ];
-            })->toArray();
+            // Use the pre-built template
+            $dailyStats = $dailyStatsTemplate;
 
             // Fill in actual data - properties added via selectRaw()
             foreach ($agentCalls as $dayData) {
@@ -119,11 +128,12 @@ final class GetDayWiseReportAction
             }
 
             // Calculate period totals
+            $dailyStatsCollection = collect($agentCalls);
             $periodTotal = [
-                'total_calls' => $agentCalls->sum('total_calls'),
-                'connected' => $agentCalls->sum('connected_calls'),
-                'missed' => $agentCalls->sum('missed_calls'),
-                'total_duration' => $agentCalls->sum('total_duration'),
+                'total_calls' => $dailyStatsCollection->sum('total_calls'),
+                'connected' => $dailyStatsCollection->sum('connected_calls'),
+                'missed' => $dailyStatsCollection->sum('missed_calls'),
+                'total_duration' => $dailyStatsCollection->sum('total_duration'),
             ];
 
             return [
@@ -135,12 +145,17 @@ final class GetDayWiseReportAction
                 'daily_stats' => $dailyStats,
                 'period_total' => $periodTotal,
             ];
-        })->values()->toArray();
+        });
+
+        // @phpstan-ignore-next-line argument.unresolvableType - PHPStan fails to resolve generic types of array items within Collection::sortBy
+        $sortedAgents = $agentData->sortBy(fn (array $agent) => $agent['agent_name'], SORT_NATURAL | SORT_FLAG_CASE)
+            ->values()
+            ->toArray();
 
         return [
-            'agents' => $agentData,
+            'agents' => $sortedAgents,
             'dates' => $dates,
-            'total_agents' => count($agentData),
+            'total_agents' => count($sortedAgents),
             'total_days' => count($dates),
         ];
     }
@@ -174,12 +189,8 @@ final class GetDayWiseReportAction
 
         // Filter by Classification (mapped from 'types' in DTO)
         if (! empty($filters->types)) {
-            $query->whereExists(function ($q) use ($filters) {
-                $q->selectRaw(1)
-                    ->from('call_classifications as cc')
-                    ->whereColumn('cc.call_log_id', 'cl.id')
-                    ->whereIn('cc.type', array_map('strtoupper', $filters->types));
-            });
+            $query->join('call_classifications as cc', 'cc.call_log_id', '=', 'cl.id')
+                ->whereIn('cc.type', array_map('strtoupper', $filters->types));
         }
 
         // Filter by Call Outcomes
@@ -190,20 +201,12 @@ final class GetDayWiseReportAction
                         switch (strtoupper($outcome)) {
                             case 'CONNECTED':
                                 $sub->where('cl.duration', '>', 0)
-                                    ->whereNotExists(function ($innerQ) {
-                                        $innerQ->selectRaw(1)
-                                            ->from('call_escalations as ce_sub')
-                                            ->whereColumn('ce_sub.call_log_id', 'cl.id');
-                                    })
+                                    ->whereNull('ce.call_log_id')
                                     ->whereNotIn('cl.direction', ['MISSED', 'REJECTED', 'BLOCKED']);
                                 break;
                             case 'MISSED':
                                 $sub->where(function ($inner) {
-                                    $inner->whereExists(function ($innerQ) {
-                                        $innerQ->selectRaw(1)
-                                            ->from('call_escalations as ce_sub')
-                                            ->whereColumn('ce_sub.call_log_id', 'cl.id');
-                                    })
+                                    $inner->whereNotNull('ce.call_log_id')
                                         ->orWhereIn('cl.direction', ['MISSED', 'REJECTED', 'BLOCKED'])
                                         ->orWhere(function ($inc) {
                                             $inc->where('cl.direction', 'INCOMING')->where('cl.duration', '<=', 0);
