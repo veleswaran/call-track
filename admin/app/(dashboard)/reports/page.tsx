@@ -1,16 +1,22 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { useQuery } from "@tanstack/react-query"
-import { format } from "date-fns"
+import { format, differenceInDays } from "date-fns"
+import { LayoutList, Calendar } from "lucide-react"
 
 import { ReportFilters, ReportFiltersData } from "@features/reports/components/report-filters"
 import { ReportSummary } from "@features/reports/components/report-summary"
 import { ReportCharts } from "@features/reports/components/report-charts"
 import { AgentPerformanceTable, AgentPerformance } from "@features/reports/components/agent-performance-table"
+import { DayWiseReportTable, DayWiseReportData } from "@features/reports/components/day-wise-report-table"
 import { CallLogPagination } from "@features/call-logs/components/call-log-pagination"
+import { Button } from "@shared/components/ui/button"
+import { Alert, AlertDescription } from "@shared/components/ui/alert"
 import { api } from "@shared/api/api"
 import { PaginatedResponse } from "@shared/types"
+
+type ViewMode = 'table' | 'day-wise'
 
 export default function ReportsPage() {
     const [filters, setFilters] = useState<ReportFiltersData>({
@@ -24,10 +30,19 @@ export default function ReportsPage() {
         teamIds: null
     })
 
+    const [viewMode, setViewMode] = useState<ViewMode>('table')
     const [page, setPage] = useState(1)
     const [perPage, setPerPage] = useState(15)
     const [sortBy, setSortBy] = useState<string | null>(null)
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
+
+    // Check if date range exceeds 32 days
+    const dateRangeDays = useMemo(() => {
+        if (!filters.dateRange?.from || !filters.dateRange?.to) return 0
+        return differenceInDays(filters.dateRange.to, filters.dateRange.from) + 1
+    }, [filters.dateRange])
+
+    const canShowDayWise = dateRangeDays <= 32
 
     const queryParams = {
         start_date: filters.dateRange?.from ? format(filters.dateRange.from, 'yyyy-MM-dd') : undefined,
@@ -88,65 +103,136 @@ export default function ReportsPage() {
         }
     })
 
-    return (
-        <div className="flex flex-col gap-6 p-6">
-            <div>
-                <h1 className="text-3xl font-bold tracking-tight">Call Reports</h1>
-                <p className="text-muted-foreground">
-                    Analyze call activity, agent performance, and follow-up status using real call data.
-                </p>
-            </div>
-            <ReportFilters onFilterChange={(newFilters) => {
-                setFilters(newFilters);
-                setPage(1);
-            }} />
+    const dayWiseQuery = useQuery({
+        queryKey: ['reports', 'day-wise', queryParams],
+        queryFn: async () => {
+            const qs = getQueryString(queryParams);
+            const res = await api.get<{ data: DayWiseReportData }>(`/api/v1/admin/reports/day-wise?${qs}`)
+            return res.data
+        },
+        enabled: viewMode === 'day-wise' && canShowDayWise
+    })
 
-            <ReportSummary metrics={metricsQuery.data || []} isLoading={metricsQuery.isLoading} />
-            <div className="space-y-4">
-                <div id="agent-performance">
-                    <h2 className="text-xl font-bold tracking-tight">Agent Performance Report</h2>
-                    <p className="text-sm text-muted-foreground">See how each agent handles calls and responds to customers.</p>
+    return (
+        <div className="flex flex-col gap-6 w-full overflow-hidden">
+            {/* Header Section */}
+            <div className="bg-zinc-50 dark:bg-zinc-950 pb-4 pt-6 px-6 border-b border-zinc-200 dark:border-zinc-800">
+                <div className="space-y-4">
+                    <div>
+                        <h1 className="text-3xl font-bold tracking-tight">Call Reports</h1>
+                        <p className="text-muted-foreground">
+                            Analyze call activity, agent performance, and follow-up status using real call data.
+                        </p>
+                    </div>
+                    <ReportFilters onFilterChange={(newFilters) => {
+                        setFilters(newFilters);
+                        setPage(1);
+                    }} />
+                </div>
+            </div>
+
+            {/* Scrollable Content */}
+            <div className="px-6 space-y-6">
+                <ReportSummary metrics={metricsQuery.data || []} isLoading={metricsQuery.isLoading} />
+
+                <div className="space-y-4 w-full overflow-hidden">
+                    <div id="agent-performance" className="flex items-center justify-between flex-wrap gap-4">
+                        <div>
+                            <h2 className="text-xl font-bold tracking-tight">Agent Performance Report</h2>
+                            <p className="text-sm text-muted-foreground">See how each agent handles calls and responds to customers.</p>
+                        </div>
+
+                        {/* View Toggle */}
+                        <div className="flex items-center gap-2">
+                        <Button
+                            variant={viewMode === 'table' ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => setViewMode('table')}
+                            className="gap-2"
+                        >
+                            <LayoutList className="h-4 w-4" />
+                            Table View
+                        </Button>
+                        <Button
+                            variant={viewMode === 'day-wise' ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => {
+                                if (canShowDayWise) {
+                                    setViewMode('day-wise')
+                                }
+                            }}
+                            disabled={!canShowDayWise}
+                            className="gap-2"
+                        >
+                            <Calendar className="h-4 w-4" />
+                            Day-Wise View
+                        </Button>
+                    </div>
                 </div>
 
-                <AgentPerformanceTable
-                    data={performanceQuery.data?.data || []}
-                    filters={filters}
-                    sortBy={sortBy}
-                    sortOrder={sortOrder}
-                    onSort={(key, order) => {
-                        setSortBy(key);
-                        setSortOrder(order);
-                        setPage(1);
-                    }}
-                />
+                {/* 32-day limit warning */}
+                {!canShowDayWise && (
+                    <Alert variant="destructive">
+                        <AlertDescription>
+                            Day-wise view is only available for date ranges up to 32 days.
+                            Current selection: {dateRangeDays} days. Please adjust your date range to use this view.
+                        </AlertDescription>
+                    </Alert>
+                )}
 
-                {performanceQuery.data && (
-                    <div className="mt-4">
-                        <CallLogPagination
-                            page={page}
-                            perPage={perPage}
-                            total={performanceQuery.data.meta.total}
-                            onChange={(newPage, newPerPage) => {
-                                setPage(newPage);
-                                setPerPage(newPerPage);
+                {/* Table View */}
+                {viewMode === 'table' && (
+                    <>
+                                <AgentPerformanceTable
+                            data={performanceQuery.data?.data || []}
+                            filters={filters}
+                            sortBy={sortBy}
+                            sortOrder={sortOrder}
+                            onSort={(key, order) => {
+                                setSortBy(key);
+                                setSortOrder(order);
+                                setPage(1);
                             }}
                         />
-                    </div>
+
+                        {performanceQuery.data && (
+                            <div className="mt-4">
+                                <CallLogPagination
+                                    page={page}
+                                    perPage={perPage}
+                                    total={performanceQuery.data.meta.total}
+                                    onChange={(newPage, newPerPage) => {
+                                        setPage(newPage);
+                                        setPerPage(newPerPage);
+                                    }}
+                                />
+                            </div>
+                        )}
+                    </>
                 )}
-            </div>
-            {chartsQuery.isLoading ? (
+
+                    {/* Day-Wise View */}
+                    {viewMode === 'day-wise' && (
+                        <DayWiseReportTable
+                            data={dayWiseQuery.data || null}
+                            isLoading={dayWiseQuery.isLoading}
+                        />
+                    )}
+                </div>
+                {chartsQuery.isLoading ? (
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
                     <div className="col-span-full h-[300px] rounded-xl bg-zinc-100 dark:bg-zinc-800 animate-pulse" />
                     <div className="col-span-3 h-[250px] rounded-xl bg-zinc-100 dark:bg-zinc-800 animate-pulse" />
                     <div className="col-span-4 h-[250px] rounded-xl bg-zinc-100 dark:bg-zinc-800 animate-pulse" />
                 </div>
-            ) : chartsQuery.data ? (
-                <ReportCharts data={chartsQuery.data} />
-            ) : (
-                <div className="p-8 text-center text-muted-foreground">
-                    No chart data available for the selected period.
-                </div>
-            )}
+                ) : chartsQuery.data ? (
+                    <ReportCharts data={chartsQuery.data} />
+                ) : (
+                    <div className="p-8 text-center text-muted-foreground">
+                        No chart data available for the selected period.
+                    </div>
+                )}
+            </div>
         </div>
     )
 }

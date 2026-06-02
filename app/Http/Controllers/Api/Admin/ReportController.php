@@ -9,6 +9,7 @@ use App\Domain\Reports\DTOs\ReportFilterDTO;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\GetReportDataRequest;
 use App\Http\Resources\AgentPerformanceCollection;
+use App\Http\Resources\DayWiseReportResource;
 use App\Http\Resources\ReportChartResource;
 use App\Http\Resources\ReportMetricCollection;
 
@@ -41,6 +42,14 @@ final class ReportController extends Controller
         $data = $this->reportService->getPerformance($filters);
 
         return new AgentPerformanceCollection($data);
+    }
+
+    public function dayWise(GetReportDataRequest $request): DayWiseReportResource
+    {
+        $filters = $this->buildScopedFilters($request);
+        $data = $this->reportService->getDayWise($filters);
+
+        return new DayWiseReportResource($data);
     }
 
     private function buildScopedFilters(GetReportDataRequest $request): ReportFilterDTO

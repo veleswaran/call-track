@@ -30,15 +30,15 @@ export function AppShell({ children, user, onLogout }: AppShellProps) {
 
     return (
         <div
-            className="flex min-h-screen bg-zinc-50 dark:bg-zinc-950"
+            className="flex min-h-screen bg-zinc-50 dark:bg-zinc-950 overflow-x-hidden"
             data-testid="app-shell"
         >
             {/* Desktop sidebar - hidden on mobile */}
             {!isMobile && <SidebarNav open={sidebarOpen} onToggle={handleToggle} />}
 
-            <div 
+            <div
                 className={cn(
-                    "flex flex-1 flex-col min-h-screen transition-all duration-200",
+                    "flex flex-1 flex-col min-h-screen transition-all duration-200 overflow-x-hidden",
                     !isMobile && (sidebarOpen ? "pl-64" : "pl-16")
                 )}
             >
@@ -49,7 +49,7 @@ export function AppShell({ children, user, onLogout }: AppShellProps) {
                 />
                 {/* Main content - extra bottom padding on mobile for bottom nav */}
                 <main
-                    className="flex-1 p-4 pb-20 md:p-6 md:pb-6"
+                    className="flex-1 p-4 pb-20 md:p-6 md:pb-6 overflow-x-hidden"
                     data-testid="main-content"
                 >
                     {children}
