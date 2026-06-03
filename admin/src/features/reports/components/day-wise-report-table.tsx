@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useState, useEffect } from "react"
+import { useRef, useState, useEffect, useMemo } from "react"
 import { format } from "date-fns"
 import { ChevronLeft, ChevronRight, Info } from "lucide-react"
 import { Button } from "@shared/components/ui/button"
@@ -76,6 +76,14 @@ const getCellColor = (durationSeconds: number, maxDuration: number): string => {
     return 'bg-red-50 text-red-650 dark:bg-red-950/30 dark:text-red-400'
 }
 
+const formatDuration = (seconds: number): string => {
+    if (seconds === 0) return '0h 0m'
+    const hours = Math.floor(seconds / 3600)
+    const minutes = Math.floor((seconds % 3600) / 60)
+    if (hours > 0) return `${hours}h ${minutes}m`
+    return `${minutes}m`
+}
+
 export function DayWiseReportTable({ data, isLoading }: DayWiseReportTableProps) {
     const scrollContainerRef = useRef<HTMLDivElement>(null)
     const [canScrollLeft, setCanScrollLeft] = useState(false)
@@ -83,54 +91,52 @@ export function DayWiseReportTable({ data, isLoading }: DayWiseReportTableProps)
     const [showScrollHint, setShowScrollHint] = useState(true)
 
     // Calculate max duration for heatmap coloring
-    const maxDuration = data?.agents.reduce((max, agent) => {
-        const agentMax = Object.values(agent.daily_stats).reduce(
-            (m, day) => Math.max(m, day.total_duration_seconds),
-            0
-        )
-        return Math.max(max, agentMax)
-    }, 0) || 1
+    const maxDuration = useMemo(() => {
+        return data?.agents.reduce((max, agent) => {
+            const agentMax = Object.values(agent.daily_stats).reduce(
+                (m, day) => Math.max(m, day.total_duration_seconds),
+                0
+            )
+            return Math.max(max, agentMax)
+        }, 0) || 1
+    }, [data])
 
     // Calculate daily totals across all agents
-    const dailyTotals = data?.dates.reduce((totals, date) => {
-        let totalCalls = 0
-        let totalConnected = 0
-        let totalMissed = 0
-        let totalDuration = 0
+    const dailyTotals = useMemo(() => {
+        return data?.dates.reduce((totals, date) => {
+            let totalCalls = 0
+            let totalConnected = 0
+            let totalMissed = 0
+            let totalDuration = 0
 
-        data.agents.forEach(agent => {
-            const dayStats = agent.daily_stats[date]
-            if (dayStats) {
-                totalCalls += dayStats.total_calls
-                totalConnected += dayStats.connected
-                totalMissed += dayStats.missed
-                totalDuration += dayStats.total_duration_seconds
+            data.agents.forEach(agent => {
+                const dayStats = agent.daily_stats[date]
+                if (dayStats) {
+                    totalCalls += dayStats.total_calls
+                    totalConnected += dayStats.connected
+                    totalMissed += dayStats.missed
+                    totalDuration += dayStats.total_duration_seconds
+                }
+            })
+
+            totals[date] = {
+                total_calls: totalCalls,
+                connected: totalConnected,
+                missed: totalMissed,
+                total_duration_seconds: totalDuration,
+                total_duration: formatDuration(totalDuration)
             }
-        })
 
-        totals[date] = {
-            total_calls: totalCalls,
-            connected: totalConnected,
-            missed: totalMissed,
-            total_duration_seconds: totalDuration,
-            total_duration: formatDuration(totalDuration)
-        }
-
-        return totals
-    }, {} as Record<string, { total_calls: number; connected: number; missed: number; total_duration_seconds: number; total_duration: string }>) || {}
+            return totals
+        }, {} as Record<string, { total_calls: number; connected: number; missed: number; total_duration_seconds: number; total_duration: string }>) || {}
+    }, [data])
 
     // Calculate grand total
-    const grandTotal = data?.agents.reduce((total, agent) => {
-        return total + agent.period_total.total_duration_seconds
-    }, 0) || 0
-
-    function formatDuration(seconds: number): string {
-        if (seconds === 0) return '0h 0m'
-        const hours = Math.floor(seconds / 3600)
-        const minutes = Math.floor((seconds % 3600) / 60)
-        if (hours > 0) return `${hours}h ${minutes}m`
-        return `${minutes}m`
-    }
+    const grandTotal = useMemo(() => {
+        return data?.agents.reduce((total, agent) => {
+            return total + agent.period_total.total_duration_seconds
+        }, 0) || 0
+    }, [data])
 
     const checkScroll = () => {
         if (scrollContainerRef.current) {

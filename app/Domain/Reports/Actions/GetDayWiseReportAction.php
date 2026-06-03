@@ -24,7 +24,7 @@ final class GetDayWiseReportAction
     /**
      * Execute the day-wise report action.
      *
-     * @throws \InvalidArgumentException
+     * @throws \Illuminate\Validation\ValidationException
      */
     public function execute(ReportFilterDTO $filters): array
     {
@@ -33,7 +33,9 @@ final class GetDayWiseReportAction
 
         // Validate date range (max 32 days)
         if ($startDate && $endDate && $startDate->diffInDays($endDate) > 32) {
-            throw new \InvalidArgumentException('Date range cannot exceed 32 days for day-wise reports');
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'date_range' => ['Date range cannot exceed 32 days for day-wise reports'],
+            ]);
         }
 
         // Get all dates in the range
@@ -42,9 +44,10 @@ final class GetDayWiseReportAction
 
         // Determine database driver and date expression for casting
         $driver = DB::connection()->getDriverName();
-        $dateExpression = $driver === 'sqlite'
-            ? 'DATE(cl.timestamp)'
-            : 'cl.timestamp::date';
+        $dateExpression = match ($driver) {
+            'sqlite', 'mysql' => 'DATE(cl.timestamp)',
+            default => 'cl.timestamp::date',
+        };
 
         // Build the base query with filters
         $query = CallLog::query()

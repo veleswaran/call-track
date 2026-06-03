@@ -186,7 +186,7 @@ class ReportControllerTest extends TestCase
         $response = $this->actingAs($this->admin)
             ->getJson('/api/v1/admin/reports/day-wise?start_date='.$startDate->toDateString().'&end_date='.$endDate->toDateString());
 
-        $response->assertStatus(500); // Throws InvalidArgumentException
+        $response->assertStatus(422);
     }
 
     public function test_day_wise_report_endpoint_filters_by_classification(): void
