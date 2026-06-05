@@ -3,9 +3,11 @@
 import { useState, useMemo } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { format, differenceInCalendarDays } from "date-fns"
-import { LayoutList, Calendar } from "lucide-react"
+import { LayoutList, Calendar, Download } from "lucide-react"
 
+import { useAuth } from "@features/auth/hooks/use-auth"
 import { ReportFilters, ReportFiltersData } from "@features/reports/components/report-filters"
+import { downloadDayWiseReportCsv } from "@features/reports/utils/export-day-wise-report-csv"
 import { ReportSummary } from "@features/reports/components/report-summary"
 import { ReportCharts } from "@features/reports/components/report-charts"
 import { AgentPerformanceTable, AgentPerformance } from "@features/reports/components/agent-performance-table"
@@ -19,6 +21,9 @@ import { PaginatedResponse } from "@shared/types"
 type ViewMode = 'table' | 'day-wise'
 
 export default function ReportsPage() {
+    const { user } = useAuth()
+    const isSuperAdmin = user?.roles?.includes("super-admin")
+
     const [filters, setFilters] = useState<ReportFiltersData>({
         dateRange: {
             from: new Date(),
@@ -35,14 +40,17 @@ export default function ReportsPage() {
     const [perPage, setPerPage] = useState(15)
     const [sortBy, setSortBy] = useState<string | null>('agent')
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
+    const [isExporting, setIsExporting] = useState(false)
 
-    // Check if date range exceeds 32 days
+    const hasCompleteDateRange = Boolean(filters.dateRange?.from && filters.dateRange?.to)
+
     const dateRangeDays = useMemo(() => {
-        if (!filters.dateRange?.from || !filters.dateRange?.to) return 0
-        return differenceInCalendarDays(filters.dateRange.to, filters.dateRange.from) + 1
-    }, [filters.dateRange])
+        if (!hasCompleteDateRange) return 0
+        return differenceInCalendarDays(filters.dateRange!.to!, filters.dateRange!.from!) + 1
+    }, [filters.dateRange, hasCompleteDateRange])
 
-    const canShowDayWise = dateRangeDays <= 32
+    const canShowDayWise = hasCompleteDateRange && dateRangeDays <= 60
+    const exceedsDayWiseLimit = hasCompleteDateRange && dateRangeDays > 60
 
     const queryParams = {
         start_date: filters.dateRange?.from ? format(filters.dateRange.from, 'yyyy-MM-dd') : undefined,
@@ -62,18 +70,35 @@ export default function ReportsPage() {
         sort_order: sortOrder,
     }
 
-    const getQueryString = (params: Record<string, string | number | (string | number)[] | undefined | null>) => {
+    const getQueryString = (params: Record<string, string | number | boolean | (string | number)[] | undefined | null>) => {
         const searchParams = new URLSearchParams();
         Object.entries(params).forEach(([key, value]) => {
             if (value !== undefined && value !== null && value !== '') {
                 if (Array.isArray(value)) {
                     value.forEach(v => searchParams.append(`${key}[]`, String(v)));
+                } else if (typeof value === 'boolean') {
+                    if (value) {
+                        searchParams.append(key, '1');
+                    }
                 } else {
                     searchParams.append(key, String(value));
                 }
             }
         });
         return searchParams.toString();
+    }
+
+    const handleExportDayWiseCsv = async () => {
+        setIsExporting(true)
+        try {
+            const qs = getQueryString({ ...queryParams, for_export: true })
+            const res = await api.get<{ data: DayWiseReportData }>(`/api/v1/admin/reports/day-wise?${qs}`)
+            if (res.data?.agents.length) {
+                downloadDayWiseReportCsv(res.data)
+            }
+        } finally {
+            setIsExporting(false)
+        }
     }
 
     const metricsQuery = useQuery({
@@ -144,6 +169,18 @@ export default function ReportsPage() {
 
                         {/* View Toggle */}
                         <div className="flex items-center gap-2">
+                        {isSuperAdmin && (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="gap-2"
+                                disabled={isExporting || !hasCompleteDateRange}
+                                onClick={handleExportDayWiseCsv}
+                            >
+                                <Download className="h-4 w-4" />
+                                {isExporting ? "Exporting..." : "Export Day-Wise CSV"}
+                            </Button>
+                        )}
                         <Button
                             variant={viewMode === 'table' ? 'default' : 'outline'}
                             size="sm"
@@ -170,12 +207,12 @@ export default function ReportsPage() {
                     </div>
                 </div>
 
-                {/* 32-day limit warning */}
-                {!canShowDayWise && (
+                {/* 60-day limit warning */}
+                {exceedsDayWiseLimit && (
                     <Alert variant="destructive">
                         <AlertDescription>
-                            Day-wise view is only available for date ranges up to 32 days.
-                            Current selection: {dateRangeDays} days. Please adjust your date range to use this view.
+                            Day-wise view is only available for date ranges up to 60 days.
+                            Current selection: {dateRangeDays} days. Use Export Day-Wise CSV to download longer periods.
                         </AlertDescription>
                     </Alert>
                 )}

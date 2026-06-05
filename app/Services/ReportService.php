@@ -63,6 +63,7 @@ final class ReportService implements ReportServiceInterface
             sortOrder: $filters->sortOrder,
             perPage: $filters->perPage,
             page: $filters->page,
+            forExport: $filters->forExport,
         );
     }
 }

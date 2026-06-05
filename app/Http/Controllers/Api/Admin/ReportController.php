@@ -75,6 +75,7 @@ final class ReportController extends Controller
             sortOrder: $base->sortOrder,
             perPage: $base->perPage,
             page: $base->page,
+            forExport: $request->boolean('for_export'),
         );
     }
 }

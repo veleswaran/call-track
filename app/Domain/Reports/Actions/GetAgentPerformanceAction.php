@@ -174,7 +174,7 @@ final class GetAgentPerformanceAction
             return [
                 'id' => $stat->id,
                 'agent' => $stat->name,
-                'employee_code' => 'EMP-'.str_pad((string) $stat->id, 3, '0', STR_PAD_LEFT), // Mock code
+                'employee_code' => $this->resolveEmployeeCode($stat->employee_code, (int) $stat->id),
                 'first_call_time' => $stat->first_call_time ? \Carbon\Carbon::parse($stat->first_call_time)->format('h:i A') : 'N/A',
                 'total_calls' => $total,
                 'connected' => $connected,
@@ -203,5 +203,14 @@ final class GetAgentPerformanceAction
         }
 
         return "{$m}m {$s}s";
+    }
+
+    private function resolveEmployeeCode(?string $employeeCode, int $agentId): string
+    {
+        if ($employeeCode !== null && $employeeCode !== '') {
+            return $employeeCode;
+        }
+
+        return 'EMP-'.str_pad((string) $agentId, 3, '0', STR_PAD_LEFT);
     }
 }
