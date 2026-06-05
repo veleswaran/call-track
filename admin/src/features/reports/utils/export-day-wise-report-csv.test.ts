@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { generateDayWiseReportCsv } from "./export-day-wise-report-csv"
+import { generateDayWiseReportCsv, escapeCsvValue } from "./export-day-wise-report-csv"
 import type { DayWiseReportData } from "@features/reports/components/day-wise-report-table"
 
 const mockData: DayWiseReportData = {
@@ -140,5 +140,15 @@ describe("generateDayWiseReportCsv", () => {
 
         expect(lines[1]).toBe("'=SUM(A1),'+1234,1h 30m,0h 0m,1h 30m")
         expect(lines[2]).toBe("'-Malicious,'@evil,45m,30m,1h 15m")
+    })
+
+    it("preserves negative number types without formula prefix", () => {
+        expect(escapeCsvValue(-100)).toBe("-100")
+        expect(escapeCsvValue(0)).toBe("0")
+    })
+
+    it("sanitizes formula triggers in string values", () => {
+        expect(escapeCsvValue("-100")).toBe("'-100")
+        expect(escapeCsvValue("=1+1")).toBe("'=1+1")
     })
 })

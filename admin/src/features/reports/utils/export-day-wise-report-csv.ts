@@ -22,7 +22,11 @@ const formatDuration = (seconds: number): string => {
 
 const FORMULA_INJECTION_PREFIX_PATTERN = /^[=+\-@\t\r]/
 
-const sanitizeFormulaInjection = (value: string): string => {
+const sanitizeFormulaInjection = (value: string | number): string => {
+    if (typeof value === "number") {
+        return String(value)
+    }
+
     if (FORMULA_INJECTION_PREFIX_PATTERN.test(value)) {
         return `'${value}`
     }
@@ -30,11 +34,11 @@ const sanitizeFormulaInjection = (value: string): string => {
     return value
 }
 
-const escapeCsvValue = (value: string | number | null | undefined): string => {
+export const escapeCsvValue = (value: string | number | null | undefined): string => {
     if (value === null || value === undefined) {
         return ""
     }
-    const str = sanitizeFormulaInjection(String(value))
+    const str = sanitizeFormulaInjection(value)
     if (str.includes(",") || str.includes('"') || str.includes("\n")) {
         return `"${str.replace(/"/g, '""')}"`
     }
