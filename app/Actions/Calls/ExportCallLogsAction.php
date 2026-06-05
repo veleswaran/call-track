@@ -133,13 +133,13 @@ final class ExportCallLogsAction
 
     private function formatSimSlot(CallLog $log): string
     {
-        $attributes = $log->getAttributes();
+        $simSlot = $log->sim_slot;
 
-        if (! array_key_exists('sim_slot', $attributes) || $attributes['sim_slot'] === null) {
+        if ($simSlot === null) {
             return '';
         }
 
-        return 'SIM '.(((int) $attributes['sim_slot']) + 1);
+        return 'SIM '.($simSlot + 1);
     }
 
     private function sanitizeCsvValue(?string $value): string

@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property int|null $agent_id
  * @property string $direction
  * @property int $duration
+ * @property int|null $sim_slot
  * @property \Illuminate\Support\Carbon $timestamp
  * @property \Illuminate\Support\Carbon $created_at
  * @property-read string|null $call_outcome
