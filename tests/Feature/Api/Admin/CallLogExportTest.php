@@ -157,6 +157,48 @@ class CallLogExportTest extends TestCase
         $this->assertStringNotContainsString('+15552220002', $content);
     }
 
+    public function test_export_does_not_prefix_phone_numbers_with_single_quote(): void
+    {
+        $phoneNumber = '+919489886526';
+        $date = Carbon::parse('2026-03-15');
+
+        CallLog::factory()->create([
+            'phone_number' => $phoneNumber,
+            'timestamp' => $date,
+        ]);
+
+        $response = $this->get(
+            '/api/v1/admin/call-logs/export?start_date='.$date->toDateString()
+            .'&end_date='.$date->toDateString()
+        );
+
+        $response->assertOk();
+
+        $content = $response->streamedContent();
+        $this->assertStringContainsString($phoneNumber, $content);
+        $this->assertStringNotContainsString("'".$phoneNumber, $content);
+    }
+
+    public function test_export_returns_422_for_invalid_date_string(): void
+    {
+        $response = $this->getJson(
+            '/api/v1/admin/call-logs/export?start_date=not-a-date&end_date=2026-03-02'
+        );
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['start_date']);
+    }
+
+    public function test_export_returns_422_when_date_is_array(): void
+    {
+        $response = $this->getJson(
+            '/api/v1/admin/call-logs/export?start_date[]=2026-03-01&end_date=2026-03-02'
+        );
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['start_date']);
+    }
+
     public function test_export_requires_authentication(): void
     {
         $this->app['auth']->forgetGuards();

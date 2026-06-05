@@ -62,20 +62,35 @@ class ExportCallLogsRequest extends FormRequest
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $validator): void {
-            $startDate = $this->input('start_date') ?? $this->input('date_from');
-            $endDate = $this->input('end_date') ?? $this->input('date_to');
-
-            if (! $startDate || ! $endDate) {
+            if ($validator->errors()->hasAny(['start_date', 'end_date', 'date_from', 'date_to'])) {
                 return;
             }
 
-            if (Carbon::parse($endDate)->lt(Carbon::parse($startDate))) {
+            $startDate = $this->input('start_date') ?? $this->input('date_from');
+            $endDate = $this->input('end_date') ?? $this->input('date_to');
+
+            if (! is_string($startDate) || ! is_string($endDate)) {
+                return;
+            }
+
+            if ($startDate === '' || $endDate === '') {
+                return;
+            }
+
+            try {
+                $parsedStart = Carbon::parse($startDate);
+                $parsedEnd = Carbon::parse($endDate);
+            } catch (\Throwable) {
+                return;
+            }
+
+            if ($parsedEnd->lt($parsedStart)) {
                 $validator->errors()->add('end_date', 'The end date must be after or equal to the start date.');
 
                 return;
             }
 
-            if ($this->diffInCalendarDays($startDate, $endDate) >= self::MAX_EXPORT_DAYS) {
+            if ($this->diffInCalendarDays($parsedStart, $parsedEnd) >= self::MAX_EXPORT_DAYS) {
                 $validator->errors()->add(
                     'date_range',
                     'Date range cannot exceed '.self::MAX_EXPORT_DAYS.' days for export.'
@@ -87,10 +102,10 @@ class ExportCallLogsRequest extends FormRequest
     /**
      * Calendar days between two dates, matching date-fns differenceInCalendarDays(later, earlier).
      */
-    private function diffInCalendarDays(string $startDate, string $endDate): int
+    private function diffInCalendarDays(Carbon $startDate, Carbon $endDate): int
     {
-        $start = Carbon::createFromFormat('Y-m-d', Carbon::parse($startDate)->toDateString(), 'UTC');
-        $end = Carbon::createFromFormat('Y-m-d', Carbon::parse($endDate)->toDateString(), 'UTC');
+        $start = $startDate->copy()->utc()->startOfDay();
+        $end = $endDate->copy()->utc()->startOfDay();
 
         return (int) $start->diffInDays($end);
     }
