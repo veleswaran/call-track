@@ -109,7 +109,7 @@ export const api = {
 
         const blob = await response.blob();
         const disposition = response.headers.get("Content-Disposition") ?? "";
-        const filenameMatch = disposition.match(/filename="?([^"]+)"?/i);
+        const filenameMatch = disposition.match(/filename="?([^";]+)"?/i);
         const filename = filenameMatch?.[1] ?? "export.csv";
 
         return { blob, filename };
