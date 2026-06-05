@@ -10,7 +10,9 @@ import {
     TableRow,
 } from "@shared/components/ui/table";
 import { format } from "date-fns";
-import { PhoneIncoming, PhoneOutgoing, PhoneMissed, HelpCircle, PhoneOff, Ban } from "lucide-react";
+import { PhoneIncoming, PhoneOutgoing, PhoneMissed, HelpCircle, PhoneOff, Ban, Download } from "lucide-react";
+import { Button } from "@shared/components/ui/button";
+import { exportCallLogsCsv } from "@features/call-logs/utils/export-call-logs-csv";
 import { CallActions } from "@features/call-logs/components/call-actions";
 import { formatDuration } from "@shared/utils/time";
 import { formatClassificationMetadata } from "@features/call-logs/utils/format-metadata";
@@ -49,8 +51,31 @@ export default function CallLogsPage() {
     if (initialFilters.team_ids?.length === 0) delete initialFilters.team_ids;
 
     const [filters, setFilters] = useState<FilterTypes>(initialFilters);
+    const [isExporting, setIsExporting] = useState(false);
+    const [exportError, setExportError] = useState<string | null>(null);
+
+    const canExport = Boolean(filters.start_date && filters.end_date);
 
     const { data, isLoading, isError } = useCallLogs(filters);
+
+    const handleExport = async () => {
+        if (!canExport) {
+            return;
+        }
+
+        setIsExporting(true);
+        setExportError(null);
+
+        try {
+            await exportCallLogsCsv(filters);
+        } catch (error) {
+            const message =
+                error instanceof Error ? error.message : "Failed to export call logs";
+            setExportError(message);
+        } finally {
+            setIsExporting(false);
+        }
+    };
 
     const callLogs = data?.data ?? [];
     const meta = data?.meta;
@@ -64,7 +89,24 @@ export default function CallLogsPage() {
                         View and manage call log entries
                     </p>
                 </div>
+                <Button
+                    variant="outline"
+                    onClick={handleExport}
+                    disabled={!canExport || isExporting}
+                    title={
+                        canExport
+                            ? "Export filtered call logs as CSV"
+                            : "Select a date range to export"
+                    }
+                >
+                    <Download className="mr-2 h-4 w-4" />
+                    {isExporting ? "Exporting..." : "Export CSV"}
+                </Button>
             </div>
+
+            {exportError && (
+                <p className="text-sm text-red-500">{exportError}</p>
+            )}
 
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <CallLogSearch
