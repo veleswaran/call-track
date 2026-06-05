@@ -42,13 +42,15 @@ export default function ReportsPage() {
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
     const [isExporting, setIsExporting] = useState(false)
 
-    // Check if date range exceeds 60 days
-    const dateRangeDays = useMemo(() => {
-        if (!filters.dateRange?.from || !filters.dateRange?.to) return 0
-        return differenceInCalendarDays(filters.dateRange.to, filters.dateRange.from) + 1
-    }, [filters.dateRange])
+    const hasCompleteDateRange = Boolean(filters.dateRange?.from && filters.dateRange?.to)
 
-    const canShowDayWise = dateRangeDays <= 60
+    const dateRangeDays = useMemo(() => {
+        if (!hasCompleteDateRange) return 0
+        return differenceInCalendarDays(filters.dateRange!.to!, filters.dateRange!.from!) + 1
+    }, [filters.dateRange, hasCompleteDateRange])
+
+    const canShowDayWise = hasCompleteDateRange && dateRangeDays <= 60
+    const exceedsDayWiseLimit = hasCompleteDateRange && dateRangeDays > 60
 
     const queryParams = {
         start_date: filters.dateRange?.from ? format(filters.dateRange.from, 'yyyy-MM-dd') : undefined,
@@ -172,7 +174,7 @@ export default function ReportsPage() {
                                 variant="outline"
                                 size="sm"
                                 className="gap-2"
-                                disabled={isExporting || !filters.dateRange?.from || !filters.dateRange?.to}
+                                disabled={isExporting || !hasCompleteDateRange}
                                 onClick={handleExportDayWiseCsv}
                             >
                                 <Download className="h-4 w-4" />
@@ -206,7 +208,7 @@ export default function ReportsPage() {
                 </div>
 
                 {/* 60-day limit warning */}
-                {!canShowDayWise && (
+                {exceedsDayWiseLimit && (
                     <Alert variant="destructive">
                         <AlertDescription>
                             Day-wise view is only available for date ranges up to 60 days.

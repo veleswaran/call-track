@@ -6,6 +6,7 @@ namespace Tests\Feature\Admin;
 
 use App\Domain\Calls\Models\CallLog;
 use App\Domain\Devices\Models\Device;
+use App\Domain\Reports\Actions\GetDayWiseReportAction;
 use App\Domain\Users\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -200,15 +201,122 @@ class ReportControllerTest extends TestCase
             );
     }
 
-    public function test_day_wise_report_endpoint_prevents_exceeding_32_days(): void
+    public function test_day_wise_report_endpoint_allows_up_to_60_inclusive_days(): void
     {
-        $startDate = Carbon::today()->subDays(40);
+        $startDate = Carbon::today()->subDays(GetDayWiseReportAction::MAX_DAY_WISE_DAYS - 1);
+        $endDate = Carbon::today();
+
+        $response = $this->actingAs($this->admin)
+            ->getJson('/api/v1/admin/reports/day-wise?start_date='.$startDate->toDateString().'&end_date='.$endDate->toDateString());
+
+        $response->assertOk()
+            ->assertJsonPath('data.meta.total_days', GetDayWiseReportAction::MAX_DAY_WISE_DAYS);
+    }
+
+    public function test_day_wise_report_endpoint_prevents_exceeding_60_days(): void
+    {
+        $startDate = Carbon::today()->subDays(GetDayWiseReportAction::MAX_DAY_WISE_DAYS);
         $endDate = Carbon::today();
 
         $response = $this->actingAs($this->admin)
             ->getJson('/api/v1/admin/reports/day-wise?start_date='.$startDate->toDateString().'&end_date='.$endDate->toDateString());
 
         $response->assertStatus(422);
+    }
+
+    public function test_day_wise_report_endpoint_prevents_61_calendar_days(): void
+    {
+        $startDate = Carbon::parse('2024-03-01');
+        $endDate = Carbon::parse('2024-04-30');
+
+        $response = $this->actingAs($this->admin)
+            ->getJson('/api/v1/admin/reports/day-wise?start_date='.$startDate->toDateString().'&end_date='.$endDate->toDateString());
+
+        $response->assertStatus(422);
+    }
+
+    public function test_day_wise_report_endpoint_allows_60_calendar_days(): void
+    {
+        $startDate = Carbon::parse('2024-03-01');
+        $endDate = Carbon::parse('2024-04-29');
+
+        $response = $this->actingAs($this->admin)
+            ->getJson('/api/v1/admin/reports/day-wise?start_date='.$startDate->toDateString().'&end_date='.$endDate->toDateString());
+
+        $response->assertOk()
+            ->assertJsonPath('data.meta.total_days', GetDayWiseReportAction::MAX_DAY_WISE_DAYS);
+    }
+
+    public function test_regular_admin_is_forbidden_from_exporting_day_wise_report(): void
+    {
+        $today = Carbon::today();
+
+        CallLog::factory()->create([
+            'device_id' => $this->device->id,
+            'timestamp' => $today->copy()->hour(10),
+            'duration' => 300,
+            'direction' => 'OUTGOING',
+        ]);
+
+        $response = $this->actingAs($this->admin)
+            ->getJson($this->dayWiseExportUrl($today, $today));
+
+        $response->assertForbidden();
+    }
+
+    public function test_super_admin_is_allowed_to_export_day_wise_report(): void
+    {
+        $today = Carbon::today();
+
+        CallLog::factory()->create([
+            'device_id' => $this->device->id,
+            'timestamp' => $today->copy()->hour(10),
+            'duration' => 300,
+            'direction' => 'OUTGOING',
+        ]);
+
+        $response = $this->actingAs($this->createSuperAdmin())
+            ->getJson($this->dayWiseExportUrl($today, $today));
+
+        $response->assertOk()
+            ->assertJsonStructure([
+                'data' => [
+                    'agents',
+                    'dates',
+                    'meta' => ['total_agents', 'total_days'],
+                ],
+            ])
+            ->assertJsonPath('data.meta.total_days', 1);
+    }
+
+    public function test_regular_admin_is_forbidden_from_exporting_day_wise_report_beyond_view_limit(): void
+    {
+        $startDate = Carbon::today()->subDays(GetDayWiseReportAction::MAX_DAY_WISE_DAYS);
+        $endDate = Carbon::today();
+
+        $response = $this->actingAs($this->admin)
+            ->getJson($this->dayWiseExportUrl($startDate, $endDate));
+
+        $response->assertForbidden();
+    }
+
+    public function test_super_admin_can_export_day_wise_report_beyond_view_limit(): void
+    {
+        $startDate = Carbon::today()->subDays(GetDayWiseReportAction::MAX_DAY_WISE_DAYS);
+        $endDate = Carbon::today();
+
+        CallLog::factory()->create([
+            'device_id' => $this->device->id,
+            'timestamp' => $startDate->copy()->hour(10),
+            'duration' => 300,
+            'direction' => 'OUTGOING',
+        ]);
+
+        $response = $this->actingAs($this->createSuperAdmin())
+            ->getJson($this->dayWiseExportUrl($startDate, $endDate));
+
+        $response->assertOk()
+            ->assertJsonPath('data.meta.total_days', GetDayWiseReportAction::MAX_DAY_WISE_DAYS + 1);
     }
 
     public function test_day_wise_report_endpoint_filters_by_classification(): void
@@ -248,5 +356,22 @@ class ReportControllerTest extends TestCase
         // Assert only BUSINESS classification is included (total_calls should be 1, total_duration 300)
         $this->assertEquals(1, $stats['total_calls']);
         $this->assertEquals(300, $stats['total_duration_seconds']);
+    }
+
+    private function createSuperAdmin(): User
+    {
+        \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'super-admin', 'guard_name' => 'web']);
+
+        $superAdmin = User::factory()->create();
+        $superAdmin->assignRole('super-admin');
+
+        return $superAdmin;
+    }
+
+    private function dayWiseExportUrl(Carbon $startDate, Carbon $endDate): string
+    {
+        return '/api/v1/admin/reports/day-wise?start_date='.$startDate->toDateString()
+            .'&end_date='.$endDate->toDateString()
+            .'&for_export=1';
     }
 }

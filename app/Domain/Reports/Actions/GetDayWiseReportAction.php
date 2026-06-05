@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\DB;
 
 final class GetDayWiseReportAction
 {
+    public const MAX_DAY_WISE_DAYS = 60;
+
     /**
      * Create a new GetDayWiseReportAction instance.
      */
@@ -31,11 +33,13 @@ final class GetDayWiseReportAction
         $startDate = $filters->startDate;
         $endDate = $filters->endDate;
 
-        // Validate date range (max 60 days for on-screen view; export has no limit)
-        if (! $filters->forExport && $startDate && $endDate && $startDate->diffInDays($endDate) > 60) {
-            throw \Illuminate\Validation\ValidationException::withMessages([
-                'date_range' => ['Date range cannot exceed 60 days for day-wise reports'],
-            ]);
+        // Validate date range (max 60 inclusive calendar days for on-screen view; export has no limit)
+        if (! $filters->forExport && $startDate && $endDate) {
+            if ($this->diffInCalendarDays($startDate, $endDate) >= self::MAX_DAY_WISE_DAYS) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'date_range' => ['Date range cannot exceed '.self::MAX_DAY_WISE_DAYS.' days for day-wise reports'],
+                ]);
+            }
         }
 
         // Get all dates in the range
@@ -246,5 +250,17 @@ final class GetDayWiseReportAction
         }
 
         return 'EMP-'.str_pad((string) $agentId, 3, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Calendar days between two dates, matching date-fns differenceInCalendarDays(later, earlier).
+     * Uses date-only values to avoid DST-related off-by-one errors.
+     */
+    private function diffInCalendarDays(Carbon $startDate, Carbon $endDate): int
+    {
+        $start = Carbon::createFromFormat('Y-m-d', $startDate->toDateString())->startOfDay();
+        $end = Carbon::createFromFormat('Y-m-d', $endDate->toDateString())->startOfDay();
+
+        return (int) $start->diffInDays($end);
     }
 }

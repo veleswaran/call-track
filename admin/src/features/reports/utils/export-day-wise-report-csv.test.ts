@@ -84,7 +84,7 @@ describe("generateDayWiseReportCsv", () => {
         expect(lines[0]).toContain("Period Total")
         expect(lines[1]).toBe("John Doe,EMP001,1h 30m,0h 0m,1h 30m")
         expect(lines[2]).toBe('"Jane ""Smith""",EMP002,45m,30m,1h 15m')
-        expect(lines[3]).toBe("Day-Wise Total,,1h 45m,30m,2h 15m")
+        expect(lines[3]).toBe("Day-Wise Total,,2h 15m,30m,2h 45m")
     })
 
     it("escapes values containing commas or quotes", () => {

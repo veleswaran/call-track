@@ -10,7 +10,11 @@ final class GetReportDataRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true; // Admin middleware handles auth
+        if (! $this->boolean('for_export')) {
+            return true;
+        }
+
+        return $this->user()?->hasRole('super-admin') ?? false;
     }
 
     public function rules(): array
