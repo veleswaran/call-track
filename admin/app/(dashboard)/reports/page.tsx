@@ -3,9 +3,11 @@
 import { useState, useMemo } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { format, differenceInCalendarDays } from "date-fns"
-import { LayoutList, Calendar } from "lucide-react"
+import { LayoutList, Calendar, Download } from "lucide-react"
 
+import { useAuth } from "@features/auth/hooks/use-auth"
 import { ReportFilters, ReportFiltersData } from "@features/reports/components/report-filters"
+import { downloadDayWiseReportCsv } from "@features/reports/utils/export-day-wise-report-csv"
 import { ReportSummary } from "@features/reports/components/report-summary"
 import { ReportCharts } from "@features/reports/components/report-charts"
 import { AgentPerformanceTable, AgentPerformance } from "@features/reports/components/agent-performance-table"
@@ -19,6 +21,9 @@ import { PaginatedResponse } from "@shared/types"
 type ViewMode = 'table' | 'day-wise'
 
 export default function ReportsPage() {
+    const { user } = useAuth()
+    const isSuperAdmin = user?.roles?.includes("super-admin")
+
     const [filters, setFilters] = useState<ReportFiltersData>({
         dateRange: {
             from: new Date(),
@@ -144,6 +149,22 @@ export default function ReportsPage() {
 
                         {/* View Toggle */}
                         <div className="flex items-center gap-2">
+                        {isSuperAdmin && viewMode === "day-wise" && (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="gap-2"
+                                disabled={dayWiseQuery.isLoading || !dayWiseQuery.data?.agents.length}
+                                onClick={() => {
+                                    if (dayWiseQuery.data) {
+                                        downloadDayWiseReportCsv(dayWiseQuery.data)
+                                    }
+                                }}
+                            >
+                                <Download className="h-4 w-4" />
+                                Export CSV
+                            </Button>
+                        )}
                         <Button
                             variant={viewMode === 'table' ? 'default' : 'outline'}
                             size="sm"

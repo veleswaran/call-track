@@ -178,6 +178,28 @@ class ReportControllerTest extends TestCase
         $this->assertEquals('10:30 AM', $stats['first_call_time']);
     }
 
+    public function test_day_wise_report_uses_fallback_employee_code_when_null(): void
+    {
+        $this->agent->update(['employee_code' => null]);
+
+        $today = Carbon::today();
+        CallLog::factory()->create([
+            'device_id' => $this->device->id,
+            'timestamp' => $today->copy()->hour(10),
+            'duration' => 300,
+            'direction' => 'OUTGOING',
+        ]);
+
+        $response = $this->actingAs($this->admin)
+            ->getJson('/api/v1/admin/reports/day-wise?start_date='.$today->toDateString().'&end_date='.$today->toDateString());
+
+        $response->assertOk()
+            ->assertJsonPath(
+                'data.agents.0.employee_code',
+                'EMP-'.str_pad((string) $this->agent->id, 3, '0', STR_PAD_LEFT)
+            );
+    }
+
     public function test_day_wise_report_endpoint_prevents_exceeding_32_days(): void
     {
         $startDate = Carbon::today()->subDays(40);

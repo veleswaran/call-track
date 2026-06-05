@@ -144,7 +144,7 @@ final class GetDayWiseReportAction
                 /** @phpstan-ignore-next-line property.notFound - agent_name is dynamically added by selectRaw */
                 'agent_name' => $firstAgent->agent_name,
                 /** @phpstan-ignore-next-line property.notFound - employee_code is dynamically added by selectRaw */
-                'employee_code' => $firstAgent->employee_code,
+                'employee_code' => $this->resolveEmployeeCode($firstAgent->employee_code, (int) $agentId),
                 'daily_stats' => $dailyStats,
                 'period_total' => $periodTotal,
             ];
@@ -237,5 +237,14 @@ final class GetDayWiseReportAction
                 $query->whereNotIn('cl.phone_number_hash', $contactHashes);
             }
         }
+    }
+
+    private function resolveEmployeeCode(?string $employeeCode, int $agentId): string
+    {
+        if ($employeeCode !== null && $employeeCode !== '') {
+            return $employeeCode;
+        }
+
+        return 'EMP-'.str_pad((string) $agentId, 3, '0', STR_PAD_LEFT);
     }
 }
