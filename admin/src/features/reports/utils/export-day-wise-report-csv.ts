@@ -20,11 +20,21 @@ const formatDuration = (seconds: number): string => {
     return `${minutes}m`
 }
 
+const FORMULA_INJECTION_PREFIX_PATTERN = /^[=+\-@\t\r]/
+
+const sanitizeFormulaInjection = (value: string): string => {
+    if (FORMULA_INJECTION_PREFIX_PATTERN.test(value)) {
+        return `'${value}`
+    }
+
+    return value
+}
+
 const escapeCsvValue = (value: string | number | null | undefined): string => {
     if (value === null || value === undefined) {
         return ""
     }
-    const str = String(value)
+    const str = sanitizeFormulaInjection(String(value))
     if (str.includes(",") || str.includes('"') || str.includes("\n")) {
         return `"${str.replace(/"/g, '""')}"`
     }

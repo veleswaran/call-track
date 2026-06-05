@@ -117,4 +117,28 @@ describe("generateDayWiseReportCsv", () => {
         const csv = generateDayWiseReportCsv(dataWithNullCode)
         expect(csv.split("\n")[1]).toBe("John Doe,EMP-042,1h 30m,0h 0m,1h 30m")
     })
+
+    it("sanitizes formula injection in agent names and employee codes", () => {
+        const dataWithFormulaTriggers: DayWiseReportData = {
+            ...mockData,
+            agents: [
+                {
+                    ...mockData.agents[0],
+                    agent_name: "=SUM(A1)",
+                    employee_code: "+1234",
+                },
+                {
+                    ...mockData.agents[1],
+                    agent_name: "-Malicious",
+                    employee_code: "@evil",
+                },
+            ],
+        }
+
+        const csv = generateDayWiseReportCsv(dataWithFormulaTriggers)
+        const lines = csv.split("\n")
+
+        expect(lines[1]).toBe("'=SUM(A1),'+1234,1h 30m,0h 0m,1h 30m")
+        expect(lines[2]).toBe("'-Malicious,'@evil,45m,30m,1h 15m")
+    })
 })

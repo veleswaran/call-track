@@ -254,12 +254,12 @@ final class GetDayWiseReportAction
 
     /**
      * Calendar days between two dates, matching date-fns differenceInCalendarDays(later, earlier).
-     * Uses date-only values to avoid DST-related off-by-one errors.
+     * Parsed in UTC so DST transitions in the application timezone cannot skew day counts.
      */
     private function diffInCalendarDays(Carbon $startDate, Carbon $endDate): int
     {
-        $start = Carbon::createFromFormat('Y-m-d', $startDate->toDateString())->startOfDay();
-        $end = Carbon::createFromFormat('Y-m-d', $endDate->toDateString())->startOfDay();
+        $start = Carbon::createFromFormat('Y-m-d', $startDate->toDateString(), 'UTC');
+        $end = Carbon::createFromFormat('Y-m-d', $endDate->toDateString(), 'UTC');
 
         return (int) $start->diffInDays($end);
     }

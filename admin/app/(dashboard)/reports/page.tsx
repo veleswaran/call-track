@@ -42,19 +42,20 @@ export default function ReportsPage() {
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
     const [isExporting, setIsExporting] = useState(false)
 
-    const hasCompleteDateRange = Boolean(filters.dateRange?.from && filters.dateRange?.to)
+    const { from: dateRangeFrom, to: dateRangeTo } = filters.dateRange ?? {}
+    const hasCompleteDateRange = Boolean(dateRangeFrom && dateRangeTo)
 
     const dateRangeDays = useMemo(() => {
-        if (!hasCompleteDateRange) return 0
-        return differenceInCalendarDays(filters.dateRange!.to!, filters.dateRange!.from!) + 1
-    }, [filters.dateRange, hasCompleteDateRange])
+        if (!dateRangeFrom || !dateRangeTo) return 0
+        return differenceInCalendarDays(dateRangeTo, dateRangeFrom) + 1
+    }, [dateRangeFrom, dateRangeTo])
 
     const canShowDayWise = hasCompleteDateRange && dateRangeDays <= 60
     const exceedsDayWiseLimit = hasCompleteDateRange && dateRangeDays > 60
 
     const queryParams = {
-        start_date: filters.dateRange?.from ? format(filters.dateRange.from, 'yyyy-MM-dd') : undefined,
-        end_date: filters.dateRange?.to ? format(filters.dateRange.to, 'yyyy-MM-dd') : undefined,
+        start_date: dateRangeFrom ? format(dateRangeFrom, 'yyyy-MM-dd') : undefined,
+        end_date: dateRangeTo ? format(dateRangeTo, 'yyyy-MM-dd') : undefined,
         outcomes: filters.outcome !== 'all' ? [filters.outcome] : undefined,
         types: filters.type !== 'all' ? [filters.type] : undefined,
         agent_ids: filters.agentIds || undefined,
