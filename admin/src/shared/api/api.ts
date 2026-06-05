@@ -87,6 +87,34 @@ export const api = {
         return response.json();
     },
 
+    async download(endpoint: string): Promise<{ blob: Blob; filename: string }> {
+        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+            credentials: "include",
+            headers: {
+                Accept: "text/csv",
+            },
+        });
+
+        if (!response.ok) {
+            let errorMessage = response.statusText;
+            let errorData = null;
+            try {
+                errorData = await response.json();
+                errorMessage = errorData.message || errorMessage;
+            } catch {
+                // Ignore JSON parse error
+            }
+            throw createApiError(errorMessage, response.status, errorData);
+        }
+
+        const blob = await response.blob();
+        const disposition = response.headers.get("Content-Disposition") ?? "";
+        const filenameMatch = disposition.match(/filename="?([^"]+)"?/i);
+        const filename = filenameMatch?.[1] ?? "export.csv";
+
+        return { blob, filename };
+    },
+
     async post<T>(endpoint: string, data?: unknown): Promise<T> {
         await this.getCsrfCookie();
 

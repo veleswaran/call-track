@@ -34,6 +34,11 @@ class AppServiceProvider extends ServiceProvider
         );
 
         $this->app->bind(
+            \App\Contracts\Services\CallLogExportServiceContract::class,
+            \App\Services\CallLogExportService::class
+        );
+
+        $this->app->bind(
             \App\Contracts\Services\CallSyncServiceInterface::class,
             \App\Services\Calls\CallSyncService::class
         );

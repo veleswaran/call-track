@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Actions\Calls;
 
 use App\Domain\Calls\Models\Contact;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -19,11 +19,23 @@ final class EnrichCallLogsWithContactsAction
      */
     public function execute(LengthAwarePaginator $paginator): LengthAwarePaginator
     {
-        /** @var Collection<int, \App\Domain\Calls\Models\CallLog> $collection */
-        $collection = $paginator->getCollection();
+        $paginator->setCollection(
+            $this->enrichCollection($paginator->getCollection())
+        );
 
+        return $paginator;
+    }
+
+    /**
+     * Batch-attach contacts to a collection of call logs by phone hash.
+     *
+     * @param  EloquentCollection<int, \App\Domain\Calls\Models\CallLog>  $collection
+     * @return EloquentCollection<int, \App\Domain\Calls\Models\CallLog>
+     */
+    public function enrichCollection(EloquentCollection $collection): EloquentCollection
+    {
         if ($collection->isEmpty()) {
-            return $paginator;
+            return $collection;
         }
 
         $hashes = [];
@@ -34,7 +46,7 @@ final class EnrichCallLogsWithContactsAction
         }
 
         if ($hashes === []) {
-            return $paginator;
+            return $collection;
         }
 
         $unique = array_values(array_unique($hashes));
@@ -57,6 +69,6 @@ final class EnrichCallLogsWithContactsAction
             $log->setRelation('contact_by_hash', $map->get($hash));
         }
 
-        return $paginator;
+        return $collection;
     }
 }

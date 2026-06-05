@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Calls\DTOs;
 
-use App\Http\Requests\Admin\IndexCallLogsRequest;
+use App\Http\Requests\Admin\ExportCallLogsRequest;
+use Illuminate\Foundation\Http\FormRequest;
 
 /**
  * Immutable DTO carrying pagination and filter inputs for listing call logs.
@@ -32,7 +33,7 @@ final readonly class ListCallLogsDTO
         public ?string $contactFilter = null,
     ) {}
 
-    public static function fromRequest(IndexCallLogsRequest $request): self
+    public static function fromRequest(FormRequest $request): self
     {
         $page = (int) ($request->integer('page') ?: 1);
         $perPage = (int) ($request->integer('per_page') ?: 15);
@@ -72,6 +73,29 @@ final readonly class ListCallLogsDTO
             teamIds: array_map('intval', (array) ($request->input('team_ids') ?? ($request->has('team_id') ? [$request->input('team_id')] : []))),
             simSlot: $request->has('sim_slot') ? $request->integer('sim_slot') : null,
             contactFilter: $request->string('contact_filter')->toString() ?: null,
+        );
+    }
+
+    public static function fromExportRequest(ExportCallLogsRequest $request, ?array $allowedAgentIds): self
+    {
+        $dto = self::fromRequest($request);
+
+        return new self(
+            page: 1,
+            perPage: 1,
+            deviceId: $dto->deviceId,
+            agentIds: $dto->agentIds,
+            callTypes: $dto->callTypes,
+            classifications: $dto->classifications,
+            outcomes: $dto->outcomes,
+            dateFrom: $dto->dateFrom,
+            dateTo: $dto->dateTo,
+            search: $dto->search,
+            user: $dto->user,
+            teamIds: $dto->teamIds,
+            allowedAgentIds: $allowedAgentIds,
+            simSlot: $dto->simSlot,
+            contactFilter: $dto->contactFilter,
         );
     }
 }
