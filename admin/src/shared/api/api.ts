@@ -91,7 +91,7 @@ export const api = {
         const response = await fetch(`${API_BASE_URL}${endpoint}`, {
             credentials: "include",
             headers: {
-                Accept: "text/csv",
+                Accept: "application/json, text/csv",
             },
         });
 
