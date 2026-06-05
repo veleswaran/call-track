@@ -70,7 +70,7 @@ export function getApiErrorMessage(
             return formatValidationErrors(data.errors);
         }
 
-        return data?.message || fallback;
+        return data?.message || error.message || fallback;
     }
 
     return fallback;
