@@ -115,7 +115,7 @@ final class ExportCallLogsAction
 
         return [
             $this->sanitizeCsvValue($log->timestamp->format('Y-m-d H:i:s')),
-            $this->sanitizeCsvValue((string) $log->phone_number),
+            (string) $log->phone_number,
             $this->sanitizeCsvValue($log->phone_contact_name),
             $this->sanitizeCsvValue($contact?->name),
             $this->sanitizeCsvValue($device?->name),
