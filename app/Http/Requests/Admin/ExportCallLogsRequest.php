@@ -78,8 +78,8 @@ class ExportCallLogsRequest extends FormRequest
             }
 
             try {
-                $parsedStart = Carbon::parse($startDate);
-                $parsedEnd = Carbon::parse($endDate);
+                $parsedStart = Carbon::parse($startDate)->utc()->startOfDay();
+                $parsedEnd = Carbon::parse($endDate)->utc()->startOfDay();
             } catch (\Throwable) {
                 return;
             }
@@ -90,23 +90,13 @@ class ExportCallLogsRequest extends FormRequest
                 return;
             }
 
-            if ($this->diffInCalendarDays($parsedStart, $parsedEnd) >= self::MAX_EXPORT_DAYS) {
+            // Calendar days between dates, matching date-fns differenceInCalendarDays(later, earlier).
+            if ((int) $parsedStart->diffInDays($parsedEnd) >= self::MAX_EXPORT_DAYS) {
                 $validator->errors()->add(
                     'date_range',
                     'Date range cannot exceed '.self::MAX_EXPORT_DAYS.' days for export.'
                 );
             }
         });
-    }
-
-    /**
-     * Calendar days between two dates, matching date-fns differenceInCalendarDays(later, earlier).
-     */
-    private function diffInCalendarDays(Carbon $startDate, Carbon $endDate): int
-    {
-        $start = $startDate->copy()->utc()->startOfDay();
-        $end = $endDate->copy()->utc()->startOfDay();
-
-        return (int) $start->diffInDays($end);
     }
 }

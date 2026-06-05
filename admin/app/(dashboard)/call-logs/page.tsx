@@ -21,6 +21,7 @@ import { CallLogSearch } from "@features/call-logs/components/call-log-search";
 import { CallLogFilters } from "@features/call-logs/components/call-log-filters";
 import { CallLogPagination } from "@features/call-logs/components/call-log-pagination";
 import { useSearchParams } from "next/navigation";
+import { getApiErrorMessage } from "@shared/utils/error";
 
 /**
  * Call Logs page - displays paginated call log list using API hook
@@ -69,9 +70,9 @@ export default function CallLogsPage() {
         try {
             await exportCallLogsCsv(filters);
         } catch (error) {
-            const message =
-                error instanceof Error ? error.message : "Failed to export call logs";
-            setExportError(message);
+            setExportError(
+                getApiErrorMessage(error, "Failed to export call logs")
+            );
         } finally {
             setIsExporting(false);
         }

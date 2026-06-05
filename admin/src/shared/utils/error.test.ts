@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getApiErrorMessage } from './error';
+import { formatValidationErrors, getApiErrorMessage } from './error';
 
 describe('getApiErrorMessage', () => {
   it('should extract message from API error response', () => {
@@ -40,5 +40,50 @@ describe('getApiErrorMessage', () => {
       response: null,
     };
     expect(getApiErrorMessage(error)).toBe('An error occurred');
+  });
+
+  it('should extract validation errors from fetch ApiError data', () => {
+    const error = Object.assign(new Error('The given data was invalid.'), {
+      status: 422,
+      data: {
+        message: 'The given data was invalid.',
+        errors: {
+          date_range: ['Date range cannot exceed 31 days for export.'],
+        },
+      },
+    });
+
+    expect(getApiErrorMessage(error)).toBe(
+      'Date range cannot exceed 31 days for export.'
+    );
+  });
+
+  it('should extract validation errors from axios-style response', () => {
+    const error = {
+      response: {
+        data: {
+          message: 'The given data was invalid.',
+          errors: {
+            start_date: ['The start date field is required.'],
+            end_date: ['The end date field is required.'],
+          },
+        },
+      },
+    };
+
+    expect(getApiErrorMessage(error)).toBe(
+      'The start date field is required. The end date field is required.'
+    );
+  });
+
+  it('should format validation errors into a single string', () => {
+    expect(
+      formatValidationErrors({
+        export: ['Too many rows (150,001). Narrow your filters.'],
+        date_range: ['Date range cannot exceed 31 days for export.'],
+      })
+    ).toBe(
+      'Too many rows (150,001). Narrow your filters. Date range cannot exceed 31 days for export.'
+    );
   });
 });
