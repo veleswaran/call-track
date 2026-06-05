@@ -34,6 +34,7 @@ final class GetReportDataRequest extends FormRequest
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
             'sort_by' => ['nullable', 'string', 'in:agent,first_call_time,total_calls,connected,missed,total_duration,avg_duration'],
             'sort_order' => ['nullable', 'string', 'in:asc,desc'],
+            'for_export' => ['nullable', 'boolean'],
         ];
     }
 }

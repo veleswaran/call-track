@@ -46,6 +46,10 @@ final class ReportController extends Controller
 
     public function dayWise(GetReportDataRequest $request): DayWiseReportResource
     {
+        if ($request->boolean('for_export') && ! $request->user()->hasRole('super-admin')) {
+            abort(403, 'Only super-admins can export day-wise reports.');
+        }
+
         $filters = $this->buildScopedFilters($request);
         $data = $this->reportService->getDayWise($filters);
 
@@ -75,6 +79,7 @@ final class ReportController extends Controller
             sortOrder: $base->sortOrder,
             perPage: $base->perPage,
             page: $base->page,
+            forExport: $request->boolean('for_export'),
         );
     }
 }

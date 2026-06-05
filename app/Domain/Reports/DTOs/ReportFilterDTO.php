@@ -24,6 +24,7 @@ final class ReportFilterDTO
         public readonly ?string $sortOrder = null,
         public readonly int $perPage = 15,
         public readonly ?int $page = null,
+        public readonly bool $forExport = false,
     ) {}
 
     public static function fromArray(array $data): self
@@ -43,6 +44,7 @@ final class ReportFilterDTO
             sortOrder: $data['sort_order'] ?? null,
             perPage: (int) ($data['per_page'] ?? 15),
             page: isset($data['page']) ? (int) $data['page'] : null,
+            forExport: (bool) ($data['for_export'] ?? false),
         );
     }
 }

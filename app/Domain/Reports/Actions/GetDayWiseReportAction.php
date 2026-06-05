@@ -31,10 +31,10 @@ final class GetDayWiseReportAction
         $startDate = $filters->startDate;
         $endDate = $filters->endDate;
 
-        // Validate date range (max 32 days)
-        if ($startDate && $endDate && $startDate->diffInDays($endDate) > 32) {
+        // Validate date range (max 60 days for on-screen view; export has no limit)
+        if (! $filters->forExport && $startDate && $endDate && $startDate->diffInDays($endDate) > 60) {
             throw \Illuminate\Validation\ValidationException::withMessages([
-                'date_range' => ['Date range cannot exceed 32 days for day-wise reports'],
+                'date_range' => ['Date range cannot exceed 60 days for day-wise reports'],
             ]);
         }
 

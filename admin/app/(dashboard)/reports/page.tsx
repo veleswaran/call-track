@@ -40,14 +40,15 @@ export default function ReportsPage() {
     const [perPage, setPerPage] = useState(15)
     const [sortBy, setSortBy] = useState<string | null>('agent')
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
+    const [isExporting, setIsExporting] = useState(false)
 
-    // Check if date range exceeds 32 days
+    // Check if date range exceeds 60 days
     const dateRangeDays = useMemo(() => {
         if (!filters.dateRange?.from || !filters.dateRange?.to) return 0
         return differenceInCalendarDays(filters.dateRange.to, filters.dateRange.from) + 1
     }, [filters.dateRange])
 
-    const canShowDayWise = dateRangeDays <= 32
+    const canShowDayWise = dateRangeDays <= 60
 
     const queryParams = {
         start_date: filters.dateRange?.from ? format(filters.dateRange.from, 'yyyy-MM-dd') : undefined,
@@ -67,18 +68,35 @@ export default function ReportsPage() {
         sort_order: sortOrder,
     }
 
-    const getQueryString = (params: Record<string, string | number | (string | number)[] | undefined | null>) => {
+    const getQueryString = (params: Record<string, string | number | boolean | (string | number)[] | undefined | null>) => {
         const searchParams = new URLSearchParams();
         Object.entries(params).forEach(([key, value]) => {
             if (value !== undefined && value !== null && value !== '') {
                 if (Array.isArray(value)) {
                     value.forEach(v => searchParams.append(`${key}[]`, String(v)));
+                } else if (typeof value === 'boolean') {
+                    if (value) {
+                        searchParams.append(key, '1');
+                    }
                 } else {
                     searchParams.append(key, String(value));
                 }
             }
         });
         return searchParams.toString();
+    }
+
+    const handleExportDayWiseCsv = async () => {
+        setIsExporting(true)
+        try {
+            const qs = getQueryString({ ...queryParams, for_export: true })
+            const res = await api.get<{ data: DayWiseReportData }>(`/api/v1/admin/reports/day-wise?${qs}`)
+            if (res.data?.agents.length) {
+                downloadDayWiseReportCsv(res.data)
+            }
+        } finally {
+            setIsExporting(false)
+        }
     }
 
     const metricsQuery = useQuery({
@@ -149,20 +167,16 @@ export default function ReportsPage() {
 
                         {/* View Toggle */}
                         <div className="flex items-center gap-2">
-                        {isSuperAdmin && viewMode === "day-wise" && (
+                        {isSuperAdmin && (
                             <Button
                                 variant="outline"
                                 size="sm"
                                 className="gap-2"
-                                disabled={dayWiseQuery.isLoading || !dayWiseQuery.data?.agents.length}
-                                onClick={() => {
-                                    if (dayWiseQuery.data) {
-                                        downloadDayWiseReportCsv(dayWiseQuery.data)
-                                    }
-                                }}
+                                disabled={isExporting || !filters.dateRange?.from || !filters.dateRange?.to}
+                                onClick={handleExportDayWiseCsv}
                             >
                                 <Download className="h-4 w-4" />
-                                Export CSV
+                                {isExporting ? "Exporting..." : "Export Day-Wise CSV"}
                             </Button>
                         )}
                         <Button
@@ -191,12 +205,12 @@ export default function ReportsPage() {
                     </div>
                 </div>
 
-                {/* 32-day limit warning */}
+                {/* 60-day limit warning */}
                 {!canShowDayWise && (
                     <Alert variant="destructive">
                         <AlertDescription>
-                            Day-wise view is only available for date ranges up to 32 days.
-                            Current selection: {dateRangeDays} days. Please adjust your date range to use this view.
+                            Day-wise view is only available for date ranges up to 60 days.
+                            Current selection: {dateRangeDays} days. Use Export Day-Wise CSV to download longer periods.
                         </AlertDescription>
                     </Alert>
                 )}
