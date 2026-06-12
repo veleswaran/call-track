@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Services;
 
-use App\Domain\Calls\DTOs\EscalationFilterDTO;
+use App\Http\Requests\ExportMissedCallsRequest;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 interface MissedCallExportServiceContract
 {
     /**
-     * Stream a CSV download of missed call escalations matching the given filters.
+     * Stream a CSV download of missed call escalations matching the request filters.
      */
-    public function export(EscalationFilterDTO $dto): StreamedResponse;
+    public function export(ExportMissedCallsRequest $request): StreamedResponse;
 }

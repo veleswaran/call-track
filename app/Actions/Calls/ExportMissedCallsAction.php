@@ -6,18 +6,16 @@ namespace App\Actions\Calls;
 
 use App\Domain\Calls\DTOs\EscalationFilterDTO;
 use App\Domain\Calls\Models\CallEscalation;
-use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use App\Domain\Calls\Models\CallLog;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
- * Streams missed call escalations as CSV using chunked queries to keep memory bounded.
+ * Streams missed call escalations as CSV using a cursor to preserve sort order with bounded memory.
  */
 final class ExportMissedCallsAction
 {
     public const MAX_EXPORT_ROWS = 150_000;
-
-    private const CHUNK_SIZE = 500;
 
     public function __construct(
         private readonly GetEscalationInsightsAction $getEscalationInsightsAction,
@@ -56,15 +54,14 @@ final class ExportMissedCallsAction
 
                 fputcsv($handle, $this->headers());
 
-                $query
-                    ->reorder('call_escalations.id')
-                    ->with(['callLog', 'callLog.agent', 'callLog.device', 'resolvedByCall'])
-                    ->chunkById(self::CHUNK_SIZE, function (EloquentCollection $escalations) use ($handle): void {
-                        foreach ($escalations as $escalation) {
-                            /** @var CallEscalation $escalation */
-                            fputcsv($handle, $this->formatRow($escalation));
-                        }
-                    }, column: 'call_escalations.id', alias: 'id');
+                foreach (
+                    $query
+                        ->with(['callLog', 'callLog.agent', 'callLog.device', 'resolvedByCall'])
+                        ->cursor() as $escalation
+                ) {
+                    /** @var CallEscalation $escalation */
+                    fputcsv($handle, $this->formatRow($escalation));
+                }
 
                 fclose($handle);
             },
@@ -97,14 +94,43 @@ final class ExportMissedCallsAction
         $callLog = $escalation->callLog;
 
         return [
-            $this->sanitizeCsvValue($callLog?->agent->name ?? 'Unknown Agent'),
-            (string) ($callLog->phone_number ?? ''),
+            $this->sanitizeCsvValue($this->resolveAgentName($callLog)),
+            $this->resolvePhoneNumber($callLog),
             $this->sanitizeCsvValue($callLog?->phone_contact_name),
-            $callLog?->timestamp?->format('Y-m-d H:i:s') ?? '',
+            $this->resolveCallTimestamp($callLog),
             $this->sanitizeCsvValue($escalation->status),
             $escalation->response_due_at->format('Y-m-d H:i:s'),
             $escalation->resolved_at?->format('Y-m-d H:i:s') ?? '',
         ];
+    }
+
+    private function resolveAgentName(?CallLog $callLog): string
+    {
+        if ($callLog === null) {
+            return 'Unknown Agent';
+        }
+
+        $agent = $callLog->agent;
+
+        if ($agent === null) {
+            return 'Unknown Agent';
+        }
+
+        return $agent->name ?? 'Unknown Agent';
+    }
+
+    private function resolvePhoneNumber(?CallLog $callLog): string
+    {
+        if ($callLog === null) {
+            return '';
+        }
+
+        return (string) ($callLog->phone_number ?? '');
+    }
+
+    private function resolveCallTimestamp(?CallLog $callLog): string
+    {
+        return $callLog?->timestamp?->format('Y-m-d H:i:s') ?? '';
     }
 
     private function sanitizeCsvValue(?string $value): string

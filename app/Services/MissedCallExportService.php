@@ -6,7 +6,10 @@ namespace App\Services;
 
 use App\Actions\Calls\ExportMissedCallsAction;
 use App\Contracts\Services\MissedCallExportServiceContract;
+use App\Domain\Auth\Actions\GetAgentAccessScopeAction;
 use App\Domain\Calls\DTOs\EscalationFilterDTO;
+use App\Domain\Users\Models\User;
+use App\Http\Requests\ExportMissedCallsRequest;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
@@ -16,10 +19,19 @@ final class MissedCallExportService implements MissedCallExportServiceContract
 {
     public function __construct(
         private readonly ExportMissedCallsAction $exportAction,
+        private readonly GetAgentAccessScopeAction $getAgentAccessScopeAction,
     ) {}
 
-    public function export(EscalationFilterDTO $dto): StreamedResponse
+    /**
+     * Resolve access scope, build the filter DTO, and stream a CSV download.
+     */
+    public function export(ExportMissedCallsRequest $request): StreamedResponse
     {
+        /** @var User $user */
+        $user = $request->user();
+        $allowedAgentIds = $this->getAgentAccessScopeAction->execute($user);
+        $dto = EscalationFilterDTO::fromRequest($request, $allowedAgentIds);
+
         return $this->exportAction->execute($dto);
     }
 }

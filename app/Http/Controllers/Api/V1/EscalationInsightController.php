@@ -51,12 +51,6 @@ class EscalationInsightController extends Controller
      */
     public function export(ExportMissedCallsRequest $request): StreamedResponse
     {
-        /** @var \App\Domain\Users\Models\User $user */
-        $user = $request->user();
-        $allowedAgentIds = $this->getAgentAccessScopeAction->execute($user);
-
-        $dto = EscalationFilterDTO::fromRequest($request, $allowedAgentIds);
-
-        return $this->exportService->export($dto);
+        return $this->exportService->export($request);
     }
 }
