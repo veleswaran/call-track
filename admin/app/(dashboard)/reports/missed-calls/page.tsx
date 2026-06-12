@@ -2,12 +2,16 @@
 
 import { useState } from "react";
 import { format } from "date-fns";
+import { Download } from "lucide-react";
 import { MissedCallsFilters } from "@features/missed-calls/components/missed-calls-filters";
 import { MissedCallSummaryWidgets } from "@features/missed-calls/components/missed-call-summary-widgets";
 import { MissedCallsTable } from "@features/missed-calls/components/missed-calls-table";
 import { useEscalationInsights } from "@features/missed-calls/api/get-escalations";
 import { GetEscalationsParams } from "@features/missed-calls/types/escalation";
+import { exportMissedCallsCsv } from "@features/missed-calls/utils/export-missed-calls-csv";
 import { CallLogPagination } from "@features/call-logs/components/call-log-pagination";
+import { Button } from "@shared/components/ui/button";
+import { getApiErrorMessage } from "@shared/utils/error";
 
 export default function MissedCallsInsightsPage() {
     const today = format(new Date(), "yyyy-MM-dd");
@@ -20,7 +24,31 @@ export default function MissedCallsInsightsPage() {
         date_to: today,
     });
 
+    const [isExporting, setIsExporting] = useState(false);
+    const [exportError, setExportError] = useState<string | null>(null);
+
+    const canExport = Boolean(filters.date_from && filters.date_to);
+
     const { data, isLoading } = useEscalationInsights(filters);
+
+    const handleExport = async () => {
+        if (!canExport) {
+            return;
+        }
+
+        setIsExporting(true);
+        setExportError(null);
+
+        try {
+            await exportMissedCallsCsv(filters);
+        } catch (error) {
+            setExportError(
+                getApiErrorMessage(error, "Failed to export missed calls")
+            );
+        } finally {
+            setIsExporting(false);
+        }
+    };
 
     const handleFilterChange = (newFilters: Partial<GetEscalationsParams>) => {
         setFilters((prev: GetEscalationsParams) => ({
@@ -40,12 +68,31 @@ export default function MissedCallsInsightsPage() {
 
     return (
         <div className="space-y-6">
-            <div>
-                <h1 className="text-2xl font-bold tracking-tight">Missed Call Insights</h1>
-                <p className="text-zinc-500 dark:text-zinc-400">
-                    Track and manage missed call escalations and SLA performance
-                </p>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight">Missed Call Insights</h1>
+                    <p className="text-zinc-500 dark:text-zinc-400">
+                        Track and manage missed call escalations and SLA performance
+                    </p>
+                </div>
+                <Button
+                    variant="outline"
+                    onClick={handleExport}
+                    disabled={!canExport || isExporting}
+                    title={
+                        canExport
+                            ? "Export filtered missed calls as CSV (max 32-day range)"
+                            : "Select a date range to export"
+                    }
+                >
+                    <Download className="mr-2 h-4 w-4" />
+                    {isExporting ? "Exporting..." : "Export CSV"}
+                </Button>
             </div>
+
+            {exportError && (
+                <p className="text-sm text-red-500">{exportError}</p>
+            )}
 
             <MissedCallsFilters onFilterChange={handleFilterChange} />
             <MissedCallSummaryWidgets
