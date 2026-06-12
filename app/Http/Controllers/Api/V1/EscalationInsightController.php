@@ -5,16 +5,20 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Contracts\Services\EscalationServiceContract;
+use App\Contracts\Services\MissedCallExportServiceContract;
 use App\Domain\Calls\DTOs\EscalationFilterDTO;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ExportMissedCallsRequest;
 use App\Http\Requests\GetEscalationInsightsRequest;
 use App\Http\Resources\EscalationResource;
 use Illuminate\Http\JsonResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class EscalationInsightController extends Controller
 {
     public function __construct(
         private EscalationServiceContract $escalationService,
+        private MissedCallExportServiceContract $exportService,
         private \App\Domain\Auth\Actions\GetAgentAccessScopeAction $getAgentAccessScopeAction
     ) {}
 
@@ -40,5 +44,13 @@ class EscalationInsightController extends Controller
             ])
             ->response()
             ->setStatusCode(200);
+    }
+
+    /**
+     * Export filtered missed call escalations as a streamed CSV download.
+     */
+    public function export(ExportMissedCallsRequest $request): StreamedResponse
+    {
+        return $this->exportService->export($request);
     }
 }
