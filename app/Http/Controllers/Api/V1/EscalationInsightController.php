@@ -35,11 +35,13 @@ class EscalationInsightController extends Controller
 
         $escalations = $this->escalationService->getEscalationInsights($dto);
         $summary = $this->escalationService->getEscalationSummary($dto);
+        $agentSummary = $this->escalationService->getEscalationSummaryByAgent($dto);
 
         return EscalationResource::collection($escalations)
             ->additional([
                 'meta' => [
                     'summary' => $summary,
+                    'agent_summary' => $agentSummary,
                 ],
             ])
             ->response()

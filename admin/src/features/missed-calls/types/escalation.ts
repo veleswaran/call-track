@@ -21,10 +21,21 @@ export interface EscalationSummary {
     resolved: number;
 }
 
+export interface AgentEscalationSummary {
+    agent_id: number;
+    agent_name: string;
+    employee_code: string | null;
+    total_missed: number;
+    pending: number;
+    unattended: number;
+    resolved: number;
+}
+
 export interface EscalationInsightsResponse {
     data: CallEscalation[];
     meta: {
         summary: EscalationSummary;
+        agent_summary: AgentEscalationSummary[];
         current_page: number;
         from: number | null;
         last_page: number;

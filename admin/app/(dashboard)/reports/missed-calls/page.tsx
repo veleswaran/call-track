@@ -6,6 +6,7 @@ import { Download } from "lucide-react";
 import { MissedCallsFilters } from "@features/missed-calls/components/missed-calls-filters";
 import { MissedCallSummaryWidgets } from "@features/missed-calls/components/missed-call-summary-widgets";
 import { MissedCallsTable } from "@features/missed-calls/components/missed-calls-table";
+import { MissedCallsAgentSummary } from "@features/missed-calls/components/missed-calls-agent-summary";
 import { useEscalationInsights } from "@features/missed-calls/api/get-escalations";
 import { GetEscalationsParams } from "@features/missed-calls/types/escalation";
 import { exportMissedCallsCsv } from "@features/missed-calls/utils/export-missed-calls-csv";
@@ -95,11 +96,20 @@ export default function MissedCallsInsightsPage() {
             )}
 
             <MissedCallsFilters onFilterChange={handleFilterChange} />
-            <MissedCallSummaryWidgets
-                summary={data?.meta?.summary}
-                isLoading={isLoading}
-            />
-
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+                <div className="flex flex-row gap-3 lg:flex-col lg:w-72 lg:shrink-0">
+                    <MissedCallSummaryWidgets
+                        summary={data?.meta?.summary}
+                        isLoading={isLoading}
+                    />
+                </div>
+                <div className="flex-1 min-w-0">
+                    <MissedCallsAgentSummary
+                        agentSummary={data?.meta?.agent_summary}
+                        isLoading={isLoading}
+                    />
+                </div>
+            </div>
 
             <div className="space-y-4">
                 <MissedCallsTable

@@ -35,6 +35,13 @@ interface EscalationServiceContract
     public function getEscalationSummary(EscalationFilterDTO $dto): array;
 
     /**
+     * Get per-agent summary metrics (total, pending, unattended, resolved counts).
+     *
+     * @return array<int, array{agent_id: int, agent_name: string, total_missed: int, pending: int, unattended: int, resolved: int}>
+     */
+    public function getEscalationSummaryByAgent(EscalationFilterDTO $dto): array;
+
+    /**
      * Notify devices of unattended missed call escalations via FCM.
      */
     public function notifyUnattendedEscalations(): int;
