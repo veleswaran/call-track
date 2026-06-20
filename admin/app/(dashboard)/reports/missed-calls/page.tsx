@@ -97,7 +97,7 @@ export default function MissedCallsInsightsPage() {
 
             <MissedCallsFilters onFilterChange={handleFilterChange} />
             <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-                <div className="flex flex-row gap-3 lg:flex-col lg:w-72 lg:shrink-0">
+                <div className="grid grid-cols-2 gap-3 lg:grid-cols-1 lg:w-72 lg:shrink-0">
                     <MissedCallSummaryWidgets
                         summary={data?.meta?.summary}
                         isLoading={isLoading}

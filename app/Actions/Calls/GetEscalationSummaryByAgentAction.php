@@ -19,12 +19,15 @@ class GetEscalationSummaryByAgentAction
         $summaryDto = clone $dto;
         $summaryDto->status = null;
 
+        // Start fresh so applyFilters never adds joins — it only adds WHERE clauses
+        // via whereHas(), which compile to subqueries and are safe to compose here.
         $baseQuery = CallEscalation::query();
         $baseQuery = $this->insightsAction->applyFilters($baseQuery, $summaryDto);
 
         $rows = $baseQuery
-            ->join('call_logs', 'call_escalations.call_log_id', '=', 'call_logs.id')
-            ->join('agents', 'call_logs.agent_id', '=', 'agents.id')
+            ->reorder()
+            ->join('call_logs as cl_agent', 'call_escalations.call_log_id', '=', 'cl_agent.id')
+            ->join('agents', 'cl_agent.agent_id', '=', 'agents.id')
             ->selectRaw('agents.id AS agent_id, agents.name AS agent_name, agents.employee_code AS employee_code, call_escalations.status AS escalation_status, COUNT(*) AS status_count')
             ->groupBy('agents.id', 'agents.name', 'agents.employee_code', 'call_escalations.status')
             ->toBase()
