@@ -7,8 +7,8 @@ namespace App\Actions\Contacts;
 use App\Domain\Calls\Models\Contact;
 use App\Domain\Contacts\DTOs\ImportContactsDTO;
 use App\Domain\Contacts\DTOs\ImportContactsResultDTO;
-use App\Domain\Contacts\DTOs\StoreContactDTO;
 use App\Support\PhoneNormalizer;
+use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -19,7 +19,6 @@ class ImportContactsAction
     public const MAX_IMPORT_ROWS = 5_000;
 
     public function __construct(
-        private readonly CreateOrUpdateContactAction $createOrUpdateContactAction,
         private readonly GetContactHashVariationsAction $getContactHashVariationsAction,
     ) {}
 
@@ -61,16 +60,54 @@ class ImportContactsAction
             ]);
         }
 
-        $existingHashes = array_fill_keys(
-            Contact::query()->pluck('phone_hash')->all(),
-            true,
+        $firstPass = $this->collectCsvPhoneHashes($handle, $columnMap);
+        $existingHashes = $this->findExistingHashes($firstPass['phone_hashes']);
+
+        rewind($handle);
+        fgetcsv($handle);
+
+        $secondPass = $this->buildAndUpsertRecords(
+            $handle,
+            $columnMap,
+            $existingHashes,
         );
 
-        $totalRows = 0;
-        $created = 0;
-        $updated = 0;
-        $failed = 0;
+        if ($secondPass['records'] !== []) {
+            Contact::upsert(
+                $secondPass['records'],
+                ['phone_hash'],
+                ['name', 'phone_number', 'is_internal', 'updated_at'],
+            );
+        }
+
+        $this->getContactHashVariationsAction->clearCache();
+
+        return new ImportContactsResultDTO(
+            totalRows: $firstPass['total_rows'],
+            created: $secondPass['created'],
+            updated: $secondPass['updated'],
+            failed: $firstPass['failed'],
+            errors: $firstPass['errors'],
+        );
+    }
+
+    /**
+     * First pass: validate rows and collect only the phone hashes present in the CSV.
+     *
+     * @param  resource  $handle
+     * @return array{
+     *     phone_hashes: list<string>,
+     *     total_rows: int,
+     *     failed: int,
+     *     errors: list<array{row: int, message: string}>
+     * }
+     */
+    private function collectCsvPhoneHashes($handle, array $columnMap): array
+    {
+        $phoneHashes = [];
         $errors = [];
+        $totalRows = 0;
+        $failed = 0;
         $rowNumber = 1;
 
         while (($row = fgetcsv($handle)) !== false) {
@@ -92,9 +129,6 @@ class ImportContactsAction
 
             $name = trim((string) ($row[$columnMap['name']] ?? ''));
             $phoneNumber = trim((string) ($row[$columnMap['phone_number']] ?? ''));
-            $isInternalRaw = isset($columnMap['is_internal'])
-                ? trim((string) ($row[$columnMap['is_internal']] ?? ''))
-                : '';
 
             $validationError = $this->validateRow($name, $phoneNumber);
 
@@ -108,36 +142,121 @@ class ImportContactsAction
                 continue;
             }
 
+            $phoneHashes[] = hash('sha256', PhoneNormalizer::normalize($phoneNumber));
+        }
+
+        return [
+            'phone_hashes' => array_values(array_unique($phoneHashes)),
+            'total_rows' => $totalRows,
+            'failed' => $failed,
+            'errors' => $errors,
+        ];
+    }
+
+    /**
+     * @param  list<string>  $phoneHashes
+     * @return array<string, true>
+     */
+    private function findExistingHashes(array $phoneHashes): array
+    {
+        if ($phoneHashes === []) {
+            return [];
+        }
+
+        return array_fill_keys(
+            Contact::query()
+                ->whereIn('phone_hash', $phoneHashes)
+                ->pluck('phone_hash')
+                ->all(),
+            true,
+        );
+    }
+
+    /**
+     * Second pass: build upsert payload and compute created/updated counts.
+     *
+     * @param  resource  $handle
+     * @param  array<string, true>  $existingHashes
+     * @return array{
+     *     records: list<array<string, mixed>>,
+     *     created: int,
+     *     updated: int
+     * }
+     */
+    private function buildAndUpsertRecords($handle, array $columnMap, array $existingHashes): array
+    {
+        $recordsByHash = [];
+        $rowNumber = 1;
+        $now = Carbon::now();
+
+        while (($row = fgetcsv($handle)) !== false) {
+            $rowNumber++;
+
+            if ($this->isEmptyRow($row)) {
+                continue;
+            }
+
+            $name = trim((string) ($row[$columnMap['name']] ?? ''));
+            $phoneNumber = trim((string) ($row[$columnMap['phone_number']] ?? ''));
+            $isInternalRaw = isset($columnMap['is_internal'])
+                ? trim((string) ($row[$columnMap['is_internal']] ?? ''))
+                : '';
+
+            if ($this->validateRow($name, $phoneNumber) !== null) {
+                continue;
+            }
+
             $normalizedPhone = PhoneNormalizer::normalize($phoneNumber);
             $phoneHash = hash('sha256', $normalizedPhone);
-            $isUpdate = isset($existingHashes[$phoneHash]);
 
-            $this->createOrUpdateContactAction->execute(
-                new StoreContactDTO(
-                    name: $name,
-                    phoneNumber: $normalizedPhone,
-                    isInternal: $this->parseBoolean($isInternalRaw),
-                ),
-                clearContactCache: false,
+            $recordsByHash[$phoneHash] = $this->prepareUpsertRecord(
+                name: $name,
+                phoneNumber: $normalizedPhone,
+                phoneHash: $phoneHash,
+                isInternal: $this->parseBoolean($isInternalRaw),
+                now: $now,
             );
+        }
 
-            if ($isUpdate) {
+        $created = 0;
+        $updated = 0;
+
+        foreach (array_keys($recordsByHash) as $phoneHash) {
+            if (isset($existingHashes[$phoneHash])) {
                 $updated++;
             } else {
                 $created++;
-                $existingHashes[$phoneHash] = true;
             }
         }
 
-        $this->getContactHashVariationsAction->clearCache();
+        return [
+            'records' => array_values($recordsByHash),
+            'created' => $created,
+            'updated' => $updated,
+        ];
+    }
 
-        return new ImportContactsResultDTO(
-            totalRows: $totalRows,
-            created: $created,
-            updated: $updated,
-            failed: $failed,
-            errors: $errors,
-        );
+    /**
+     * @return array<string, mixed>
+     */
+    private function prepareUpsertRecord(
+        string $name,
+        string $phoneNumber,
+        string $phoneHash,
+        bool $isInternal,
+        Carbon $now,
+    ): array {
+        $contact = new Contact;
+        $contact->phone_number = $phoneNumber;
+
+        return [
+            'name' => $name,
+            'phone_hash' => $phoneHash,
+            'phone_number' => $contact->getAttributes()['phone_number'],
+            'is_internal' => $isInternal,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ];
     }
 
     /**

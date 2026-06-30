@@ -48,7 +48,9 @@ export function ImportContactsDialog({ open, onOpenChange }: ImportContactsDialo
         const link = document.createElement("a");
         link.href = url;
         link.download = "contacts-import-template.csv";
+        document.body.appendChild(link);
         link.click();
+        document.body.removeChild(link);
         URL.revokeObjectURL(url);
     };
 

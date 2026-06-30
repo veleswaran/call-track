@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Contracts\Services\ContactManagementServiceInterface;
-use App\Domain\Calls\Models\Contact;
 use App\Domain\Contacts\DTOs\ImportContactsDTO;
 use App\Domain\Contacts\DTOs\StoreContactDTO;
 use App\Http\Controllers\Controller;
@@ -74,7 +73,7 @@ class ContactController extends Controller
 
     public function import(ImportContactsRequest $request): ImportContactsResultResource
     {
-        $this->authorize('create', Contact::class);
+        $this->authorize('create', \App\Domain\Calls\Models\Contact::class);
 
         $result = $this->contactService->importContacts(
             ImportContactsDTO::fromRequest($request)
