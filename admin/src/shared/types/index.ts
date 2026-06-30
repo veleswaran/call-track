@@ -114,6 +114,17 @@ export interface Contact {
     updated_at: string;
 }
 
+export interface ContactImportResult {
+    total_rows: number;
+    created: number;
+    updated: number;
+    failed: number;
+    errors: Array<{
+        row: number;
+        message: string;
+    }>;
+}
+
 /**
  * Paginated API response
  */

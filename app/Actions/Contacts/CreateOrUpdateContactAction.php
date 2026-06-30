@@ -16,7 +16,7 @@ class CreateOrUpdateContactAction
         protected \App\Actions\Contacts\GetContactHashVariationsAction $getVariationsAction
     ) {}
 
-    public function execute(StoreContactDTO $data): Contact
+    public function execute(StoreContactDTO $data, bool $clearContactCache = true): Contact
     {
         $normalizedPhone = \App\Support\PhoneNormalizer::normalize($data->phoneNumber);
         $phoneHash = hash('sha256', $normalizedPhone);
@@ -32,7 +32,9 @@ class CreateOrUpdateContactAction
             ]
         );
 
-        $this->getVariationsAction->clearCache();
+        if ($clearContactCache) {
+            $this->getVariationsAction->clearCache();
+        }
 
         return $contact;
     }

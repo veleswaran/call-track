@@ -65,6 +65,7 @@ Route::prefix('v1')->group(function () {
             ->name('admin.call-logs.escalations.index');
 
         // Contacts
+        Route::post('/contacts/import', [\App\Http\Controllers\Api\Admin\ContactController::class, 'import']);
         Route::post('/contacts', [\App\Http\Controllers\Api\Admin\ContactController::class, 'store']);
         Route::get('/contacts', [\App\Http\Controllers\Api\Admin\ContactController::class, 'index']);
         Route::put('/contacts/{id}', [\App\Http\Controllers\Api\Admin\ContactController::class, 'update']);

@@ -6,6 +6,8 @@ namespace Tests\Unit\Services;
 
 use App\Actions\Contacts\CreateOrUpdateContactAction;
 use App\Domain\Calls\Models\Contact;
+use App\Domain\Contacts\DTOs\ImportContactsDTO;
+use App\Domain\Contacts\DTOs\ImportContactsResultDTO;
 use App\Domain\Contacts\DTOs\StoreContactDTO;
 use App\Services\Contacts\ContactManagementService;
 use App\Support\PhoneNormalizer;
@@ -20,8 +22,9 @@ class ContactManagementServiceTest extends TestCase
         $updateAction = Mockery::mock(\App\Actions\Contacts\UpdateContactAction::class);
         $deleteAction = Mockery::mock(\App\Actions\Contacts\DeleteContactAction::class);
         $listAction = Mockery::mock(\App\Actions\Contacts\ListContactsAction::class);
+        $importAction = Mockery::mock(\App\Actions\Contacts\ImportContactsAction::class);
 
-        $service = new ContactManagementService($action, $updateAction, $deleteAction, $listAction);
+        $service = new ContactManagementService($action, $updateAction, $deleteAction, $listAction, $importAction);
 
         $dto = new StoreContactDTO(
             name: 'Jane Doe',
@@ -41,6 +44,34 @@ class ContactManagementServiceTest extends TestCase
 
         $this->assertEquals($expectedContact, $result);
         $this->assertEquals('Jane Doe', $result->name);
+    }
+
+    public function test_it_delegates_contact_import_to_action(): void
+    {
+        $action = Mockery::mock(CreateOrUpdateContactAction::class);
+        $updateAction = Mockery::mock(\App\Actions\Contacts\UpdateContactAction::class);
+        $deleteAction = Mockery::mock(\App\Actions\Contacts\DeleteContactAction::class);
+        $listAction = Mockery::mock(\App\Actions\Contacts\ListContactsAction::class);
+        $importAction = Mockery::mock(\App\Actions\Contacts\ImportContactsAction::class);
+
+        $service = new ContactManagementService($action, $updateAction, $deleteAction, $listAction, $importAction);
+
+        $dto = new ImportContactsDTO(filePath: '/tmp/contacts.csv');
+        $expected = new ImportContactsResultDTO(
+            totalRows: 2,
+            created: 2,
+            updated: 0,
+            failed: 0,
+        );
+
+        $importAction->shouldReceive('execute')
+            ->once()
+            ->with($dto)
+            ->andReturn($expected);
+
+        $result = $service->importContacts($dto);
+
+        $this->assertSame($expected, $result);
     }
 
     protected function tearDown(): void

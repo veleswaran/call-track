@@ -94,4 +94,42 @@ class ContactControllerTest extends TestCase
 
         $this->assertDatabaseMissing('contacts', ['id' => $contact->id]);
     }
+
+    public function test_admin_can_import_contacts_from_csv(): void
+    {
+        $csv = "name,phone_number,is_internal\nJohn Doe,9876543210,true\nJane Smith,9123456789,false\n";
+
+        $response = $this->post('/api/v1/admin/contacts/import', [
+            'file' => \Illuminate\Http\UploadedFile::fake()->createWithContent('contacts.csv', $csv),
+        ], [
+            'Accept' => 'application/json',
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'total_rows' => 2,
+                'created' => 2,
+                'updated' => 0,
+                'failed' => 0,
+            ]);
+
+        $this->assertDatabaseHas('contacts', [
+            'name' => 'John Doe',
+            'phone_hash' => hash('sha256', PhoneNormalizer::normalize('9876543210')),
+        ]);
+    }
+
+    public function test_non_admin_cannot_import_contacts(): void
+    {
+        $nonAdmin = User::factory()->create();
+        $csv = "name,phone_number,is_internal\nJohn Doe,9876543210,false\n";
+
+        $response = $this->actingAs($nonAdmin, 'sanctum')->post('/api/v1/admin/contacts/import', [
+            'file' => \Illuminate\Http\UploadedFile::fake()->createWithContent('contacts.csv', $csv),
+        ], [
+            'Accept' => 'application/json',
+        ]);
+
+        $response->assertStatus(403);
+    }
 }

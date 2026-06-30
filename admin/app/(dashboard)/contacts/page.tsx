@@ -6,12 +6,14 @@
 import { useEffect, useState } from "react";
 import { ContactsList } from "@features/contacts/components/contacts-list";
 import { AddContactDialog } from "@features/contacts/components/add-contact-dialog";
+import { ImportContactsDialog } from "@features/contacts/components/import-contacts-dialog";
 import { Button } from "@shared/components/ui/button";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, Upload } from "lucide-react";
 import { Input } from "@shared/components/ui/input";
 
 export default function ContactsPage() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
     const [search, setSearch] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
 
@@ -32,10 +34,16 @@ export default function ContactsPage() {
                         Saved contacts from call logs
                     </p>
                 </div>
-                <Button onClick={() => setIsDialogOpen(true)}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add Contact
-                </Button>
+                <div className="flex gap-2">
+                    <Button variant="outline" onClick={() => setIsImportDialogOpen(true)}>
+                        <Upload className="mr-2 h-4 w-4" />
+                        Import
+                    </Button>
+                    <Button onClick={() => setIsDialogOpen(true)}>
+                        <Plus className="mr-2 h-4 w-4" />
+                        Add Contact
+                    </Button>
+                </div>
             </div>
 
             <div className="relative mb-6">
@@ -53,6 +61,11 @@ export default function ContactsPage() {
             <AddContactDialog
                 open={isDialogOpen}
                 onOpenChange={setIsDialogOpen}
+            />
+
+            <ImportContactsDialog
+                open={isImportDialogOpen}
+                onOpenChange={setIsImportDialogOpen}
             />
         </div>
     );

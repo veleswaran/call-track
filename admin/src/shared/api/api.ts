@@ -144,6 +144,44 @@ export const api = {
         return response.json();
     },
 
+    async postForm<T>(endpoint: string, formData: FormData): Promise<T> {
+        await this.getCsrfCookie();
+
+        const headers: Record<string, string> = {
+            Accept: "application/json",
+        };
+
+        const xsrfToken = getCookie("XSRF-TOKEN");
+        if (xsrfToken) {
+            headers["X-XSRF-TOKEN"] = decodeURIComponent(xsrfToken);
+        }
+
+        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+            method: "POST",
+            credentials: "include",
+            headers,
+            body: formData,
+        });
+
+        if (!response.ok) {
+            let errorMessage = response.statusText;
+            let errorData = null;
+            try {
+                errorData = await response.json();
+                errorMessage = errorData.message || errorMessage;
+            } catch {
+                // Ignore JSON parse error
+            }
+            throw createApiError(errorMessage, response.status, errorData);
+        }
+
+        if (response.status === 204) {
+            return {} as T;
+        }
+
+        return response.json();
+    },
+
     async put<T>(endpoint: string, data?: unknown): Promise<T> {
         await this.getCsrfCookie();
 

@@ -5,9 +5,13 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Contracts\Services\ContactManagementServiceInterface;
+use App\Domain\Calls\Models\Contact;
+use App\Domain\Contacts\DTOs\ImportContactsDTO;
 use App\Domain\Contacts\DTOs\StoreContactDTO;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ImportContactsRequest;
 use App\Http\Requests\StoreContactRequest;
+use App\Http\Resources\ImportContactsResultResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -66,5 +70,16 @@ class ContactController extends Controller
         $this->contactService->deleteContact($contact);
 
         return response()->json(null, 204);
+    }
+
+    public function import(ImportContactsRequest $request): ImportContactsResultResource
+    {
+        $this->authorize('create', Contact::class);
+
+        $result = $this->contactService->importContacts(
+            ImportContactsDTO::fromRequest($request)
+        );
+
+        return new ImportContactsResultResource($result);
     }
 }
