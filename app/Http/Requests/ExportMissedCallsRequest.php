@@ -30,15 +30,18 @@ class ExportMissedCallsRequest extends FormRequest
             'team_ids' => ['nullable', 'array'],
             'team_ids.*' => ['integer', 'exists:teams,id'],
             'agent_id' => ['nullable', 'integer', 'exists:agents,id'],
-            'status' => ['nullable', function ($attribute, $value, $fail) {
-                $allowed = ['pending', 'unattended', 'resolved'];
-                $statuses = is_array($value) ? $value : explode(',', (string) $value);
-                foreach ($statuses as $status) {
-                    if (! in_array(trim($status), $allowed)) {
-                        $fail(__('validation.in', ['attribute' => $attribute]));
+            'status' => [
+                'nullable',
+                function ($attribute, $value, $fail) {
+                    $allowed = ['pending', 'unattended', 'resolved'];
+                    $statuses = is_array($value) ? $value : explode(',', (string) $value);
+                    foreach ($statuses as $status) {
+                        if (! in_array(trim($status), $allowed)) {
+                            $fail(__('validation.in', ['attribute' => $attribute]));
+                        }
                     }
-                }
-            }],
+                },
+            ],
             'date_from' => ['required', 'date'],
             'date_to' => ['required', 'date'],
             'contact_filter' => ['nullable', 'string', 'in:all,internal,external'],

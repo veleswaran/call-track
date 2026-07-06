@@ -192,7 +192,6 @@ export function MissedCallsFilters({ onFilterChange }: MissedCallsFiltersProps) 
                     <SelectContent>
                         <SelectItem value="all">All Classes</SelectItem>
                         <SelectItem value="BUSINESS">Business Class</SelectItem>
-                        <SelectItem value="PERSONAL">Personal Class</SelectItem>
                         <SelectItem value="IGNORED">Ignored Class</SelectItem>
                     </SelectContent>
                 </Select>
