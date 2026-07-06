@@ -31,6 +31,8 @@ class GetEscalationInsightsRequest extends FormRequest
             'date_to' => ['nullable', 'date', 'after_or_equal:date_from'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
             'contact_filter' => ['nullable', 'string', 'in:all,internal,external'],
+            'types' => ['nullable', 'array'],
+            'types.*' => ['string', 'in:BUSINESS,PERSONAL,IGNORED'],
         ];
     }
 }

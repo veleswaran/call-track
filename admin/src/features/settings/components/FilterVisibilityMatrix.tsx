@@ -56,7 +56,7 @@ const ROWS: FilterRow[] = [
         label: "All Classes",
         keys: {
             callLogs: "enable_call_log_class_filter",
-            missedCalls: null,
+            missedCalls: "enable_missed_call_class_filter",
             reports: "enable_report_class_filter",
         },
     },

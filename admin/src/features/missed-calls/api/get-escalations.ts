@@ -26,6 +26,9 @@ export const getEscalations = async (params: GetEscalationsParams): Promise<Esca
     if (params.contact_filter && params.contact_filter !== "all") {
         searchParams.append("contact_filter", params.contact_filter);
     }
+    if (params.types && params.types.length > 0) {
+        params.types.forEach(type => searchParams.append("types[]", type));
+    }
     const queryString = searchParams.toString();
     const endpoint = `/api/v1/admin/call-logs/escalations${queryString ? `?${queryString}` : ""}`;
 

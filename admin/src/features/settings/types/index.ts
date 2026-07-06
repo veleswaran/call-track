@@ -19,6 +19,7 @@ export interface SettingsData {
     enable_missed_call_team_filter: boolean;
     enable_report_team_filter: boolean;
     enable_call_log_class_filter: boolean;
+    enable_missed_call_class_filter: boolean;
     enable_report_class_filter: boolean;
     enable_call_log_outcome_filter: boolean;
     enable_report_outcome_filter: boolean;

@@ -89,6 +89,12 @@ class GetEscalationInsightsAction
             }
         }
 
+        if (! empty($dto->types)) {
+            $query->whereHas('callLog.classification', function ($q) use ($dto) {
+                $q->whereIn('type', array_map('strtolower', $dto->types));
+            });
+        }
+
         return $query;
     }
 }

@@ -18,6 +18,7 @@ class EscalationFilterDTO
         /** @var int[]|null Null = full access, array = restricted agent IDs */
         public ?array $allowed_agent_ids = null,
         public ?string $contact_filter = null,
+        public ?array $types = null,
     ) {}
 
     public static function fromRequest(Request $request, ?array $allowed_agent_ids = null): self
@@ -31,6 +32,7 @@ class EscalationFilterDTO
             per_page: (int) $request->input('per_page', 20),
             allowed_agent_ids: $allowed_agent_ids,
             contact_filter: $request->string('contact_filter')->toString() ?: null,
+            types: $request->input('types'),
         );
     }
 }

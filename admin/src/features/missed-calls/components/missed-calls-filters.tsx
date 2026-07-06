@@ -41,6 +41,7 @@ export function MissedCallsFilters({ onFilterChange }: MissedCallsFiltersProps) 
     const [status, setStatus] = useState<string>("all");
     const [agentId, setAgentId] = useState<string>("all");
     const [teamIds, setTeamIds] = useState<string[]>([]);
+    const [type, setType] = useState<string>("all");
     const [contactFilter, setContactFilter] = useState<string>("all");
     const [quickDate, setQuickDate] = useState<string>("today");
     const { data: settings } = useSettingsQuery();
@@ -86,6 +87,7 @@ export function MissedCallsFilters({ onFilterChange }: MissedCallsFiltersProps) 
             status: status === "all" ? null : status as EscalationStatus,
             agent_id: agentId === "all" ? null : agentId,
             team_ids: teamIds.length > 0 ? teamIds.map(id => parseInt(id)) : null,
+            types: type === "all" ? null : [type],
             contact_filter: contactFilter === "all" ? null : contactFilter as "internal" | "external",
             date_from: date?.from ? format(date.from, "yyyy-MM-dd") : null,
             date_to: date?.to ? format(date.to, "yyyy-MM-dd") : null,
@@ -96,6 +98,7 @@ export function MissedCallsFilters({ onFilterChange }: MissedCallsFiltersProps) 
         setStatus("all");
         setAgentId("all");
         setTeamIds([]);
+        setType("all");
         setContactFilter("all");
         setDate(defaultDateRange);
         setQuickDate("today");
@@ -103,6 +106,7 @@ export function MissedCallsFilters({ onFilterChange }: MissedCallsFiltersProps) 
             status: "all",
             agent_id: null,
             team_ids: null,
+            types: null,
             contact_filter: "all",
             date_from: format(defaultDateRange.from!, "yyyy-MM-dd"),
             date_to: format(defaultDateRange.to!, "yyyy-MM-dd"),
@@ -179,6 +183,20 @@ export function MissedCallsFilters({ onFilterChange }: MissedCallsFiltersProps) 
                     <SelectItem value="resolved">Resolved</SelectItem>
                 </SelectContent>
             </Select>
+
+            {settings?.enable_missed_call_class_filter && (
+                <Select value={type} onValueChange={setType}>
+                    <SelectTrigger className="w-[150px]">
+                        <SelectValue placeholder="All Classes" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Classes</SelectItem>
+                        <SelectItem value="BUSINESS">Business Class</SelectItem>
+                        <SelectItem value="PERSONAL">Personal Class</SelectItem>
+                        <SelectItem value="IGNORED">Ignored Class</SelectItem>
+                    </SelectContent>
+                </Select>
+            )}
 
             {settings?.enable_missed_call_internal_filter && (
                 <Select value={contactFilter} onValueChange={setContactFilter}>
