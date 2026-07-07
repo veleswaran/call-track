@@ -57,7 +57,7 @@ export default function ReportsPage() {
         start_date: dateRangeFrom ? format(dateRangeFrom, 'yyyy-MM-dd') : undefined,
         end_date: dateRangeTo ? format(dateRangeTo, 'yyyy-MM-dd') : undefined,
         outcomes: filters.outcome !== 'all' ? [filters.outcome] : undefined,
-        types: filters.type !== 'all' ? [filters.type] : undefined,
+        types: filters.type === 'BUSINESS' ? undefined : [filters.type],
         agent_ids: filters.agentIds || undefined,
         team_ids: filters.teamIds || undefined,
         contact_filter: filters.contactFilter || undefined,

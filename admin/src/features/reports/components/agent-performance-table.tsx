@@ -189,7 +189,7 @@ export function AgentPerformanceTable({
         }
 
         // Classification (mapped from 'type' filter in ReportFilters)
-        if (filters.type && filters.type !== 'all') {
+        if (filters.type && filters.type !== 'BUSINESS') {
             // Frontend 'type' filter values are BUSINESS, PERSONAL, IGNORED which match backend classification
             // Backend expects lowercase for simple match or validation allows string. 
             // Request validation: in:business,personal,ignored
