@@ -87,7 +87,7 @@ export function MissedCallsFilters({ onFilterChange }: MissedCallsFiltersProps) 
             status: status === "all" ? null : status as EscalationStatus,
             agent_id: agentId === "all" ? null : agentId,
             team_ids: teamIds.length > 0 ? teamIds.map(id => parseInt(id)) : null,
-            types: type === "BUSINESS" ? null : [type],
+            types: type === "all" ? null : [type],
             contact_filter: contactFilter === "all" ? null : contactFilter as "internal" | "external",
             date_from: date?.from ? format(date.from, "yyyy-MM-dd") : null,
             date_to: date?.to ? format(date.to, "yyyy-MM-dd") : null,
@@ -98,7 +98,7 @@ export function MissedCallsFilters({ onFilterChange }: MissedCallsFiltersProps) 
         setStatus("all");
         setAgentId("all");
         setTeamIds([]);
-        setType("all");
+        setType("BUSINESS");
         setContactFilter("all");
         setDate(defaultDateRange);
         setQuickDate("today");
@@ -106,7 +106,7 @@ export function MissedCallsFilters({ onFilterChange }: MissedCallsFiltersProps) 
             status: "all",
             agent_id: null,
             team_ids: null,
-            types: null,
+            types: ["BUSINESS"],
             contact_filter: "all",
             date_from: format(defaultDateRange.from!, "yyyy-MM-dd"),
             date_to: format(defaultDateRange.to!, "yyyy-MM-dd"),

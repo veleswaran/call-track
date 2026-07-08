@@ -23,6 +23,7 @@ export default function MissedCallsInsightsPage() {
         status: ["pending", "unattended"],
         date_from: today,
         date_to: today,
+        types: ["BUSINESS"],
     });
 
     const [isExporting, setIsExporting] = useState(false);
