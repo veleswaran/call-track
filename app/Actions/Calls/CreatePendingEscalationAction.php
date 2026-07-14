@@ -20,13 +20,33 @@ class CreatePendingEscalationAction
         $responseDueAt = $this->calculateSlaDeadlineAction->execute($callLog->timestamp);
 
         // Use updateOrCreate in case of idempotent reprocessing
-        return CallEscalation::updateOrCreate(
+        $escalation = CallEscalation::updateOrCreate(
             ['call_log_id' => $callLog->id],
             [
                 'status' => 'pending',
                 'response_due_at' => $responseDueAt,
             ]
         );
+
+        $subsequentCall = CallLog::where('phone_number_hash', $callLog->phone_number_hash)
+            ->where('agent_id', $callLog->agent_id)
+            ->where('timestamp', '>', $callLog->timestamp)
+            ->where(function ($query) {
+                $query->whereIn('direction', ['OUTGOING', 'INCOMING', 'outgoing', 'incoming'])
+                    ->where('duration', '>', 0);
+            })
+            ->orderBy('timestamp', 'asc')
+            ->first();
+
+        if ($subsequentCall) {
+            $escalation->update([
+                'status' => 'resolved',
+                'resolved_at' => $subsequentCall->timestamp,
+                'resolved_by_call_id' => $subsequentCall->id,
+            ]);
+        }
+
+        return $escalation;
     }
 
     private function isMissedCall(CallLog $callLog): bool
