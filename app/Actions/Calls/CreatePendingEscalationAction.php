@@ -19,17 +19,10 @@ class CreatePendingEscalationAction
 
         $responseDueAt = $this->calculateSlaDeadlineAction->execute($callLog->timestamp);
 
-        // Use updateOrCreate in case of idempotent reprocessing
-        $escalation = CallEscalation::updateOrCreate(
-            ['call_log_id' => $callLog->id],
-            [
-                'status' => 'pending',
-                'response_due_at' => $responseDueAt,
-            ]
-        );
-
         $subsequentCall = CallLog::where('phone_number_hash', $callLog->phone_number_hash)
-            ->where('agent_id', $callLog->agent_id)
+            ->when($callLog->agent_id !== null, function ($query) use ($callLog) {
+                $query->where('agent_id', $callLog->agent_id);
+            })
             ->where('timestamp', '>', $callLog->timestamp)
             ->where(function ($query) {
                 $query->whereIn('direction', ['OUTGOING', 'INCOMING', 'outgoing', 'incoming'])
@@ -38,15 +31,15 @@ class CreatePendingEscalationAction
             ->orderBy('timestamp', 'asc')
             ->first();
 
-        if ($subsequentCall) {
-            $escalation->update([
-                'status' => 'resolved',
-                'resolved_at' => $subsequentCall->timestamp,
-                'resolved_by_call_id' => $subsequentCall->id,
-            ]);
-        }
-
-        return $escalation;
+        return CallEscalation::updateOrCreate(
+            ['call_log_id' => $callLog->id],
+            [
+                'status' => $subsequentCall ? 'resolved' : 'pending',
+                'response_due_at' => $responseDueAt,
+                'resolved_at' => $subsequentCall?->timestamp,
+                'resolved_by_call_id' => $subsequentCall?->id,
+            ]
+        );
     }
 
     private function isMissedCall(CallLog $callLog): bool
