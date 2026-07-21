@@ -64,7 +64,7 @@ export default function CallLogsPage() {
     const isAdmin = user?.roles?.some(role => ['super-admin', 'admin'].includes(role));
 
     const activeFilters = useMemo(() => {
-        if (user && !isAdmin) {
+        if (!user || !isAdmin) {
             return {
                 ...filters,
                 classifications: ["business"] as ("business" | "personal" | "ignored")[],

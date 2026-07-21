@@ -16,8 +16,18 @@ class GetEscalationSummaryByAgentAction
      */
     public function execute(EscalationFilterDTO $dto): array
     {
-        $summaryDto = clone $dto;
-        $summaryDto->status = null;
+        $summaryDto = new EscalationFilterDTO(
+            team_ids: $dto->team_ids,
+            agent_id: $dto->agent_id,
+            status: null,
+            date_from: $dto->date_from,
+            date_to: $dto->date_to,
+            per_page: $dto->per_page,
+            allowed_agent_ids: $dto->allowed_agent_ids,
+            contact_filter: $dto->contact_filter,
+            types: $dto->types,
+            sim_slot: $dto->sim_slot,
+        );
 
         // Start fresh so applyFilters never adds joins — it only adds WHERE clauses
         // via whereHas(), which compile to subqueries and are safe to compose here.

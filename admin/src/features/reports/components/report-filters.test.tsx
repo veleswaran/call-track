@@ -45,8 +45,8 @@ vi.mock("@shared/components/ui/select", () => ({
     ),
     SelectContent: ({ children }: { children: React.ReactNode }) => <>{children}</>,
     SelectItem: ({ children, value }: { children: React.ReactNode; value: string }) => <option value={value}>{children}</option>,
-    SelectTrigger: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-    SelectValue: ({ placeholder }: { placeholder: string }) => <span>{placeholder}</span>,
+    SelectTrigger: () => null,
+    SelectValue: () => null,
 }))
 
 interface AsyncSelectMockProps {

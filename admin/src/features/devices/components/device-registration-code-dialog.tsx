@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useAgents } from "@features/agents/hooks/use-agents";
 import { AsyncSelect } from "@shared/components/async-select";
 import { useGenerateDeviceCode, GeneratedCode } from "@features/devices/hooks/use-devices";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@shared/components/ui/dialog";
@@ -10,6 +9,7 @@ import { Loader2, Copy, Check } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { ApiError } from "@shared/api/api";
+import type { Agent, PaginatedResponse } from "@shared/types";
 
 export function DeviceRegistrationCodeDialog() {
     const [open, setOpen] = useState(false);
@@ -18,9 +18,7 @@ export function DeviceRegistrationCodeDialog() {
     const [generatedCode, setGeneratedCode] = useState<GeneratedCode | null>(null);
     const [copied, setCopied] = useState(false);
 
-    // Fetch agents for dropdown (without limit)
-    const { data: agentsData } = useAgents({ page: 1, per_page: 10000 });
-    const agents = agentsData?.data ?? [];
+    // Agents are loaded on-demand via AsyncSelect to support large datasets efficiently
 
     const { mutate: generateCode, isPending: isGenerating } = useGenerateDeviceCode();
 
@@ -84,16 +82,19 @@ export function DeviceRegistrationCodeDialog() {
                                 value={selectedAgentId}
                                 onChange={setSelectedAgentId}
                                 loadOptions={async (search) => {
-                                    const lowerSearch = search.toLowerCase();
-                                    return agents
-                                        .filter(agent => 
-                                            agent.name.toLowerCase().includes(lowerSearch) || 
-                                            (agent.employee_code && agent.employee_code.toLowerCase().includes(lowerSearch))
-                                        )
-                                        .map((agent) => ({
+                                    try {
+                                        const { api } = await import("@shared/api/api");
+                                        const response = await api.get<PaginatedResponse<Agent>>(
+                                            `/api/v1/admin/agents?page=1&per_page=20&search=${encodeURIComponent(search)}&sort_by=name`
+                                        );
+                                        return response.data.map((agent: Agent) => ({
                                             label: `${agent.name} (${agent.employee_code ?? "No code"})`,
                                             value: agent.id.toString(),
                                         }));
+                                    } catch (e) {
+                                        console.error(e);
+                                        return [];
+                                    }
                                 }}
                                 placeholder="Search agent..."
                                 label="Agent"
