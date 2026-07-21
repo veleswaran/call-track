@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useAgents } from "@features/agents/hooks/use-agents";
+import { AsyncSelect } from "@shared/components/async-select";
 import { useGenerateDeviceCode, GeneratedCode } from "@features/devices/hooks/use-devices";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@shared/components/ui/dialog";
 import { Button } from "@shared/components/ui/button";
@@ -17,8 +18,8 @@ export function DeviceRegistrationCodeDialog() {
     const [generatedCode, setGeneratedCode] = useState<GeneratedCode | null>(null);
     const [copied, setCopied] = useState(false);
 
-    // Fetch agents for dropdown
-    const { data: agentsData, isLoading: isLoadingAgents } = useAgents({ page: 1, per_page: 100 });
+    // Fetch agents for dropdown (without limit)
+    const { data: agentsData } = useAgents({ page: 1, per_page: 10000 });
     const agents = agentsData?.data ?? [];
 
     const { mutate: generateCode, isPending: isGenerating } = useGenerateDeviceCode();
@@ -79,22 +80,25 @@ export function DeviceRegistrationCodeDialog() {
                     <div className="space-y-4 py-4">
                         <div className="space-y-2">
                             <label className="text-sm font-medium">Select Agent</label>
-                            {isLoadingAgents ? (
-                                <div className="h-10 w-full animate-pulse rounded-md bg-zinc-100 dark:bg-zinc-800" />
-                            ) : (
-                                <select
-                                    className="flex h-10 w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-800 dark:bg-zinc-950 dark:ring-offset-zinc-950 dark:focus-visible:ring-zinc-300"
-                                    value={selectedAgentId}
-                                    onChange={(e) => setSelectedAgentId(e.target.value)}
-                                >
-                                    <option value="" disabled>Select an agent...</option>
-                                    {agents.map((agent) => (
-                                        <option key={agent.id} value={agent.id}>
-                                            {agent.name} ({agent.employee_code ?? "No code"})
-                                        </option>
-                                    ))}
-                                </select>
-                            )}
+                            <AsyncSelect
+                                value={selectedAgentId}
+                                onChange={setSelectedAgentId}
+                                loadOptions={async (search) => {
+                                    const lowerSearch = search.toLowerCase();
+                                    return agents
+                                        .filter(agent => 
+                                            agent.name.toLowerCase().includes(lowerSearch) || 
+                                            (agent.employee_code && agent.employee_code.toLowerCase().includes(lowerSearch))
+                                        )
+                                        .map((agent) => ({
+                                            label: `${agent.name} (${agent.employee_code ?? "No code"})`,
+                                            value: agent.id.toString(),
+                                        }));
+                                }}
+                                placeholder="Search agent..."
+                                label="Agent"
+                                className="w-full"
+                            />
                         </div>
 
                         <div className="space-y-2">

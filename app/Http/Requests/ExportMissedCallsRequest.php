@@ -47,6 +47,7 @@ class ExportMissedCallsRequest extends FormRequest
             'contact_filter' => ['nullable', 'string', 'in:all,internal,external'],
             'types' => ['nullable', 'array'],
             'types.*' => ['string', 'in:BUSINESS,PERSONAL,IGNORED'],
+            'sim_slot' => ['nullable', 'integer', 'min:0'],
         ];
     }
 

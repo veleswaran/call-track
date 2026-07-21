@@ -27,6 +27,7 @@ import { Agent, Team, PaginatedResponse } from "@shared/types"
 import { AsyncSelect } from "@shared/components/async-select"
 import { MultiSelectAsync } from "@shared/components/multi-select-async"
 import { useSettingsQuery } from "@features/settings/hooks/use-settings"
+import { useAuth } from "@features/auth/hooks/use-auth"
 
 export interface ReportFiltersData {
     dateRange: DateRange | undefined
@@ -35,6 +36,7 @@ export interface ReportFiltersData {
     agentIds?: string[] | null
     teamIds?: string[] | null
     contactFilter?: "all" | "internal" | "external" | null
+    simSlot?: number | null
 }
 
 interface ReportFiltersProps {
@@ -54,8 +56,11 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
     const [agentId, setAgentId] = useState<string>("")
     const [teamIds, setTeamIds] = useState<string[]>([])
     const [contactFilter, setContactFilter] = useState<string>("all")
+    const [simSlot, setSimSlot] = useState<string>("all")
     const [quickDate, setQuickDate] = useState<string>("today")
     const { data: settings } = useSettingsQuery()
+    const { user } = useAuth()
+    const isAdmin = user?.roles?.some(role => ['super-admin', 'admin'].includes(role));
     const handleQuickDateChange = (value: string) => {
         setQuickDate(value)
         const today = new Date()
@@ -101,7 +106,8 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
             type,
             agentIds: agentId && agentId !== "all" ? [agentId] : null,
             teamIds: teamIds.length > 0 ? teamIds : null,
-            contactFilter: contactFilter === "all" ? null : contactFilter as "internal" | "external"
+            contactFilter: contactFilter === "all" ? null : contactFilter as "internal" | "external",
+            simSlot: simSlot === "all" ? null : parseInt(simSlot, 10),
         })
     }
 
@@ -113,13 +119,15 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
         setAgentId("");
         setTeamIds([]);
         setContactFilter("all");
+        setSimSlot("all");
         onFilterChange({
             dateRange: defaultDateRange,
             outcome: "all",
             type: "BUSINESS",
             agentIds: null,
             teamIds: null,
-            contactFilter: null
+            contactFilter: null,
+            simSlot: null
         });
     }
 
@@ -242,7 +250,7 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
                 />
             )}
 
-            {settings?.enable_report_class_filter && (
+            {settings?.enable_report_class_filter && isAdmin && (
                 <Select value={type} onValueChange={setType}>
                     <SelectTrigger className="w-[150px]">
                         <SelectValue placeholder="All Classes" />
@@ -265,6 +273,19 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
                         <SelectItem value="all">All Records</SelectItem>
                         <SelectItem value="internal">Show Internal</SelectItem>
                         <SelectItem value="external">Exclude Internal</SelectItem>
+                    </SelectContent>
+                </Select>
+            )}
+
+            {settings?.enable_report_sim_filter && (
+                <Select value={simSlot} onValueChange={setSimSlot}>
+                    <SelectTrigger className="w-[150px]">
+                        <SelectValue placeholder="All SIMs" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All SIMs</SelectItem>
+                        <SelectItem value="0">SIM 1</SelectItem>
+                        <SelectItem value="1">SIM 2</SelectItem>
                     </SelectContent>
                 </Select>
             )}

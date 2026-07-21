@@ -47,6 +47,8 @@ const formSchema = z.object({
     enable_report_class_filter: z.boolean(),
     enable_call_log_outcome_filter: z.boolean(),
     enable_report_outcome_filter: z.boolean(),
+    enable_report_sim_filter: z.boolean(),
+    enable_missed_call_sim_filter: z.boolean(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -81,6 +83,8 @@ export function SettingsPage() {
             enable_report_class_filter: true,
             enable_call_log_outcome_filter: true,
             enable_report_outcome_filter: true,
+            enable_report_sim_filter: true,
+            enable_missed_call_sim_filter: true,
         },
     });
 
@@ -110,6 +114,8 @@ export function SettingsPage() {
                 enable_report_class_filter: !!settings.enable_report_class_filter,
                 enable_call_log_outcome_filter: !!settings.enable_call_log_outcome_filter,
                 enable_report_outcome_filter: !!settings.enable_report_outcome_filter,
+                enable_report_sim_filter: !!settings.enable_report_sim_filter,
+                enable_missed_call_sim_filter: !!settings.enable_missed_call_sim_filter,
             });
         }
     }, [settings, form]);
@@ -140,6 +146,8 @@ export function SettingsPage() {
                 enable_report_class_filter: values.enable_report_class_filter,
                 enable_call_log_outcome_filter: values.enable_call_log_outcome_filter,
                 enable_report_outcome_filter: values.enable_report_outcome_filter,
+                enable_report_sim_filter: values.enable_report_sim_filter,
+                enable_missed_call_sim_filter: values.enable_missed_call_sim_filter,
             }
         });
     }

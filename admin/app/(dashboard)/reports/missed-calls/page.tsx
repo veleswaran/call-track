@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { format } from "date-fns";
 import { Download } from "lucide-react";
 import { MissedCallsFilters } from "@features/missed-calls/components/missed-calls-filters";
@@ -13,6 +13,7 @@ import { exportMissedCallsCsv } from "@features/missed-calls/utils/export-missed
 import { CallLogPagination } from "@features/call-logs/components/call-log-pagination";
 import { Button } from "@shared/components/ui/button";
 import { getApiErrorMessage } from "@shared/utils/error";
+import { useAuth } from "@features/auth/hooks/use-auth";
 
 export default function MissedCallsInsightsPage() {
     const today = format(new Date(), "yyyy-MM-dd");
@@ -29,9 +30,22 @@ export default function MissedCallsInsightsPage() {
     const [isExporting, setIsExporting] = useState(false);
     const [exportError, setExportError] = useState<string | null>(null);
 
-    const canExport = Boolean(filters.date_from && filters.date_to);
+    const { user } = useAuth();
+    const isAdmin = user?.roles?.some(role => ['super-admin', 'admin'].includes(role));
 
-    const { data, isLoading } = useEscalationInsights(filters);
+    const activeFilters = useMemo(() => {
+        if (user && !isAdmin) {
+            return {
+                ...filters,
+                types: ["BUSINESS"],
+            };
+        }
+        return filters;
+    }, [filters, user, isAdmin]);
+
+    const canExport = Boolean(activeFilters.date_from && activeFilters.date_to);
+
+    const { data, isLoading } = useEscalationInsights(activeFilters);
 
     const handleExport = async () => {
         if (!canExport) {
@@ -42,7 +56,7 @@ export default function MissedCallsInsightsPage() {
         setExportError(null);
 
         try {
-            await exportMissedCallsCsv(filters);
+            await exportMissedCallsCsv(activeFilters);
         } catch (error) {
             setExportError(
                 getApiErrorMessage(error, "Failed to export missed calls")

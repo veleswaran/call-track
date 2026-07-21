@@ -19,6 +19,7 @@ class EscalationFilterDTO
         public ?array $allowed_agent_ids = null,
         public ?string $contact_filter = null,
         public ?array $types = null,
+        public ?int $sim_slot = null,
     ) {}
 
     public static function fromRequest(Request $request, ?array $allowed_agent_ids = null): self
@@ -33,6 +34,7 @@ class EscalationFilterDTO
             allowed_agent_ids: $allowed_agent_ids,
             contact_filter: $request->string('contact_filter')->toString() ?: null,
             types: $request->input('types'),
+            sim_slot: $request->filled('sim_slot') ? (int) $request->input('sim_slot') : null,
         );
     }
 }

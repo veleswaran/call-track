@@ -95,6 +95,12 @@ class GetEscalationInsightsAction
             });
         }
 
+        if ($dto->sim_slot !== null) {
+            $query->whereHas('callLog', function ($q) use ($dto) {
+                $q->where('sim_slot', $dto->sim_slot);
+            });
+        }
+
         return $query;
     }
 }

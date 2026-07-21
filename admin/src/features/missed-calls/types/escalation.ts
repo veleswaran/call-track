@@ -61,4 +61,5 @@ export interface GetEscalationsParams {
     per_page?: number;
     contact_filter?: "all" | "internal" | "external" | null;
     types?: string[] | null;
+    sim_slot?: number | null;
 }

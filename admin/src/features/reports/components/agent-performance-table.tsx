@@ -204,6 +204,11 @@ export function AgentPerformanceTable({
             params.append('outcomes[]', filters.outcome);
         }
 
+        // SIM Slot
+        if (filters.simSlot !== undefined && filters.simSlot !== null) {
+            params.append('sim_slot', String(filters.simSlot));
+        }
+
         // Team Filter
         if (filters.teamIds && filters.teamIds.length > 0) {
             filters.teamIds.forEach(id => params.append('team_ids[]', id));

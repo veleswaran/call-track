@@ -23,6 +23,7 @@ type ViewMode = 'table' | 'day-wise'
 export default function ReportsPage() {
     const { user } = useAuth()
     const isSuperAdmin = user?.roles?.includes("super-admin")
+    const isAdmin = user?.roles?.some(role => ['super-admin', 'admin'].includes(role));
 
     const [filters, setFilters] = useState<ReportFiltersData>({
         dateRange: {
@@ -57,10 +58,11 @@ export default function ReportsPage() {
         start_date: dateRangeFrom ? format(dateRangeFrom, 'yyyy-MM-dd') : undefined,
         end_date: dateRangeTo ? format(dateRangeTo, 'yyyy-MM-dd') : undefined,
         outcomes: filters.outcome !== 'all' ? [filters.outcome] : undefined,
-        types: filters.type === 'all' ? undefined : [filters.type],
+        types: (!user || isAdmin) ? (filters.type === 'all' ? undefined : [filters.type]) : ["BUSINESS"],
         agent_ids: filters.agentIds || undefined,
         team_ids: filters.teamIds || undefined,
         contact_filter: filters.contactFilter || undefined,
+        sim_slot: filters.simSlot !== undefined && filters.simSlot !== null ? filters.simSlot : undefined,
     }
 
     const performanceQueryParams = {

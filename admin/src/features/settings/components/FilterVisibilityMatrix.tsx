@@ -74,8 +74,8 @@ const ROWS: FilterRow[] = [
         label: "SIMs",
         keys: {
             callLogs: "enable_call_log_sim_filter",
-            missedCalls: null,
-            reports: null,
+            missedCalls: "enable_missed_call_sim_filter",
+            reports: "enable_report_sim_filter",
         },
     },
 ];

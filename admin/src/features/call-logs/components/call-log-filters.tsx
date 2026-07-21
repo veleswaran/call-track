@@ -34,8 +34,9 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
     const { user } = useAuth();
     const { data: settings } = useSettingsQuery();
 
+    const isAdmin = user?.roles?.some(role => ['super-admin', 'admin'].includes(role));
     // Allow if user is admin or can manage team
-    const canViewTeams = user?.roles?.includes('admin') || user?.roles?.includes('super-admin') || user?.permissions?.includes('manage team');
+    const canViewTeams = isAdmin || user?.permissions?.includes('manage team');
 
     const hasActiveFilters =
         filters.start_date ||
@@ -44,7 +45,9 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
         (filters.agents && filters.agents.length > 0) ||
         (filters.types && filters.types.length > 0) ||
         (filters.outcomes && filters.outcomes.length > 0) ||
-        (filters.classifications && filters.classifications.length > 0) ||
+        (filters.classifications && (
+            filters.classifications.length !== 1 || filters.classifications[0] !== "business"
+        )) ||
         (filters.team_ids && filters.team_ids.length > 0) ||
         filters.contact_filter;
 
@@ -53,6 +56,7 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
             page: 1,
             per_page: filters.per_page,
             search: filters.search,
+            classifications: ["business"],
         });
     };
 
@@ -230,7 +234,7 @@ export function CallLogFilters({ filters, onChange }: CallLogFiltersProps) {
                 </Select>
             )}
 
-            {settings?.enable_call_log_class_filter && (
+            {settings?.enable_call_log_class_filter && isAdmin && (
                 <Select
                     value={filters.classifications?.[0] ?? "all"}
                     onValueChange={(val) => updateArrayFilter("classifications", val)}
