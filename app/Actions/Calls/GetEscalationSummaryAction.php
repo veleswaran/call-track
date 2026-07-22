@@ -16,8 +16,18 @@ class GetEscalationSummaryAction
         $baseQuery = CallEscalation::query();
 
         // Use a DTO without status to get all statuses for the summary
-        $summaryDto = clone $dto;
-        $summaryDto->status = null;
+        $summaryDto = new EscalationFilterDTO(
+            team_ids: $dto->team_ids,
+            agent_id: $dto->agent_id,
+            status: null,
+            date_from: $dto->date_from,
+            date_to: $dto->date_to,
+            per_page: $dto->per_page,
+            allowed_agent_ids: $dto->allowed_agent_ids,
+            contact_filter: $dto->contact_filter,
+            types: $dto->types,
+            sim_slot: $dto->sim_slot,
+        );
 
         $baseQuery = $this->insightsAction->applyFilters($baseQuery, $summaryDto);
 

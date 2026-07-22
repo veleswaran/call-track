@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useAgents } from "@features/agents/hooks/use-agents";
+import { AsyncSelect } from "@shared/components/async-select";
 import { useGenerateDeviceCode, GeneratedCode } from "@features/devices/hooks/use-devices";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@shared/components/ui/dialog";
 import { Button } from "@shared/components/ui/button";
@@ -9,6 +9,7 @@ import { Loader2, Copy, Check } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { ApiError } from "@shared/api/api";
+import type { Agent, PaginatedResponse } from "@shared/types";
 
 export function DeviceRegistrationCodeDialog() {
     const [open, setOpen] = useState(false);
@@ -17,9 +18,7 @@ export function DeviceRegistrationCodeDialog() {
     const [generatedCode, setGeneratedCode] = useState<GeneratedCode | null>(null);
     const [copied, setCopied] = useState(false);
 
-    // Fetch agents for dropdown
-    const { data: agentsData, isLoading: isLoadingAgents } = useAgents({ page: 1, per_page: 100 });
-    const agents = agentsData?.data ?? [];
+    // Agents are loaded on-demand via AsyncSelect to support large datasets efficiently
 
     const { mutate: generateCode, isPending: isGenerating } = useGenerateDeviceCode();
 
@@ -79,22 +78,28 @@ export function DeviceRegistrationCodeDialog() {
                     <div className="space-y-4 py-4">
                         <div className="space-y-2">
                             <label className="text-sm font-medium">Select Agent</label>
-                            {isLoadingAgents ? (
-                                <div className="h-10 w-full animate-pulse rounded-md bg-zinc-100 dark:bg-zinc-800" />
-                            ) : (
-                                <select
-                                    className="flex h-10 w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-800 dark:bg-zinc-950 dark:ring-offset-zinc-950 dark:focus-visible:ring-zinc-300"
-                                    value={selectedAgentId}
-                                    onChange={(e) => setSelectedAgentId(e.target.value)}
-                                >
-                                    <option value="" disabled>Select an agent...</option>
-                                    {agents.map((agent) => (
-                                        <option key={agent.id} value={agent.id}>
-                                            {agent.name} ({agent.employee_code ?? "No code"})
-                                        </option>
-                                    ))}
-                                </select>
-                            )}
+                            <AsyncSelect
+                                value={selectedAgentId}
+                                onChange={setSelectedAgentId}
+                                loadOptions={async (search) => {
+                                    try {
+                                        const { api } = await import("@shared/api/api");
+                                        const response = await api.get<PaginatedResponse<Agent>>(
+                                            `/api/v1/admin/agents?page=1&per_page=20&search=${encodeURIComponent(search)}&sort_by=name`
+                                        );
+                                        return response.data.map((agent: Agent) => ({
+                                            label: `${agent.name} (${agent.employee_code ?? "No code"})`,
+                                            value: agent.id.toString(),
+                                        }));
+                                    } catch (e) {
+                                        console.error(e);
+                                        return [];
+                                    }
+                                }}
+                                placeholder="Search agent..."
+                                label="Agent"
+                                className="w-full"
+                            />
                         </div>
 
                         <div className="space-y-2">

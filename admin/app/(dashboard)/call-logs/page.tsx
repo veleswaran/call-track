@@ -16,12 +16,13 @@ import { exportCallLogsCsv } from "@features/call-logs/utils/export-call-logs-cs
 import { CallActions } from "@features/call-logs/components/call-actions";
 import { formatDuration } from "@shared/utils/time";
 import { formatClassificationMetadata } from "@features/call-logs/utils/format-metadata";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { CallLogSearch } from "@features/call-logs/components/call-log-search";
 import { CallLogFilters } from "@features/call-logs/components/call-log-filters";
 import { CallLogPagination } from "@features/call-logs/components/call-log-pagination";
 import { useSearchParams } from "next/navigation";
 import { getApiErrorMessage } from "@shared/utils/error";
+import { useAuth } from "@features/auth/hooks/use-auth";
 
 /**
  * Call Logs page - displays paginated call log list using API hook
@@ -38,7 +39,9 @@ export default function CallLogsPage() {
         end_date: searchParams.get("end_date") || undefined,
         types: searchParams.getAll("types[]") as ("incoming" | "outgoing" | "missed" | "rejected" | "blocked" | "unknown")[] | undefined,
         outcomes: searchParams.getAll("outcomes[]") as ("Connected" | "Missed" | "No Answer")[] | undefined,
-        classifications: searchParams.getAll("classifications[]") as ("business" | "personal" | "ignored")[] | undefined,
+        classifications: searchParams.has("classifications[]")
+            ? (searchParams.getAll("classifications[]").filter(Boolean) as ("business" | "personal" | "ignored")[])
+            : ["business"],
         agents: searchParams.getAll("agents[]").map(Number).filter(n => !isNaN(n)),
         team_ids: searchParams.getAll("team_ids[]").map(Number).filter(n => !isNaN(n)),
     };
@@ -47,7 +50,9 @@ export default function CallLogsPage() {
     // However, getAll returns [] if not found. Let's clean them up.
     if (initialFilters.types?.length === 0) delete initialFilters.types;
     if (initialFilters.outcomes?.length === 0) delete initialFilters.outcomes;
-    if (initialFilters.classifications?.length === 0) delete initialFilters.classifications;
+    if (searchParams.has("classifications[]") && initialFilters.classifications?.length === 0) {
+        delete initialFilters.classifications;
+    }
     if (initialFilters.agents?.length === 0) delete initialFilters.agents;
     if (initialFilters.team_ids?.length === 0) delete initialFilters.team_ids;
 
@@ -55,9 +60,22 @@ export default function CallLogsPage() {
     const [isExporting, setIsExporting] = useState(false);
     const [exportError, setExportError] = useState<string | null>(null);
 
-    const canExport = Boolean(filters.start_date && filters.end_date);
+    const { user } = useAuth();
+    const isAdmin = user?.roles?.some(role => ['super-admin', 'admin'].includes(role));
 
-    const { data, isLoading, isError } = useCallLogs(filters);
+    const activeFilters = useMemo(() => {
+        if (!user || !isAdmin) {
+            return {
+                ...filters,
+                classifications: ["business"] as ("business" | "personal" | "ignored")[],
+            };
+        }
+        return filters;
+    }, [filters, user, isAdmin]);
+
+    const canExport = Boolean(activeFilters.start_date && activeFilters.end_date);
+
+    const { data, isLoading, isError } = useCallLogs(activeFilters);
 
     const handleExport = async () => {
         if (!canExport) {
@@ -68,7 +86,7 @@ export default function CallLogsPage() {
         setExportError(null);
 
         try {
-            await exportCallLogsCsv(filters);
+            await exportCallLogsCsv(activeFilters);
         } catch (error) {
             setExportError(
                 getApiErrorMessage(error, "Failed to export call logs")

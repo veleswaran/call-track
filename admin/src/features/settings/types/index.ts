@@ -23,6 +23,8 @@ export interface SettingsData {
     enable_report_class_filter: boolean;
     enable_call_log_outcome_filter: boolean;
     enable_report_outcome_filter: boolean;
+    enable_report_sim_filter: boolean;
+    enable_missed_call_sim_filter: boolean;
 }
 
 export interface SettingsUpdatePayload {

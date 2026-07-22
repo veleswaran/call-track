@@ -112,6 +112,10 @@ final class GetReportChartsAction
             }
         }
 
+        if ($filters->simSlot !== null) {
+            $query->where('call_logs.sim_slot', $filters->simSlot);
+        }
+
         return $query;
     }
 

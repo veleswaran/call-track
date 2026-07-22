@@ -29,6 +29,9 @@ export const getEscalations = async (params: GetEscalationsParams): Promise<Esca
     if (params.types && params.types.length > 0) {
         params.types.forEach(type => searchParams.append("types[]", type));
     }
+    if (params.sim_slot !== undefined && params.sim_slot !== null) {
+        searchParams.append("sim_slot", params.sim_slot.toString());
+    }
     const queryString = searchParams.toString();
     const endpoint = `/api/v1/admin/call-logs/escalations${queryString ? `?${queryString}` : ""}`;
 

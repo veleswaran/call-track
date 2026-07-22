@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import DevicesPage from "../../../../app/(dashboard)/devices/page";
 import { describe, it, expect, vi } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useDevices } from "@features/devices/hooks/use-devices";
 
 // Mock hooks
 const mockUseDevices = vi.fn();

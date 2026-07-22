@@ -26,6 +26,7 @@ import { EscalationStatus, GetEscalationsParams } from "../types/escalation";
 import { AsyncSelect } from "@shared/components/async-select";
 import { MultiSelectAsync } from "@shared/components/multi-select-async";
 import { useSettingsQuery } from "@features/settings/hooks/use-settings";
+import { useAuth } from "@features/auth/hooks/use-auth";
 
 interface MissedCallsFiltersProps {
     onFilterChange: (filters: Partial<GetEscalationsParams>) => void;
@@ -43,8 +44,11 @@ export function MissedCallsFilters({ onFilterChange }: MissedCallsFiltersProps) 
     const [teamIds, setTeamIds] = useState<string[]>([]);
     const [type, setType] = useState<string>("BUSINESS");
     const [contactFilter, setContactFilter] = useState<string>("all");
+    const [simSlot, setSimSlot] = useState<string>("all");
     const [quickDate, setQuickDate] = useState<string>("today");
     const { data: settings } = useSettingsQuery();
+    const { user } = useAuth();
+    const isAdmin = user?.roles?.some(role => ['super-admin', 'admin'].includes(role));
 
     const handleQuickDateChange = (value: string) => {
         setQuickDate(value);
@@ -91,6 +95,7 @@ export function MissedCallsFilters({ onFilterChange }: MissedCallsFiltersProps) 
             contact_filter: contactFilter === "all" ? null : contactFilter as "internal" | "external",
             date_from: date?.from ? format(date.from, "yyyy-MM-dd") : null,
             date_to: date?.to ? format(date.to, "yyyy-MM-dd") : null,
+            sim_slot: simSlot === "all" ? null : parseInt(simSlot, 10),
         });
     };
 
@@ -100,6 +105,7 @@ export function MissedCallsFilters({ onFilterChange }: MissedCallsFiltersProps) 
         setTeamIds([]);
         setType("BUSINESS");
         setContactFilter("all");
+        setSimSlot("all");
         setDate(defaultDateRange);
         setQuickDate("today");
         onFilterChange({
@@ -110,6 +116,7 @@ export function MissedCallsFilters({ onFilterChange }: MissedCallsFiltersProps) 
             contact_filter: "all",
             date_from: format(defaultDateRange.from!, "yyyy-MM-dd"),
             date_to: format(defaultDateRange.to!, "yyyy-MM-dd"),
+            sim_slot: null,
         });
     };
 
@@ -230,7 +237,7 @@ export function MissedCallsFilters({ onFilterChange }: MissedCallsFiltersProps) 
                 />
             )}
 
-            {settings?.enable_missed_call_class_filter && (
+            {settings?.enable_missed_call_class_filter && isAdmin && (
                 <Select value={type} onValueChange={setType}>
                     <SelectTrigger className="w-[150px]">
                         <SelectValue placeholder="All Classes" />
@@ -253,6 +260,19 @@ export function MissedCallsFilters({ onFilterChange }: MissedCallsFiltersProps) 
                         <SelectItem value="all">All Records</SelectItem>
                         <SelectItem value="internal">Show Internal</SelectItem>
                         <SelectItem value="external">Exclude Internal</SelectItem>
+                    </SelectContent>
+                </Select>
+            )}
+
+            {settings?.enable_missed_call_sim_filter && (
+                <Select value={simSlot} onValueChange={setSimSlot}>
+                    <SelectTrigger className="w-[150px]">
+                        <SelectValue placeholder="All SIMs" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All SIMs</SelectItem>
+                        <SelectItem value="0">SIM 1</SelectItem>
+                        <SelectItem value="1">SIM 2</SelectItem>
                     </SelectContent>
                 </Select>
             )}

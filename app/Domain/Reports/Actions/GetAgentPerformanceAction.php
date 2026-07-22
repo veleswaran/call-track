@@ -114,6 +114,10 @@ final class GetAgentPerformanceAction
             }
         }
 
+        if ($filters->simSlot !== null) {
+            $query->where('cl.sim_slot', $filters->simSlot);
+        }
+
         // Group by Agent
         $stats = $query->select([
             'a.id',

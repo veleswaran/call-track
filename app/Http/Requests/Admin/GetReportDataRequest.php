@@ -34,6 +34,7 @@ final class GetReportDataRequest extends FormRequest
             'types.*' => ['string', 'in:BUSINESS,PERSONAL,IGNORED'], // Based on ReportFilterDTO logic
             'search' => ['nullable', 'string', 'max:255'],
             'contact_filter' => ['nullable', 'string', 'in:all,internal,external'],
+            'sim_slot' => ['nullable', 'integer', 'min:0'],
             'page' => ['nullable', 'integer', 'min:1'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
             'sort_by' => ['nullable', 'string', 'in:agent,first_call_time,total_calls,connected,missed,total_duration,avg_duration'],

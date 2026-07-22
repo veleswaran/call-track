@@ -18,6 +18,14 @@ vi.mock("@features/teams/api/teams-api", () => ({
     },
 }))
 
+// Mock Auth
+const mockUseAuth = vi.fn().mockReturnValue({
+    user: { roles: ["admin"] }
+});
+vi.mock("@features/auth/hooks/use-auth", () => ({
+    useAuth: () => mockUseAuth(),
+}));
+
 interface MockSelectProps {
     children: React.ReactNode;
     onValueChange: (value: string) => void;
@@ -37,8 +45,8 @@ vi.mock("@shared/components/ui/select", () => ({
     ),
     SelectContent: ({ children }: { children: React.ReactNode }) => <>{children}</>,
     SelectItem: ({ children, value }: { children: React.ReactNode; value: string }) => <option value={value}>{children}</option>,
-    SelectTrigger: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-    SelectValue: ({ placeholder }: { placeholder: string }) => <span>{placeholder}</span>,
+    SelectTrigger: () => null,
+    SelectValue: () => null,
 }))
 
 interface AsyncSelectMockProps {
@@ -120,6 +128,7 @@ describe("ReportFilters", () => {
                         enable_report_class_filter: true,
                         enable_report_outcome_filter: true,
                         enable_report_internal_filter: true,
+                        enable_report_sim_filter: true,
                     }
                 })
             }
@@ -136,7 +145,7 @@ describe("ReportFilters", () => {
         await screen.findByTestId("async-select-Team")
         await screen.findByTestId("async-select-Agent")
 
-        expect(screen.getAllByTestId("mock-select")).toHaveLength(4)
+        expect(screen.getAllByTestId("mock-select")).toHaveLength(5)
         expect(screen.getByTestId("async-select-Team")).toBeInTheDocument()
         expect(screen.getByTestId("async-select-Agent")).toBeInTheDocument()
     })
@@ -193,9 +202,11 @@ describe("ReportFilters", () => {
         const selects = screen.getAllByTestId("mock-select")
         const outcomeSelect = selects[1]
         const classSelect = selects[2]
+        const simSelect = selects[4]
 
         fireEvent.change(outcomeSelect, { target: { value: "Connected" } })
         fireEvent.change(classSelect, { target: { value: "PERSONAL" } })
+        fireEvent.change(simSelect, { target: { value: "0" } })
 
         fireEvent.change(screen.getByTestId("input-Team"), { target: { value: "TeamX" } })
         fireEvent.change(screen.getByTestId("input-Agent"), { target: { value: "AgentY" } })
@@ -206,7 +217,8 @@ describe("ReportFilters", () => {
             outcome: "Connected",
             type: "PERSONAL",
             teamIds: ["TeamX"],
-            agentIds: ["AgentY"]
+            agentIds: ["AgentY"],
+            simSlot: 0
         }))
     })
 })

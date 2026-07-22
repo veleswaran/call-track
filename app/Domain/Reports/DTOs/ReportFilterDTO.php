@@ -20,6 +20,7 @@ final class ReportFilterDTO
         /** @var int[]|null Null = full access, array = restricted agent IDs */
         public readonly ?array $allowedAgentIds = null,
         public readonly ?string $contactFilter = null,
+        public readonly ?int $simSlot = null,
         public readonly ?string $sortBy = null,
         public readonly ?string $sortOrder = null,
         public readonly int $perPage = 15,
@@ -40,6 +41,7 @@ final class ReportFilterDTO
             search: $data['search'] ?? null,
             allowedAgentIds: $data['allowed_agent_ids'] ?? null,
             contactFilter: $data['contact_filter'] ?? null,
+            simSlot: isset($data['sim_slot']) ? (int) $data['sim_slot'] : null,
             sortBy: $data['sort_by'] ?? null,
             sortOrder: $data['sort_order'] ?? null,
             perPage: (int) ($data['per_page'] ?? 15),

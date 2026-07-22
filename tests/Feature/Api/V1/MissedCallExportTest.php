@@ -172,4 +172,47 @@ class MissedCallExportTest extends TestCase
 
         $response->assertUnauthorized();
     }
+
+    public function test_export_respects_sim_slot_filter(): void
+    {
+        $date = Carbon::parse('2026-03-10');
+
+        $sim0Call = CallLog::factory()->create([
+            'direction' => 'MISSED',
+            'timestamp' => $date,
+            'sim_slot' => 0,
+            'phone_number' => '+919999999990',
+        ]);
+
+        $sim1Call = CallLog::factory()->create([
+            'direction' => 'MISSED',
+            'timestamp' => $date,
+            'sim_slot' => 1,
+            'phone_number' => '+919999999991',
+        ]);
+
+        CallEscalation::create([
+            'call_log_id' => $sim0Call->id,
+            'status' => 'pending',
+            'response_due_at' => $date->copy()->addHour(),
+        ]);
+
+        CallEscalation::create([
+            'call_log_id' => $sim1Call->id,
+            'status' => 'pending',
+            'response_due_at' => $date->copy()->addHour(),
+        ]);
+
+        $response = $this->get(
+            '/api/v1/admin/call-logs/escalations/export?date_from='.$date->toDateString()
+            .'&date_to='.$date->toDateString()
+            .'&sim_slot=0'
+        );
+
+        $response->assertOk();
+
+        $content = $response->streamedContent();
+        $this->assertStringContainsString('+919999999990', $content);
+        $this->assertStringNotContainsString('+919999999991', $content);
+    }
 }

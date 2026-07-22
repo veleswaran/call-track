@@ -9,16 +9,17 @@ use Illuminate\Http\Request;
 class EscalationFilterDTO
 {
     public function __construct(
-        public array $team_ids = [],
-        public ?int $agent_id = null,
-        public string|array|null $status = null, // pending, unattended, resolved
-        public ?string $date_from = null,
-        public ?string $date_to = null,
-        public int $per_page = 20,
+        public readonly array $team_ids = [],
+        public readonly ?int $agent_id = null,
+        public readonly string|array|null $status = null, // pending, unattended, resolved
+        public readonly ?string $date_from = null,
+        public readonly ?string $date_to = null,
+        public readonly int $per_page = 20,
         /** @var int[]|null Null = full access, array = restricted agent IDs */
-        public ?array $allowed_agent_ids = null,
-        public ?string $contact_filter = null,
-        public ?array $types = null,
+        public readonly ?array $allowed_agent_ids = null,
+        public readonly ?string $contact_filter = null,
+        public readonly ?array $types = null,
+        public readonly ?int $sim_slot = null,
     ) {}
 
     public static function fromRequest(Request $request, ?array $allowed_agent_ids = null): self
@@ -33,6 +34,7 @@ class EscalationFilterDTO
             allowed_agent_ids: $allowed_agent_ids,
             contact_filter: $request->string('contact_filter')->toString() ?: null,
             types: $request->input('types'),
+            sim_slot: $request->filled('sim_slot') ? (int) $request->input('sim_slot') : null,
         );
     }
 }

@@ -187,6 +187,10 @@ final class GetReportMetricsAction
                 $query->whereNotIn('call_logs.phone_number_hash', $contactHashes);
             }
         }
+
+        if ($filters->simSlot !== null) {
+            $query->where('call_logs.sim_slot', $filters->simSlot);
+        }
     }
 
     private function formatDuration(int $seconds): string

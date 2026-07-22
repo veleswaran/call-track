@@ -71,6 +71,7 @@ final class ReportController extends Controller
             search: $base->search,
             allowedAgentIds: $allowedAgentIds,
             contactFilter: $base->contactFilter,
+            simSlot: $base->simSlot,
             sortBy: $base->sortBy,
             sortOrder: $base->sortOrder,
             perPage: $base->perPage,

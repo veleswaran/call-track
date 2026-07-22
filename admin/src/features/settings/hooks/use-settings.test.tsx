@@ -65,8 +65,11 @@ describe("use-settings hooks", () => {
                 enable_report_team_filter: true,
                 enable_call_log_class_filter: true,
                 enable_report_class_filter: true,
+                enable_missed_call_class_filter: true,
                 enable_call_log_outcome_filter: true,
                 enable_report_outcome_filter: true,
+                enable_report_sim_filter: true,
+                enable_missed_call_sim_filter: true,
             };
 
             vi.mocked(settingsApi.getSettings).mockResolvedValueOnce({ data: mockData });

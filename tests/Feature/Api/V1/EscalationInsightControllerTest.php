@@ -92,4 +92,55 @@ class EscalationInsightControllerTest extends TestCase
 
         $response->assertStatus(403);
     }
+
+    /**
+     * Test that we can filter escalations by sim_slot.
+     */
+    public function test_it_can_filter_by_sim_slot(): void
+    {
+        $user = User::factory()->create();
+        $user->assignRole('admin');
+
+        $date = \Carbon\Carbon::parse('2026-03-10');
+
+        $sim0Call = \App\Domain\Calls\Models\CallLog::factory()->create([
+            'direction' => 'MISSED',
+            'timestamp' => $date,
+            'sim_slot' => 0,
+        ]);
+
+        $sim1Call = \App\Domain\Calls\Models\CallLog::factory()->create([
+            'direction' => 'MISSED',
+            'timestamp' => $date,
+            'sim_slot' => 1,
+        ]);
+
+        \App\Domain\Calls\Models\CallEscalation::create([
+            'call_log_id' => $sim0Call->id,
+            'status' => 'pending',
+            'response_due_at' => $date->copy()->addHour(),
+        ]);
+
+        \App\Domain\Calls\Models\CallEscalation::create([
+            'call_log_id' => $sim1Call->id,
+            'status' => 'pending',
+            'response_due_at' => $date->copy()->addHour(),
+        ]);
+
+        // Query SIM 0
+        $responseSim0 = $this->actingAs($user, 'sanctum')
+            ->getJson('/api/v1/admin/call-logs/escalations?date_from='.$date->toDateString().'&date_to='.$date->toDateString().'&sim_slot=0');
+
+        $responseSim0->assertStatus(200)
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.call_log.id', $sim0Call->id);
+
+        // Query SIM 1
+        $responseSim1 = $this->actingAs($user, 'sanctum')
+            ->getJson('/api/v1/admin/call-logs/escalations?date_from='.$date->toDateString().'&date_to='.$date->toDateString().'&sim_slot=1');
+
+        $responseSim1->assertStatus(200)
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.call_log.id', $sim1Call->id);
+    }
 }

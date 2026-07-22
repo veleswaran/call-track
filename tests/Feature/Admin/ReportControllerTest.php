@@ -64,6 +64,38 @@ class ReportControllerTest extends TestCase
             ->assertJsonPath('data.2.percentage', 100);
     }
 
+    public function test_metrics_endpoint_filters_by_sim_slot(): void
+    {
+        $today = Carbon::now();
+        // Call on SIM 0
+        CallLog::factory()->create([
+            'device_id' => $this->device->id,
+            'timestamp' => $today,
+            'duration' => 60,
+            'direction' => 'INCOMING',
+            'sim_slot' => 0,
+        ]);
+
+        // Call on SIM 1
+        CallLog::factory()->create([
+            'device_id' => $this->device->id,
+            'timestamp' => $today,
+            'duration' => 120,
+            'direction' => 'INCOMING',
+            'sim_slot' => 1,
+        ]);
+
+        // Filter SIM 0
+        $responseSim0 = $this->actingAs($this->admin)->getJson('/api/v1/admin/reports/metrics?sim_slot=0');
+        $responseSim0->assertOk()
+            ->assertJsonPath('data.1.value', '1'); // Total calls for SIM 0
+
+        // Filter SIM 1
+        $responseSim1 = $this->actingAs($this->admin)->getJson('/api/v1/admin/reports/metrics?sim_slot=1');
+        $responseSim1->assertOk()
+            ->assertJsonPath('data.1.value', '1'); // Total calls for SIM 1
+    }
+
     public function test_charts_endpoint_returns_structure(): void
     {
         $response = $this->actingAs($this->admin)->getJson('/api/v1/admin/reports/charts');

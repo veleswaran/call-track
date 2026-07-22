@@ -10,7 +10,13 @@ vi.mock("@shared/api/api", () => ({
         get: vi.fn(),
     },
 }))
-
+// Mock Auth
+const mockUseAuth = vi.fn().mockReturnValue({
+    user: { roles: ["admin"] }
+});
+vi.mock("@features/auth/hooks/use-auth", () => ({
+    useAuth: () => mockUseAuth(),
+}));
 interface MockSelectProps {
     children: React.ReactNode;
     onValueChange: (value: string) => void;
@@ -30,8 +36,8 @@ vi.mock("@shared/components/ui/select", () => ({
     ),
     SelectContent: ({ children }: { children: React.ReactNode }) => <>{children}</>,
     SelectItem: ({ children, value }: { children: React.ReactNode; value: string }) => <option value={value}>{children}</option>,
-    SelectTrigger: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-    SelectValue: ({ placeholder }: { placeholder: string }) => <span>{placeholder}</span>,
+    SelectTrigger: () => null,
+    SelectValue: () => null,
 }))
 
 interface MockAsyncSelectProps {
@@ -95,6 +101,7 @@ describe("MissedCallsFilters", () => {
                         enable_missed_call_team_filter: true,
                         enable_missed_call_agent_filter: true,
                         enable_missed_call_internal_filter: true,
+                        enable_missed_call_sim_filter: true,
                     }
                 })
             }
@@ -118,7 +125,7 @@ describe("MissedCallsFilters", () => {
         await screen.findByTestId("async-select-Team")
         await screen.findByTestId("async-select-Agent")
 
-        expect(screen.getAllByTestId("mock-select")).toHaveLength(3)
+        expect(screen.getAllByTestId("mock-select")).toHaveLength(4)
         expect(screen.getByTestId("async-select-Team")).toBeInTheDocument()
         expect(screen.getByTestId("async-select-Agent")).toBeInTheDocument()
     })
@@ -134,7 +141,9 @@ describe("MissedCallsFilters", () => {
         // Change status
         const statusSelects = screen.getAllByTestId("mock-select")
         const statusSelect = statusSelects[1] // Second select is status
+        const simSelect = statusSelects[3] // Fourth select is sim
         fireEvent.change(statusSelect, { target: { value: "pending" } })
+        fireEvent.change(simSelect, { target: { value: "1" } })
 
         // Change Team
         const teamInput = screen.getByTestId("input-Team")
@@ -151,7 +160,8 @@ describe("MissedCallsFilters", () => {
         expect(onFilterChange).toHaveBeenCalledWith(expect.objectContaining({
             status: "pending",
             team_ids: [5],
-            agent_id: "10"
+            agent_id: "10",
+            sim_slot: 1
         }))
     })
 

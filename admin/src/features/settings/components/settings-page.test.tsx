@@ -43,8 +43,11 @@ describe("SettingsPage", () => {
         enable_report_team_filter: false,
         enable_call_log_class_filter: false,
         enable_report_class_filter: false,
+        enable_missed_call_class_filter: false,
         enable_call_log_outcome_filter: false,
         enable_report_outcome_filter: false,
+        enable_report_sim_filter: false,
+        enable_missed_call_sim_filter: false,
     };
 
     beforeEach(() => {

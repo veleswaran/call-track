@@ -241,6 +241,10 @@ final class GetDayWiseReportAction
                 $query->whereNotIn('cl.phone_number_hash', $contactHashes);
             }
         }
+
+        if ($filters->simSlot !== null) {
+            $query->where('cl.sim_slot', $filters->simSlot);
+        }
     }
 
     private function resolveEmployeeCode(?string $employeeCode, int $agentId): string

@@ -91,7 +91,9 @@ export function AsyncSelect({
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[200px] p-0">
+            <PopoverContent 
+                className="w-[var(--radix-popover-trigger-width)] p-0 pointer-events-auto"
+            >
                 <div className="flex items-center border-b px-3">
                     <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
                     <Input
@@ -103,7 +105,7 @@ export function AsyncSelect({
                         )}
                     />
                 </div>
-                <div className="max-h-[300px] overflow-y-auto p-1">
+                <div className="max-h-[300px] overflow-y-auto overscroll-contain p-1" onWheel={(e) => e.stopPropagation()}>
                     {loading && (
                         <div className="py-6 text-center text-sm">
                             <Loader2 className="mx-auto h-4 w-4 animate-spin" />
