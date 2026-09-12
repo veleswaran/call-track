@@ -43,6 +43,10 @@ export const usersApi = {
         await api.put(`/api/v1/admin/users/${id}/role`, { role });
     },
 
+    resetPassword: async (id: number, password: string, password_confirmation: string) => {
+        await api.put(`/api/v1/admin/users/${id}/reset-password`, { password, password_confirmation });
+    },
+
     unlinkUserFromAgent: async (agentId: number, userId: number) => {
         await api.post(`/api/v1/admin/agents/${agentId}/unlink-user`, { user_id: userId });
     },

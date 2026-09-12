@@ -75,6 +75,7 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('users', \App\Http\Controllers\Api\Admin\AdminUserController::class);
         Route::put('/users/{id}/role', [\App\Http\Controllers\Api\Admin\UserRoleController::class, 'update']);
         Route::post('/users/{id}/reset-2fa', [\App\Http\Controllers\Api\Admin\AdminUserController::class, 'resetTwoFactor']);
+        Route::put('/users/{id}/reset-password', [\App\Http\Controllers\Api\Admin\AdminUserController::class, 'resetPassword']);
 
         // Team Management
         Route::get('teams', [\App\Http\Controllers\Api\Teams\TeamController::class, 'index']);

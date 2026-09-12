@@ -25,6 +25,7 @@ class UserManagementService implements UserManagementServiceInterface
         protected \App\Domain\Users\Actions\GetPaginatedUsersAction $getPaginatedUsersAction,
         protected \App\Domain\Users\Actions\DeleteUserAction $deleteUserAction,
         protected \App\Domain\Users\Actions\ResetTwoFactorAction $resetTwoFactorAction,
+        protected \App\Domain\Users\Actions\ResetUserPasswordAction $resetUserPasswordAction,
         protected LinkUserToAgentAction $linkUserToAgentAction,
         protected UnlinkUserFromAgentAction $unlinkUserFromAgentAction,
         protected AgentManagementServiceInterface $agentService,
@@ -50,6 +51,11 @@ class UserManagementService implements UserManagementServiceInterface
     public function resetTwoFactor(int $userId): void
     {
         $this->resetTwoFactorAction->execute($userId);
+    }
+
+    public function resetPassword(int $userId, string $password): void
+    {
+        $this->resetUserPasswordAction->execute($userId, $password);
     }
 
     public function linkUserToAgent(User $user, Agent $agent): void

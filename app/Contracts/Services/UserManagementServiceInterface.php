@@ -33,6 +33,11 @@ interface UserManagementServiceInterface
     public function resetTwoFactor(int $userId): void;
 
     /**
+     * Reset a user's password.
+     */
+    public function resetPassword(int $userId, string $password): void;
+
+    /**
      * Link a User to an Agent profile.
      */
     public function linkUserToAgent(User $user, Agent $agent): void;

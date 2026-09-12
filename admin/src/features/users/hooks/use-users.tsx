@@ -73,6 +73,19 @@ export function useUpdateUserRole() {
     });
 }
 
+export function useResetUserPassword() {
+    return useMutation({
+        mutationFn: ({ id, password, password_confirmation }: { id: number; password: string; password_confirmation: string }) =>
+            usersApi.resetPassword(id, password, password_confirmation),
+        onSuccess: () => {
+            toast.success("Password reset successfully");
+        },
+        onError: (error: ApiError) => {
+            toast.error(error.message || "Failed to reset password");
+        },
+    });
+}
+
 export function useUnlinkUserFromAgent() {
     const queryClient = useQueryClient();
 

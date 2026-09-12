@@ -74,6 +74,14 @@ class UserPolicy
     }
 
     /**
+     * Determine whether the user can reset the target user's password.
+     */
+    public function resetPassword(User $user, User $targetUser): bool
+    {
+        return $user->hasRole('super-admin');
+    }
+
+    /**
      * Determine if the authenticated user can change the target user's role.
      */
     public function updateRole(User $user, User $targetUser, string $newRole): bool

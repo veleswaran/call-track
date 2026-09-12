@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ChangeRoleDialog } from "./change-role-dialog";
+import { ResetPasswordDialog } from "./reset-password-dialog";
 
 import {
     DropdownMenu,
@@ -12,7 +13,7 @@ import {
     DropdownMenuTrigger,
 } from "@shared/components/ui/dropdown-menu";
 import { Button } from "@shared/components/ui/button";
-import { MoreHorizontal, Trash, ShieldAlert, Unlink } from "lucide-react";
+import { MoreHorizontal, Trash, ShieldAlert, Unlink, KeyRound } from "lucide-react";
 import { useDeleteUser, useResetTwoFactor, useUnlinkUserFromAgent } from "../hooks/use-users";
 import { User } from "@shared/types";
 import { useAuth } from "@features/auth/hooks/use-auth";
@@ -28,6 +29,7 @@ export function UserActions({ user }: UserActionsProps) {
     const { mutate: reset2FA, isPending: isResetting } = useResetTwoFactor();
     const { mutate: unlinkUser, isPending: isUnlinking } = useUnlinkUserFromAgent();
     const [showRoleDialog, setShowRoleDialog] = useState(false);
+    const [showPasswordDialog, setShowPasswordDialog] = useState(false);
     const [confirmAction, setConfirmAction] = useState<{
         type: "delete" | "reset2fa" | "unlink";
         isOpen: boolean;
@@ -94,6 +96,16 @@ export function UserActions({ user }: UserActionsProps) {
                             </DropdownMenuItem>
                         )}
 
+                    {/* Password Reset: Super Admin only */}
+                    {!isSelf && currentUser?.roles?.includes("super-admin") && (
+                        <DropdownMenuItem
+                            onSelect={() => setShowPasswordDialog(true)}
+                        >
+                            <KeyRound className="mr-2 h-4 w-4" />
+                            Reset Password
+                        </DropdownMenuItem>
+                    )}
+
                     {/* Unlink User from Agent Logic */}
                     {canUnlinkAgent && (
                         <DropdownMenuItem
@@ -126,6 +138,12 @@ export function UserActions({ user }: UserActionsProps) {
                 user={user}
                 open={showRoleDialog}
                 onOpenChange={setShowRoleDialog}
+            />
+
+            <ResetPasswordDialog
+                user={user}
+                open={showPasswordDialog}
+                onOpenChange={setShowPasswordDialog}
             />
 
             <ConfirmDialog

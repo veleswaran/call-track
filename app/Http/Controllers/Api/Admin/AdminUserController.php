@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Contracts\Services\UserManagementServiceInterface;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\ResetUserPasswordRequest;
 use App\Http\Requests\Admin\StoreAdminUserRequest;
 use App\Http\Resources\AdminUserResource;
 use Illuminate\Http\JsonResponse;
@@ -54,5 +55,16 @@ class AdminUserController extends Controller
         $this->userService->resetTwoFactor($id);
 
         return response()->json(['message' => 'Two-factor authentication reset successfully.']);
+    }
+
+    public function resetPassword(ResetUserPasswordRequest $request, int $id): JsonResponse
+    {
+        $user = \App\Domain\Users\Models\User::findOrFail($id);
+
+        $this->authorize('resetPassword', $user);
+
+        $this->userService->resetPassword($id, $request->validated('password'));
+
+        return response()->json(['message' => 'Password reset successfully.']);
     }
 }
