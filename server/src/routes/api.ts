@@ -14,7 +14,11 @@ import * as contactController from '../controllers/contactController.js';
 import * as userController from '../controllers/userController.js';
 import * as settingsController from '../controllers/settingsController.js';
 
-const upload = multer({ dest: 'uploads/' });
+// Use memoryStorage in serverless environments (Vercel has a read-only filesystem except /tmp)
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+});
 const router = Router();
 
 // ==========================================

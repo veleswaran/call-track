@@ -49,8 +49,15 @@ export async function updateSettings(req: Request, res: Response, next: NextFunc
 
 export async function uploadLogo(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    // In Express with multer, req.file contains uploaded logo
-    const logoUrl = req.file ? `/uploads/${req.file.filename}` : '/logo.png';
+    // In Express with multer memoryStorage, req.file.buffer contains the file bytes
+    let logoUrl = '/logo.png';
+    if (req.file) {
+      if (req.file.buffer) {
+        logoUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+      } else if (req.file.filename) {
+        logoUrl = `/uploads/${req.file.filename}`;
+      }
+    }
 
     await SystemSetting.findOneAndUpdate(
       { key: 'app_logo' },
