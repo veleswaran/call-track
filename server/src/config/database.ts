@@ -2,8 +2,13 @@ import mongoose from 'mongoose';
 import dns from 'dns';
 import { config } from './env.js';
 
-// Resolve MongoDB SRV records via Google & Cloudflare DNS if local ISP DNS fails
-if (config.mongodbUri.startsWith('mongodb+srv://')) {
+// Only set custom DNS fallback on local machine, never on cloud environments (like Vercel / AWS Lambda)
+if (
+  !process.env.VERCEL &&
+  !process.env.AWS_REGION &&
+  !process.env.AWS_LAMBDA_FUNCTION_NAME &&
+  config.mongodbUri.startsWith('mongodb+srv://')
+) {
   try {
     dns.setServers(['8.8.8.8', '1.1.1.1']);
   } catch (e) {
@@ -23,7 +28,7 @@ export async function connectDB(): Promise<void> {
     mongoose.set('strictQuery', true);
     cachedPromise = mongoose.connect(config.mongodbUri, {
       dbName: 'calltrack',
-      serverSelectionTimeoutMS: 5000,
+      serverSelectionTimeoutMS: 8000,
     });
   }
 

@@ -1,24 +1,23 @@
 import { app } from './app.js';
 import { connectDB } from './config/database.js';
-import { config } from './config/env.js';
 
-// Standalone local server listener
-if (!process.env.VERCEL && !process.env.AWS_LAMBDA_FUNCTION_NAME) {
-  connectDB()
-    .then(() => {
-      app.listen(config.port, () => {
-        console.log(`[CallTrack Express API] Server is running on http://localhost:${config.port}`);
-        console.log(`[CallTrack Express API] Environment: ${config.nodeEnv}`);
-      });
-    })
-    .catch((err) => {
-      console.error('[CallTrack Express API] Startup error:', err);
+// Vercel Serverless Function entrypoint
+export default async function handler(req: any, res: any) {
+  try {
+    await connectDB();
+  } catch (err: any) {
+    console.error('[Vercel Serverless] Database connection failed:', err);
+    return res.status(500).json({
+      message: 'Database connection failed',
+      error: err?.message || String(err),
     });
+  }
+
+  return app(req, res);
 }
 
-// Support both ES module and CommonJS export styles for Vercel Serverless Function compatibility
-export default app;
+// CommonJS compatibility for Vercel
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = app;
-  module.exports.default = app;
+  module.exports = handler;
+  module.exports.default = handler;
 }
