@@ -11,15 +11,28 @@ if (config.mongodbUri.startsWith('mongodb+srv://')) {
   }
 }
 
+let cachedPromise: Promise<typeof mongoose> | null = null;
+
 export async function connectDB(): Promise<void> {
-  try {
+  // If already connected, reuse connection
+  if (mongoose.connection.readyState >= 1) {
+    return;
+  }
+
+  if (!cachedPromise) {
     mongoose.set('strictQuery', true);
-    await mongoose.connect(config.mongodbUri, {
+    cachedPromise = mongoose.connect(config.mongodbUri, {
       dbName: 'calltrack',
+      serverSelectionTimeoutMS: 5000,
     });
+  }
+
+  try {
+    await cachedPromise;
     console.log(`[MongoDB] Connected successfully to database: calltrack`);
   } catch (error) {
+    cachedPromise = null;
     console.error('[MongoDB] Connection error:', error);
-    process.exit(1);
+    throw error;
   }
 }
