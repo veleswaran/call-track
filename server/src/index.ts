@@ -2,7 +2,7 @@ import { app } from './app.js';
 import { connectDB } from './config/database.js';
 import { config } from './config/env.js';
 
-// Only start listening when not running inside a serverless platform (like Vercel / AWS Lambda)
+// Standalone local server listener
 if (!process.env.VERCEL && !process.env.AWS_LAMBDA_FUNCTION_NAME) {
   connectDB()
     .then(() => {
@@ -16,4 +16,9 @@ if (!process.env.VERCEL && !process.env.AWS_LAMBDA_FUNCTION_NAME) {
     });
 }
 
+// Support both ES module and CommonJS export styles for Vercel Serverless Function compatibility
 export default app;
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = app;
+  module.exports.default = app;
+}
