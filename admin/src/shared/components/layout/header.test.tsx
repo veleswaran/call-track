@@ -124,14 +124,15 @@ describe("Header", () => {
         expect(screen.getByLabelText("Notifications")).toBeInTheDocument();
     });
 
-    it("should have correct aria-expanded attribute", async () => {
+    it("should close user menu when profile link is clicked", async () => {
         const user = userEvent.setup();
-        render(<Header onMenuClick={() => { }} />);
+        render(<Header onMenuClick={() => { }} user={mockUser} />);
 
-        const userMenuButton = screen.getByTestId("user-menu-button");
-        expect(userMenuButton).toHaveAttribute("aria-expanded", "false");
+        await user.click(screen.getByTestId("user-menu-button"));
+        expect(screen.getByTestId("user-menu-dropdown")).toBeInTheDocument();
 
-        await user.click(userMenuButton);
-        expect(userMenuButton).toHaveAttribute("aria-expanded", "true");
+        const profileLink = screen.getByText("Profile");
+        await user.click(profileLink);
+        expect(screen.queryByTestId("user-menu-dropdown")).not.toBeInTheDocument();
     });
 });

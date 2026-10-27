@@ -47,7 +47,10 @@ export interface CallLogFilters {
 /**
  * Fetch paginated call logs with filters
  */
-export function useCallLogs(filters?: CallLogFilters) {
+export function useCallLogs(
+    filters?: CallLogFilters,
+    options?: { enabled?: boolean }
+) {
     const params = new URLSearchParams();
 
     if (filters) {
@@ -72,6 +75,7 @@ export function useCallLogs(filters?: CallLogFilters) {
             api.get<PaginatedResponse<CallLog>>(
                 `/api/v1/admin/call-logs?${params.toString()}`
             ),
+        enabled: options?.enabled ?? true,
     });
 }
 

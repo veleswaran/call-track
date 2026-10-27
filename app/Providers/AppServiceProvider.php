@@ -113,6 +113,11 @@ class AppServiceProvider extends ServiceProvider
         );
 
         $this->app->bind(
+            \App\Contracts\Services\CallInsightsServiceInterface::class,
+            \App\Services\CallInsightsService::class
+        );
+
+        $this->app->bind(
             \App\Contracts\Services\Teams\TeamManagementServiceInterface::class,
             \App\Services\Teams\TeamManagementService::class
         );
@@ -148,6 +153,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             \App\Contracts\Services\EscalationServiceContract::class,
             \App\Services\EscalationService::class
+        );
+
+        $this->app->bind(
+            \App\Contracts\Services\CustomerSummaryServiceInterface::class,
+            \App\Services\CustomerSummaryService::class
         );
     }
 

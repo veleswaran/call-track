@@ -1,13 +1,30 @@
 import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi } from "vitest"
 import { ReportCharts } from "./report-charts"
+import React from "react"
 
-// Mock ResponsiveContainer and other Recharts components to avoid issues in JSDOM
+// Mock ResponsiveContainer, YAxis, and Pie to call custom formatters and label renderers
 vi.mock("recharts", async (importOriginal) => {
     const original = await importOriginal<typeof import("recharts")>()
     return {
         ...original,
         ResponsiveContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+        YAxis: ({ tickFormatter }: { tickFormatter?: (v: number | string) => string }) => {
+            if (tickFormatter) tickFormatter(100);
+            return <div data-testid="mock-yaxis" />;
+        },
+        Pie: ({
+            label,
+            children,
+        }: {
+            label?: (props: { value: number }) => string;
+            children?: React.ReactNode;
+        }) => {
+            if (label) {
+                label({ value: 50 });
+            }
+            return <div data-testid="mock-pie">{children}</div>;
+        },
     }
 })
 
@@ -71,5 +88,18 @@ describe("ReportCharts", () => {
         const zeroData = { ...mockData, peak_call_hours: [{ hour: 9, label: "09:00", value: 0 }] }
         render(<ReportCharts data={zeroData} />)
         expect(screen.getByText(/No calls recorded in this period./i)).toBeInTheDocument()
+    })
+
+    it("handles zero totals in Pie charts", () => {
+        const zeroPieData = {
+            ...mockData,
+            status_distribution: [],
+            caller_types: [],
+            call_direction_distribution: [],
+            agent_distribution: [],
+            team_distribution: [],
+        }
+        render(<ReportCharts data={zeroPieData} />)
+        expect(screen.getByText("Calls Per Day")).toBeInTheDocument()
     })
 })

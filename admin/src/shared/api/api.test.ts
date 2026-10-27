@@ -285,6 +285,30 @@ describe("api client", () => {
 
             await expect(api.put("/api/v1/test/999", {})).rejects.toThrow("Not Found");
         });
+        it("should handle 204 No Content as empty object", async () => {
+            mockFetch
+                .mockResolvedValueOnce({ ok: true }) // CSRF
+                .mockResolvedValueOnce({
+                    ok: true,
+                    status: 204,
+                });
+
+            const result = await api.put("/api/v1/test/1", { name: "test" });
+            expect(result).toEqual({});
+        });
+
+        it("should parse JSON error response if available", async () => {
+            mockFetch
+                .mockResolvedValueOnce({ ok: true }) // CSRF
+                .mockResolvedValueOnce({
+                    ok: false,
+                    status: 422,
+                    statusText: "Unprocessable",
+                    json: () => Promise.resolve({ message: "Validation error on put" }),
+                });
+
+            await expect(api.put("/api/v1/test/1", {})).rejects.toThrow("Validation error on put");
+        });
     });
 
     describe("delete", () => {
@@ -328,6 +352,31 @@ describe("api client", () => {
                 }
             );
             expect(result).toEqual({ deleted: true });
+        });
+
+        it("should handle 204 No Content on DELETE", async () => {
+            mockFetch
+                .mockResolvedValueOnce({ ok: true }) // CSRF
+                .mockResolvedValueOnce({
+                    ok: true,
+                    status: 204,
+                });
+
+            const result = await api.delete("/api/v1/test/1");
+            expect(result).toEqual({});
+        });
+
+        it("should parse JSON error on DELETE if available", async () => {
+            mockFetch
+                .mockResolvedValueOnce({ ok: true }) // CSRF
+                .mockResolvedValueOnce({
+                    ok: false,
+                    status: 400,
+                    statusText: "Bad Request",
+                    json: () => Promise.resolve({ message: "Cannot delete resource" }),
+                });
+
+            await expect(api.delete("/api/v1/test/1")).rejects.toThrow("Cannot delete resource");
         });
 
         it("should throw error on non-ok response", async () => {

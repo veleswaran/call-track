@@ -12,14 +12,17 @@ vi.mock("../hooks/use-users", () => ({
     }),
 }));
 
+let mockCurrentUser: { role: string; roles: string[]; permissions: string[] } | null = {
+    role: "admin",
+    roles: ["admin"],
+    permissions: [],
+};
+
 vi.mock("@features/auth/hooks/use-auth", () => ({
     useAuth: () => ({
-        user: { role: "admin", roles: ["admin"], permissions: [] }, // Admin user
+        user: mockCurrentUser,
     }),
 }));
-
-// Mock UI components if necessary, but shallow rendering might be better or just rely on DOM
-// Since we use Radix primitives, they should be testable.
 
 describe("ChangeRoleDialog", () => {
     const mockUser: User = {
@@ -45,25 +48,68 @@ describe("ChangeRoleDialog", () => {
         expect(screen.getByText("Update the role for Test User. careful, this affects their permissions.")).toBeInTheDocument();
     });
 
-    it("calls updateRole when form is submitted", () => {
+    it("calls updateRole when form is submitted and calls onSuccess callback", () => {
+        const onOpenChange = vi.fn();
+        mockUpdateUserRole.mockImplementation((_data, options) => {
+            if (options?.onSuccess) {
+                options.onSuccess();
+            }
+        });
+
         render(
             <ChangeRoleDialog
                 user={mockUser}
+                open={true}
+                onOpenChange={onOpenChange}
+            />
+        );
+
+        const submitButton = screen.getByText("Save changes");
+        fireEvent.click(submitButton);
+
+        expect(mockUpdateUserRole).toHaveBeenCalledWith(
+            expect.objectContaining({ id: 1, role: "manager" }),
+            expect.anything()
+        );
+        expect(onOpenChange).toHaveBeenCalledWith(false);
+    });
+
+    it("calls onOpenChange(false) when cancel button is clicked", () => {
+        const onOpenChange = vi.fn();
+        render(
+            <ChangeRoleDialog
+                user={mockUser}
+                open={true}
+                onOpenChange={onOpenChange}
+            />
+        );
+
+        const cancelButton = screen.getByText("Cancel");
+        fireEvent.click(cancelButton);
+
+        expect(onOpenChange).toHaveBeenCalledWith(false);
+    });
+
+    it("handles super-admin currentUser and user with no roles", () => {
+        mockCurrentUser = {
+            role: "super-admin",
+            roles: ["super-admin"],
+            permissions: [],
+        };
+
+        const userWithoutRoles: User = {
+            ...mockUser,
+            roles: [],
+        };
+
+        render(
+            <ChangeRoleDialog
+                user={userWithoutRoles}
                 open={true}
                 onOpenChange={vi.fn()}
             />
         );
 
-        // Select role - this might be tricky with Radix Select, simpler to just find the button and click save 
-        // assuming default value is selected or just testing submission.
-        const submitButton = screen.getByText("Save changes");
-        fireEvent.click(submitButton);
-
-        expect(mockUpdateUserRole).toHaveBeenCalled();
-        // Check arguments if possible
-        expect(mockUpdateUserRole).toHaveBeenCalledWith(
-            expect.objectContaining({ id: 1 }), // Role might be default 'manager' (from mockUser) or 'member' fallback
-            expect.anything()
-        );
+        expect(screen.getByText("Change User Role")).toBeInTheDocument();
     });
 });

@@ -4,7 +4,7 @@ import * as React from "react";
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Phone, Smartphone, Users, BarChart, Menu, Contact, Settings, X, LogOut, PhoneMissed } from "lucide-react";
+import { LayoutDashboard, Phone, Smartphone, Users, UsersRound, BarChart, Menu, Contact, Settings, X, LogOut, PhoneMissed, Flame } from "lucide-react";
 import { cn } from "@shared/utils";
 import { useAuth } from "@/src/features/auth/hooks/use-auth";
 
@@ -22,6 +22,8 @@ const primaryNavItems = [
  * Overflow navigation items shown in the "More" menu
  */
 const moreNavItems = [
+    { name: "Call Insights", href: "/call-insights", icon: Flame },
+    { name: "Customer Summary", href: "/customer-summary", icon: UsersRound },
     { name: "Missed Calls", href: "/reports/missed-calls", icon: PhoneMissed },
     { name: "Teams", href: "/teams", icon: Users, permission: "manage team" },
     { name: "Users", href: "/users", icon: Users, permission: "manage users" },
@@ -29,6 +31,7 @@ const moreNavItems = [
     { name: "Contacts", href: "/contacts", icon: Contact, role: ["admin", "super-admin"] },
     { name: "Settings", href: "/settings", icon: Settings, role: ["admin", "super-admin"] },
 ] as const;
+
 
 export const navItems = [...primaryNavItems, ...moreNavItems];
 

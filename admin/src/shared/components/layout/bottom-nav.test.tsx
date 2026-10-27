@@ -132,21 +132,46 @@ describe("BottomNav", () => {
         expect(screen.queryByTestId("bottom-nav-logout")).not.toBeInTheDocument();
     });
 
-    it("should call onLogout when logout button is clicked", async () => {
+    it("should close More menu when close button, overlay, or item is clicked", async () => {
         const user = userEvent.setup();
-        const onLogout = vi.fn();
-        render(<BottomNav onLogout={onLogout} />);
+        const { container } = render(<BottomNav />);
 
+        // Open menu
         await user.click(screen.getByTestId("bottom-nav-more"));
-        await user.click(screen.getByTestId("bottom-nav-logout"));
-        expect(onLogout).toHaveBeenCalledTimes(1);
+        expect(screen.getByText("Teams")).toBeInTheDocument();
+
+        // Close via close button
+        await user.click(screen.getByLabelText("Close menu"));
+        expect(screen.queryByText("Teams")).not.toBeInTheDocument();
+
+        // Open again
+        await user.click(screen.getByTestId("bottom-nav-more"));
+        expect(screen.getByText("Teams")).toBeInTheDocument();
+
+        // Close via backdrop overlay
+        const overlay = container.querySelector(".fixed.inset-0");
+        if (overlay) {
+            await user.click(overlay);
+        }
+        expect(screen.queryByText("Teams")).not.toBeInTheDocument();
+
+        // Open and close via clicking a More item
+        await user.click(screen.getByTestId("bottom-nav-more"));
+        await user.click(screen.getByText("Teams"));
+        expect(screen.queryByText("Teams")).not.toBeInTheDocument();
+
+        // Open and close via clicking a primary nav item
+        await user.click(screen.getByTestId("bottom-nav-more"));
+        await user.click(screen.getByTestId("bottom-nav-dashboard"));
+        expect(screen.queryByText("Teams")).not.toBeInTheDocument();
     });
 });
 
 describe("navItems", () => {
-    it("should have 10 navigation items (4 primary + 6 overflow)", () => {
-        expect(navItems).toHaveLength(10);
+    it("should have 12 navigation items (4 primary + 8 overflow)", () => {
+        expect(navItems).toHaveLength(12);
     });
+
 
     it("should have Dashboard as first item", () => {
         expect(navItems[0].name).toBe("Dashboard");

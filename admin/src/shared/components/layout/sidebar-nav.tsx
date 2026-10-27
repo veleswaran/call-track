@@ -11,9 +11,11 @@ import {
     PhoneMissed,
     Smartphone,
     Users,
+    UsersRound,
     Contact,
     Settings,
     ChevronLeft,
+    Flame,
     type LucideIcon,
 } from "lucide-react";
 import { useAuth } from "@/src/features/auth/hooks/use-auth";
@@ -36,8 +38,10 @@ export interface NavItem {
 export const defaultNavigation: NavItem[] = [
     { name: "Dashboard", href: "/", icon: LayoutDashboard },
     { name: "Reports", href: "/reports", icon: BarChart },
+    { name: "Customer Summary", href: "/customer-summary", icon: UsersRound },
+    { name: "Call Insights", href: "/call-insights", icon: Flame },
     { name: "Missed Calls", href: "/reports/missed-calls", icon: PhoneMissed },
-    { name: "Call Logs", href: "/call-logs", icon: Phone }, // accessible by all logged in usually, or check permission
+    { name: "Call Logs", href: "/call-logs", icon: Phone },
     { name: "Devices", href: "/devices", icon: Smartphone, permission: "manage devices" }, // or view devices? 'manage devices' is permission name.
     { name: "Users", href: "/users", icon: Users, permission: "manage users" },
     { name: "Teams", href: "/teams", icon: Users, permission: "manage team" },

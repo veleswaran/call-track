@@ -2,7 +2,7 @@ import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { UserActions } from "./user-actions";
 import { useAuth } from "@features/auth/hooks/use-auth";
-import { useDeleteUser, useResetTwoFactor, useUnlinkUserFromAgent } from "../hooks/use-users";
+import { useDeleteUser, useResetTwoFactor, useUnlinkUserFromAgent, useResetUserPassword } from "../hooks/use-users";
 import { vi, describe, it, expect, beforeEach, Mock } from "vitest";
 
 // Mock hooks
@@ -12,7 +12,7 @@ vi.mock("@shared/components/ui/button", () => ({
     Button: ({ children, ...props }: React.ComponentProps<"button">) => <button {...props}>{children}</button>,
 }));
 
-// Mock Dialog component since it's complex
+// Mock Dialog components since they are complex
 vi.mock("./change-role-dialog", () => ({
     ChangeRoleDialog: ({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) => (
         open ? <div data-testid="change-role-dialog">
@@ -20,6 +20,9 @@ vi.mock("./change-role-dialog", () => ({
             <button onClick={() => onOpenChange(false)}>Close</button>
         </div> : null
     ),
+}));
+vi.mock("./reset-password-dialog", () => ({
+    ResetPasswordDialog: () => null,
 }));
 
 // Mock clipboard
@@ -46,6 +49,7 @@ describe("UserActions", () => {
         (useDeleteUser as Mock).mockReturnValue({ mutate: mockDeleteUser, isPending: false });
         (useResetTwoFactor as Mock).mockReturnValue({ mutate: mockReset2FA, isPending: false });
         (useUnlinkUserFromAgent as Mock).mockReturnValue({ mutate: vi.fn(), isPending: false });
+        (useResetUserPassword as Mock).mockReturnValue({ mutate: vi.fn(), isPending: false });
         (useAuth as Mock).mockReturnValue({
             user: { id: 99, roles: ["admin"], permissions: ["delete records"] }
         });

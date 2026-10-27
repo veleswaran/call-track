@@ -38,6 +38,18 @@ Route::prefix('v1')->group(function () {
             Route::get('/day-wise', [\App\Http\Controllers\Api\Admin\ReportController::class, 'dayWise']);
         });
 
+        Route::prefix('call-insights')->group(function () {
+            Route::get('/top-callers', [\App\Http\Controllers\Api\Admin\CallInsightsController::class, 'topCallers']);
+            Route::get('/agent-insights', [\App\Http\Controllers\Api\Admin\CallInsightsController::class, 'agentInsights']);
+            Route::get('/frequently-contacted', [\App\Http\Controllers\Api\Admin\CallInsightsController::class, 'frequentlyContacted']);
+            Route::get('/longest-calls', [\App\Http\Controllers\Api\Admin\CallInsightsController::class, 'longestCalls']);
+        });
+
+        Route::prefix('customer-summary')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Api\Admin\CustomerSummaryController::class, 'index']);
+            Route::get('/metrics', [\App\Http\Controllers\Api\Admin\CustomerSummaryController::class, 'metrics']);
+        });
+
         // Device Codes
         Route::post('/devices/codes', [\App\Http\Controllers\Api\Admin\DeviceCodeController::class, 'store']);
         Route::get('/devices/codes', [\App\Http\Controllers\Api\Admin\DeviceCodeController::class, 'index']);

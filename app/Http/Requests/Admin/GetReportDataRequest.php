@@ -37,9 +37,10 @@ final class GetReportDataRequest extends FormRequest
             'sim_slot' => ['nullable', 'integer', 'min:0'],
             'page' => ['nullable', 'integer', 'min:1'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
-            'sort_by' => ['nullable', 'string', 'in:agent,first_call_time,total_calls,connected,missed,total_duration,avg_duration'],
+            'sort_by' => ['nullable', 'string', 'in:agent,first_call_time,total_calls,connected,missed,missed_calls,total_duration,avg_duration'],
             'sort_order' => ['nullable', 'string', 'in:asc,desc'],
             'for_export' => ['nullable', 'boolean'],
+            'tab' => ['nullable', 'string', 'in:all,with-missed,high-duration'],
         ];
     }
 }

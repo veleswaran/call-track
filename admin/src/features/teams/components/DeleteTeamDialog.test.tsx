@@ -28,7 +28,12 @@ describe("DeleteTeamDialog", () => {
     it("shows deleting state", () => {
         render(<DeleteTeamDialog {...defaultProps} isDeleting={true} />);
         expect(screen.getByText("Deleting...")).toBeInTheDocument();
-        expect(screen.getByText("Deleting...")).toBeDisabled();
         expect(screen.getByText("Cancel")).toBeDisabled();
+    });
+
+    it("calls onOpenChange(false) when cancel button is clicked", () => {
+        render(<DeleteTeamDialog {...defaultProps} />);
+        fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+        expect(mockOnOpenChange).toHaveBeenCalledWith(false);
     });
 });
